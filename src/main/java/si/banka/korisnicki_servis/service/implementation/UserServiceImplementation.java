@@ -1,4 +1,4 @@
-package si.banka.service.implementation;
+package si.banka.korisnicki_servis.service.implementation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,11 +8,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import si.banka.model.Role;
-import si.banka.model.User;
-import si.banka.repository.RoleRepository;
-import si.banka.repository.UserRepository;
-import si.banka.service.UserService;
+import si.banka.korisnicki_servis.model.Role;
+import si.banka.korisnicki_servis.model.User;
+import si.banka.korisnicki_servis.repository.RoleRepository;
+import si.banka.korisnicki_servis.repository.UserRepository;
+import si.banka.korisnicki_servis.service.UserService;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;

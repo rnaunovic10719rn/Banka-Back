@@ -1,4 +1,4 @@
-package si.banka.security;
+package si.banka.korisnicki_servis.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -12,9 +12,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import si.banka.filter.CustomAuthenticationFilter;
-import si.banka.filter.CustomAuthorizationFilter;
-import si.banka.model.Permissions;
+import si.banka.korisnicki_servis.filter.CustomAuthenticationFilter;
+import si.banka.korisnicki_servis.filter.CustomAuthorizationFilter;
+import si.banka.korisnicki_servis.model.Permissions;
 
 import static org.springframework.http.HttpMethod.GET;
 

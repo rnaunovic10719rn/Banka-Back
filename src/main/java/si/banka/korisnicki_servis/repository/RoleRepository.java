@@ -1,7 +1,7 @@
-package si.banka.repository;
+package si.banka.korisnicki_servis.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import si.banka.model.Role;
+import si.banka.korisnicki_servis.model.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
 

@@ -1,4 +1,4 @@
-package si.banka.model;
+package si.banka.korisnicki_servis.model;
 
 public enum Permissions {
     LIST_USERS,
