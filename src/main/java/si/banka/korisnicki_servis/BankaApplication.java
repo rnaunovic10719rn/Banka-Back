@@ -1,16 +1,15 @@
-package si.banka;
+package si.banka.korisnicki_servis;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import si.banka.model.Permissions;
-import si.banka.model.Role;
-import si.banka.model.User;
-import si.banka.service.UserService;
+import si.banka.korisnicki_servis.model.Permissions;
+import si.banka.korisnicki_servis.model.Role;
+import si.banka.korisnicki_servis.model.User;
+import si.banka.korisnicki_servis.service.UserService;
 
 import java.util.ArrayList;
 import java.util.Collection;

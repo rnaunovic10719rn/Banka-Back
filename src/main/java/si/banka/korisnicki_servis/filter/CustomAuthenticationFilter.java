@@ -1,4 +1,4 @@
-package si.banka.filter;
+package si.banka.korisnicki_servis.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

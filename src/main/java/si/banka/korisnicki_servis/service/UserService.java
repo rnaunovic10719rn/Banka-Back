@@ -1,7 +1,7 @@
-package si.banka.service;
+package si.banka.korisnicki_servis.service;
 
-import si.banka.model.Role;
-import si.banka.model.User;
+import si.banka.korisnicki_servis.model.Role;
+import si.banka.korisnicki_servis.model.User;
 
 import java.util.List;
 

@@ -1,12 +1,12 @@
-package si.banka.controller;
+package si.banka.korisnicki_servis.controller;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import si.banka.model.Role;
-import si.banka.model.User;
-import si.banka.service.UserService;
+import si.banka.korisnicki_servis.controller.response_forms.RoleToUserForm;
+import si.banka.korisnicki_servis.model.Role;
+import si.banka.korisnicki_servis.model.User;
+import si.banka.korisnicki_servis.service.UserService;
 
 import java.util.List;
 
@@ -40,8 +40,3 @@ public class UserController {
 
 }
 
-@Data
-class RoleToUserForm {
-    private String username;
-    private String role_name;
-}
