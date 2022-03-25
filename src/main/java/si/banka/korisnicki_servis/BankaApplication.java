@@ -41,10 +41,10 @@ public class BankaApplication {
 			userService.saveRole(new Role(null, "ROLE_MANAGER", manager_permissions));
 
 			//Punimo bazu userima
-			userService.saveUser(new User(null, "John Travolta", "john", "1234", null));
-			userService.saveUser(new User(null, "Will Boyden", "will", "1234", null));
-			userService.saveUser(new User(null, "Jim Team", "jim", "1234", null));
-			userService.saveUser(new User(null, "Arnold Marakesh", "arnold", "1234", null));
+			userService.saveUser(new User(null, "John Travolta", "john", "1234", null, null, false));
+			userService.saveUser(new User(null, "Will Boyden", "will", "1234", null, null, false));
+			userService.saveUser(new User(null, "Jim Team", "jim", "1234", null, null, false));
+			userService.saveUser(new User(null, "Arnold Marakesh", "arnold", "1234", null, null, false));
 
 			//Setujemo Role userima
 			userService.setRoleToUser("will", "ROLE_MANAGER");
