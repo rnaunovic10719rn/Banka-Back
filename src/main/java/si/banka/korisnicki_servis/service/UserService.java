@@ -11,4 +11,6 @@ public interface UserService {
     User saveUser(User user);
     Role saveRole(Role role);
     void setRoleToUser(String username, String role_name);
+    String setUserOtp(String username, String seecret);
+    void clearUserOtp(String username);
 }

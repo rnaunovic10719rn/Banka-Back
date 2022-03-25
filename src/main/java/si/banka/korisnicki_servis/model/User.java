@@ -3,6 +3,7 @@ package si.banka.korisnicki_servis.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 
@@ -17,6 +18,14 @@ public class User {
     private String name;
     private String username;
     private String password;
+    @Nullable
+    private String otpSeecret;
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
+    private boolean requiresOtp;
+
+    public boolean hasOTP()
+    {
+        return otpSeecret != null;
+    }
 }

@@ -12,6 +12,7 @@ import si.banka.korisnicki_servis.model.Role;
 import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.repository.RoleRepository;
 import si.banka.korisnicki_servis.repository.UserRepository;
+import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
 
 import javax.transaction.Transactional;
@@ -75,5 +76,18 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         User user = userRepository.findByUsername(username);
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
+    }
+
+    @Override
+    public String setUserOtp(String username, String seecret) {
+        User user = userRepository.findByUsername(username);
+        user.setOtpSeecret(seecret);
+        return seecret;
+    }
+
+    @Override
+    public void clearUserOtp(String username) {
+        User user = userRepository.findByUsername(username);
+        user.setOtpSeecret(null);
     }
 }
