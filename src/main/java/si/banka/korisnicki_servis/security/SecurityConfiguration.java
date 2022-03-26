@@ -15,6 +15,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import si.banka.korisnicki_servis.filter.CustomAuthenticationFilter;
 import si.banka.korisnicki_servis.filter.CustomAuthorizationFilter;
 import si.banka.korisnicki_servis.model.Permissions;
+import si.banka.korisnicki_servis.security.otp.OtpAuthenticationManager;
+import si.banka.korisnicki_servis.service.implementation.UserServiceImplementation;
 
 import static org.springframework.http.HttpMethod.GET;
 
@@ -23,6 +25,7 @@ import static org.springframework.http.HttpMethod.GET;
 @RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    private final UserServiceImplementation userServiceImplementation;
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -50,6 +53,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception{
-        return super.authenticationManagerBean();
+        return new OtpAuthenticationManager(userServiceImplementation, super.authenticationManagerBean());
     }
 }

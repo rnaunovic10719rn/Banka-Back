@@ -1,5 +1,6 @@
 package si.banka.korisnicki_servis.security.otp;
 
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,14 +23,15 @@ public class OtpAuthenticationManager implements AuthenticationManager {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
         if(!(authentication instanceof OtpAuthenticationToken otpToken))
-            return authentication;
-
+            throw new AuthenticationCredentialsNotFoundException("");
         // Provera OTP Koda
         var user =_userServiceImplementation.getUser(otpToken.getUsername());
-        var otpSeecret = user.getOtpSeecret();
-        var otp = OTPUtilities.getTOTPCode(otpSeecret);
-        if(!otp.equals(otpToken.getOtp()))
-            return authentication;
+        if(user.hasOTP()){
+            var otpSeecret = user.getOtpSeecret();
+            var sentOtp = otpToken.getOtp();
+            if(!OTPUtilities.validate(otpSeecret, sentOtp))
+                throw new AuthenticationCredentialsNotFoundException("");
+        }
 
         var passwordToken = new UsernamePasswordAuthenticationToken(otpToken.getUsername(), otpToken.getPassword());
         return _baseAuthenticationManager.authenticate(passwordToken);

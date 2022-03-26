@@ -18,10 +18,11 @@
 	</properties>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-credentials -->
+
 		<dependency>
-			<groupId>de.taimos</groupId>
+			<groupId>dev.samstevens.totp</groupId>
 			<artifactId>totp</artifactId>
-			<version>1.0</version>
+			<version>1.7.1</version>
 		</dependency>
 
 		<dependency>

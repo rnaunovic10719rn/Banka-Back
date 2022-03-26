@@ -63,8 +63,7 @@ public class UserController {
     @PostMapping("/otp/getQrcode")
     public ResponseEntity<String>getOtpToUser(@RequestBody OtpToUserForm form) {
 
-        var otpUrl = OTPUtilities.getTOTPUrl(form.getOtpSeecret(), form.getUsername(), "Banka");
-        var qr = OTPUtilities.createTOTPQRCodeBase64Png(otpUrl, 50 , 50);
+        var qr = OTPUtilities.createTOTPQRCodeBase64Png(form.getOtpSeecret(), form.getUsername(), "Banka");
 
         return ResponseEntity.ok().body(qr);
     }

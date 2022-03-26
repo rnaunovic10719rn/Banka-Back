@@ -45,10 +45,12 @@ public class BankaApplication {
 			userService.saveUser(new User(null, "Will Boyden", "will", "1234", null, null, false));
 			userService.saveUser(new User(null, "Jim Team", "jim", "1234", null, null, false));
 			userService.saveUser(new User(null, "Arnold Marakesh", "arnold", "1234", null, null, false));
+			userService.saveUser(new User(null, "Testic", "test", "1234", "5MYDN5OMDRTEVQPCED4F5VYKZRPZ4FRY", null, false));
 
 			//Setujemo Role userima
 			userService.setRoleToUser("will", "ROLE_MANAGER");
 			userService.setRoleToUser("arnold", "ROLE_ADMIN");
+			userService.setRoleToUser("test", "ROLE_ADMIN");
 		};
 	}
 
