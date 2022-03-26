@@ -5,7 +5,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import si.banka.korisnicki_servis.model.Permissions;
 import si.banka.korisnicki_servis.model.Role;
 import si.banka.korisnicki_servis.model.User;
@@ -22,33 +21,32 @@ public class BankaApplication {
 	}
 
 	@Bean
-	PasswordEncoder passwordEncoder(){
+	BCryptPasswordEncoder passwordEncoder(){
 		return new BCryptPasswordEncoder();
 	}
 
 	@Bean
 	CommandLineRunner run(UserService userService){
 		return args -> {
-			//Punimo Rolu permisijama
+			//Punimo Role permisijama
 			Collection<String> admin_permissions = new ArrayList<>();
+			admin_permissions.add(String.valueOf(Permissions.CREATE_USER));
+			admin_permissions.add(String.valueOf(Permissions.DELETE_USER));
 			admin_permissions.add(String.valueOf(Permissions.LIST_USERS));
 
-			Collection<String> manager_permissions = new ArrayList<>();
-			manager_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
+			Collection<String> sadmin_permissions = new ArrayList<>();
+			admin_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
 
 			//Punimo bazu Rolama
+			userService.saveRole(new Role(null, "ROLE_GL_ADMIN", admin_permissions));
 			userService.saveRole(new Role(null, "ROLE_ADMIN", admin_permissions));
-			userService.saveRole(new Role(null, "ROLE_MANAGER", manager_permissions));
 
-			//Punimo bazu userima
-			userService.saveUser(new User(null, "John Travolta", "john", "1234", null));
-			userService.saveUser(new User(null, "Will Boyden", "will", "1234", null));
-			userService.saveUser(new User(null, "Jim Team", "jim", "1234", null));
-			userService.saveUser(new User(null, "Arnold Marakesh", "arnold", "1234", null));
+			//Cuvamo glavnog admina
+			userService.createUser(new User(null, "admin", "", "", "", "", "", "Admin123", null));
 
-			//Setujemo Role userima
-			userService.setRoleToUser("will", "ROLE_MANAGER");
-			userService.setRoleToUser("arnold", "ROLE_ADMIN");
+			//Setujemo Rolu adminu
+			userService.setRoleToUser("admin", "ROLE_GL_ADMIN");
+			//userService.setRoleToUser("arnold", "ROLE_ADMIN");
 		};
 	}
 

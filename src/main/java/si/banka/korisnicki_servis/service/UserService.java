@@ -7,8 +7,12 @@ import java.util.List;
 
 public interface UserService {
     User getUser(String username);
+    User createUser(User user);
+    User editUser(User user);
+    void deleteUser(User user);
     List<User> getUsers();
-    User saveUser(User user);
+
+    Role getRole(String role_name);
     Role saveRole(Role role);
     void setRoleToUser(String username, String role_name);
 }

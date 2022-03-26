@@ -14,8 +14,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
     private String username;
+    private String ime;
+    private String prezime;
+    private String email;
+    private String jmbg;
+    private String br_telefon;
     private String password;
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;

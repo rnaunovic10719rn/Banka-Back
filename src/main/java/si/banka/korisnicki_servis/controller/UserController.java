@@ -3,8 +3,7 @@ package si.banka.korisnicki_servis.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import si.banka.korisnicki_servis.controller.response_forms.RoleToUserForm;
-import si.banka.korisnicki_servis.model.Role;
+import si.banka.korisnicki_servis.controller.response_forms.CreateUserForm;
 import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.service.UserService;
 
@@ -22,20 +21,21 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUsers());
     }
 
-    @PostMapping("/user/save")
-    public ResponseEntity<User>saveUser(@RequestBody User user) {
-        return ResponseEntity.ok().body(userService.saveUser(user));
+    @PostMapping("/user/create")
+    public ResponseEntity<User>createUser(@RequestBody CreateUserForm createUserForm) {
+        String username = createUserForm.getIme() + createUserForm.getPrezime();
+        String password = username + "123";
+        return ResponseEntity.ok()
+                .body(userService.createUser(new User(null, username, createUserForm.getIme(),
+                        createUserForm.getPrezime(), createUserForm.getEmail(),
+                        createUserForm.getJmbg(), createUserForm.getBr_telefon(),
+                        password, userService.getRole(createUserForm.getPozicija()))));
     }
 
-    @PostMapping("/role/save")
-    public ResponseEntity<Role>saveUser(@RequestBody Role role) {
-        return ResponseEntity.ok().body(userService.saveRole(role));
-    }
-
-    @PostMapping("/role/addtouser")
-    public ResponseEntity<?>addRoleToUser(@RequestBody RoleToUserForm form) {
-        userService.setRoleToUser(form.getUsername(), form.getRole_name());
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/user/delete/{username}")
+    public ResponseEntity<?>deleteUser(@PathVariable String username) {
+        userService.deleteUser(userService.getUser(username));
+        return ResponseEntity.ok().body(username + " deleted");
     }
 
 }

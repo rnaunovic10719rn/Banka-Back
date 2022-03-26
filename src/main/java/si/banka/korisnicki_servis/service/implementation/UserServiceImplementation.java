@@ -6,7 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import si.banka.korisnicki_servis.model.Role;
 import si.banka.korisnicki_servis.model.User;
@@ -27,7 +27,6 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -57,10 +56,30 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public User saveUser(User user) {
-        log.info("Saving new user {} to the database", user.getName());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public Role getRole(String role_name) {
+        return roleRepository.findByName(role_name);
+    }
+
+    @Override
+    public void deleteUser(User user) {
+        if(user.getRole().getName().equalsIgnoreCase("ROLE_GL_ADMIN"))
+            return;
+
+        log.info("Deleting user {} from database", user.getUsername());
+        userRepository.delete(user);
+    }
+
+    @Override
+    public User createUser(User user) {
+        log.info("Saving new user {} to the database", user.getUsername());
+        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hash_pw);
         return userRepository.save(user);
+    }
+
+    @Override
+    public User editUser(User user) {
+        return null;
     }
 
     @Override
@@ -76,4 +95,5 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
     }
+
 }
