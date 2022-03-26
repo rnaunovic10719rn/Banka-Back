@@ -12,6 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import si.banka.korisnicki_servis.security.otp.OtpAuthenticationToken;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -38,9 +39,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         String otp = request.getParameter("otp");
         log.info("Log in: {} ", username);
 
-        //TODO: Kreirati custom authentication managera i token koj podrzava otp kao parametar
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+
+        OtpAuthenticationToken authenticationToken = new OtpAuthenticationToken(username, password, otp);
         return authenticationManager.authenticate(authenticationToken);
     }
 

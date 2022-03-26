@@ -42,8 +42,8 @@ public class UserController {
 
     //TODO: Dodati permisije na otp urleove
 
-    @PostMapping("/otp/generateSeecret")
-    public ResponseEntity<String>saveUser() {
+    @GetMapping("/otp/generateSeecret")
+    public ResponseEntity<String>generateSeecret() {
         var seecret = OTPUtilities.generateTOTPSecretKey();
         return ResponseEntity.ok().body(seecret);
     }
