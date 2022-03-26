@@ -61,4 +61,9 @@ public class OTPUtilities {
             throw new IllegalStateException(e);
         }
     }
+
+    public static String createTOTPQrUri(String secretKey, String account, String issuer) {
+        var data = createTOTPQRCodeData(secretKey, account, issuer);
+        return data.getUri();
+    }
 }

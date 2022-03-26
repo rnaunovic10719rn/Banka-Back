@@ -40,13 +40,27 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    //TODO: Dodati permisije na otp urleove
-
     @GetMapping("/otp/generateSeecret")
     public ResponseEntity<String>generateSeecret() {
         var seecret = OTPUtilities.generateTOTPSecretKey();
         return ResponseEntity.ok().body(seecret);
     }
+
+    @PostMapping("/otp/generateQrImage")
+    public ResponseEntity<String>generateOtpQrImage(@RequestBody OtpToUserForm form) {
+
+        var qr = OTPUtilities.createTOTPQRCodeBase64Png(form.getOtpSeecret(), form.getUsername(), "Banka");
+        return ResponseEntity.ok().body(qr);
+    }
+
+    @PostMapping("/otp/generateQrUri")
+    public ResponseEntity<String>generateOtpQrUri(@RequestBody OtpToUserForm form) {
+
+        var qr = OTPUtilities.createTOTPQrUri(form.getOtpSeecret(), form.getUsername(), "Banka");
+        return ResponseEntity.ok().body(qr);
+    }
+
+    //TODO: Dodati permisije na otp urleove
 
     @PostMapping("/otp/setSeecret")
     public ResponseEntity<?>setOtpSeecret(@RequestBody OtpToUserForm form) {
@@ -59,14 +73,5 @@ public class UserController {
         userService.clearUserOtp(username);
         return ResponseEntity.ok().build();
     }
-
-    @PostMapping("/otp/getQrcode")
-    public ResponseEntity<String>getOtpToUser(@RequestBody OtpToUserForm form) {
-
-        var qr = OTPUtilities.createTOTPQRCodeBase64Png(form.getOtpSeecret(), form.getUsername(), "Banka");
-
-        return ResponseEntity.ok().body(qr);
-    }
-
 }
 
