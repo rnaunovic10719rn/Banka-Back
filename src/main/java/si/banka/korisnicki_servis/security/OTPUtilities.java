@@ -38,9 +38,9 @@ public class OTPUtilities {
         return verifier.isValidCode(seecretKey, otp);
     }
 
-    public static QrData createTOTPQRCodeData(String secretKey, String account, String issuer) {
+    public static QrData createTOTPQRCodeData(String secretKey, String label, String issuer) {
         QrData data = new QrData.Builder()
-                .label("account")
+                .label(label)
                 .secret(secretKey)
                 .issuer(issuer)
                 .algorithm(HashingAlgorithm.SHA1) // More on this below
@@ -50,9 +50,9 @@ public class OTPUtilities {
         return data;
     }
 
-    public static String createTOTPQRCodeBase64Png(String secretKey, String account, String issuer) {
+    public static String createTOTPQRCodeBase64Png(String secretKey, String label, String issuer) {
         try {
-            var data = createTOTPQRCodeData(secretKey, account, issuer);
+            var data = createTOTPQRCodeData(secretKey, label, issuer);
             QrGenerator generator = new ZxingPngQrGenerator();
             byte[] imageData = generator.generate(data);
             String mimeType = generator.getImageMimeType();

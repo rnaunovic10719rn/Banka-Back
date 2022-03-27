@@ -3,6 +3,7 @@ package si.banka.korisnicki_servis.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import si.banka.korisnicki_servis.controller.response_forms.OtpQRForm;
 import si.banka.korisnicki_servis.controller.response_forms.OtpToUserForm;
 import si.banka.korisnicki_servis.controller.response_forms.RoleToUserForm;
 import si.banka.korisnicki_servis.model.Role;
@@ -47,16 +48,16 @@ public class UserController {
     }
 
     @PostMapping("/otp/generateQrImage")
-    public ResponseEntity<String>generateOtpQrImage(@RequestBody OtpToUserForm form) {
+    public ResponseEntity<String>generateOtpQrImage(@RequestBody OtpQRForm form) {
 
-        var qr = OTPUtilities.createTOTPQRCodeBase64Png(form.getOtpSeecret(), form.getUsername(), "Banka");
+        var qr = OTPUtilities.createTOTPQRCodeBase64Png(form.getSeecret(), form.getLabel(), "Banka");
         return ResponseEntity.ok().body(qr);
     }
 
     @PostMapping("/otp/generateQrUri")
-    public ResponseEntity<String>generateOtpQrUri(@RequestBody OtpToUserForm form) {
+    public ResponseEntity<String>generateOtpQrUri(@RequestBody OtpQRForm form) {
 
-        var qr = OTPUtilities.createTOTPQrUri(form.getOtpSeecret(), form.getUsername(), "Banka");
+        var qr = OTPUtilities.createTOTPQrUri(form.getSeecret(), form.getLabel(), "Banka");
         return ResponseEntity.ok().body(qr);
     }
 
@@ -64,7 +65,7 @@ public class UserController {
 
     @PostMapping("/otp/setSeecret")
     public ResponseEntity<?>setOtpSeecret(@RequestBody OtpToUserForm form) {
-        userService.setUserOtp(form.getUsername(), form.getOtpSeecret());
+        userService.setUserOtp(form.getUsername(), form.getSeecret());
         return ResponseEntity.ok().build();
     }
 
