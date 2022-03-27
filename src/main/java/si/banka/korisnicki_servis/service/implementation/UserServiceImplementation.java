@@ -6,6 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +23,8 @@ import si.banka.korisnicki_servis.service.UserService;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -89,6 +92,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
                             createUserForm.getPrezime(), createUserForm.getEmail(),
                             createUserForm.getJmbg(), createUserForm.getBr_telefon(),
                             password, true, this.getRole(createUserForm.getPozicija()));
+        //Checking password
+        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(password);
+        if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
+
         log.info("Saving new user {} to the database", user.getUsername());
         String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(hash_pw);
@@ -114,9 +123,9 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         String usernameFromJWT = decodedJWT.getSubject();
         String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
         //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
-        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && Arrays.stream(permissionsFromJWT).anyMatch(permission -> permission.equalsIgnoreCase(String.valueOf(Permissions.MY_EDIT)))) {
+        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT)) {
             //edit logika set na usera?
-        }else if(Arrays.stream(permissionsFromJWT).anyMatch(permission -> permission.equalsIgnoreCase(String.valueOf(Permissions.EDIT_USER)))){
+        }else if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER)){
             //edit logika
         }
 
@@ -135,6 +144,13 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         User user = userRepository.findByUsername(username);
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
+    }
+
+    public boolean hasEditPermission(String[] permissions,Permissions permission){
+        if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
+            return true;
+        }
+        return false;
     }
 
 }
