@@ -8,6 +8,7 @@ import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.service.UserService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -23,20 +24,26 @@ public class UserController {
 
     @PostMapping("/user/create")
     public ResponseEntity<User>createUser(@RequestBody CreateUserForm createUserForm) {
-        String username = createUserForm.getIme() + createUserForm.getPrezime();
-        String password = username + "123";
-        return ResponseEntity.ok()
-                .body(userService.createUser(new User(null, username, createUserForm.getIme(),
-                        createUserForm.getPrezime(), createUserForm.getEmail(),
-                        createUserForm.getJmbg(), createUserForm.getBr_telefon(),
-                        password, userService.getRole(createUserForm.getPozicija()))));
+        return ResponseEntity.ok().body(userService.createUser(createUserForm));
     }
 
-    @DeleteMapping("/user/delete/{username}")
-    public ResponseEntity<?>deleteUser(@PathVariable String username) {
-        userService.deleteUser(userService.getUser(username));
-        return ResponseEntity.ok().body(username + " deleted");
+    @DeleteMapping("/user/delete/{id}")
+    public ResponseEntity<?>deleteUser(@PathVariable long id) {
+        Optional<User> user= userService.getUserById(id);
+        if(user.get() == null){ResponseEntity.badRequest().build();}
+        userService.deleteUser(user.get());
+        return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
     }
+
+    @PostMapping("/user/edit/{id}")
+    public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token) {
+        String username = userService.getUserById(id).get().getUsername();
+        if(username.equalsIgnoreCase("admin")) return ResponseEntity.badRequest().build();
+
+        userService.editUser(userService.getUser(username), token.substring("Bearer ".length()));
+        return ResponseEntity.ok().body(username + " edited");
+    }
+
 
 }
 

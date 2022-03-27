@@ -37,12 +37,13 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        //Checking if user is active
+
         //Checking password
-        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,20}$";
+        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(password);
-        if(!matcher.matches()) throw new BadCredentialsException("Password: must be 8 characters long, must have one uppercase and one digit minimum");
-
+        if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
 
         log.info("Log in: {} ", username);
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);

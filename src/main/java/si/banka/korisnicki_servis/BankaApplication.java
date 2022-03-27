@@ -33,16 +33,18 @@ public class BankaApplication {
 			admin_permissions.add(String.valueOf(Permissions.CREATE_USER));
 			admin_permissions.add(String.valueOf(Permissions.DELETE_USER));
 			admin_permissions.add(String.valueOf(Permissions.LIST_USERS));
+			admin_permissions.add(String.valueOf(Permissions.EDIT_USER));
+			admin_permissions.add(String.valueOf(Permissions.MY_EDIT));
 
-			Collection<String> sadmin_permissions = new ArrayList<>();
-			admin_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
+			Collection<String> neka_pozicija_permissions = new ArrayList<>();
+			neka_pozicija_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
 
 			//Punimo bazu Rolama
 			userService.saveRole(new Role(null, "ROLE_GL_ADMIN", admin_permissions));
 			userService.saveRole(new Role(null, "ROLE_ADMIN", admin_permissions));
 
 			//Cuvamo glavnog admina
-			userService.createUser(new User(null, "admin", "", "", "", "", "", "Admin123", null));
+			userService.createUserAdmin(new User("admin", "Admin123"));
 
 			//Setujemo Rolu adminu
 			userService.setRoleToUser("admin", "ROLE_GL_ADMIN");
