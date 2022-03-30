@@ -110,22 +110,31 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public User editUser(User user, String token) {
+    public boolean hasEditPermissions(User user, String token) {
+        if(token.startsWith("Bearer "))
+            token = token.substring("Bearer ".length());
         //Cupamo username i permisije iz tokena
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
         String usernameFromJWT = decodedJWT.getSubject();
-        String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
-        //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
-        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT)) {
-            //edit logika set na usera?
-        }else if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER)){
-            //edit logika
+
+        //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
+        if(user.getUsername() == "admin")
+        {
+            if(usernameFromJWT.equalsIgnoreCase(user.getUsername()))
+                return true;
+            return false;
         }
 
-        return user;
+        String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
+        //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
+        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT))
+            return true;
+        if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER))
+            return true;
+        return false;
     }
 
     @Override
@@ -142,25 +151,13 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setRole(role);
     }
 
+
+
     public boolean hasEditPermission(String[] permissions,Permissions permission){
         if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
             return true;
         }
         return false;
-    }
-
-
-    @Override
-    public String setUserOtp(String username, String seecret) {
-        User user = userRepository.findByUsername(username);
-        user.setOtpSeecret(seecret);
-        return seecret;
-    }
-
-    @Override
-    public void clearUserOtp(String username) {
-        User user = userRepository.findByUsername(username);
-        user.setOtpSeecret(null);
     }
 
 }

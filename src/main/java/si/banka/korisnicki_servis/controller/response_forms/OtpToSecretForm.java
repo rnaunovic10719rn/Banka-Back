@@ -7,7 +7,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class OtpToUserForm {
-    private String username;
-    private String seecret;
+public class OtpToSecretForm {
+    private String otp;
+    private String secret;
 }

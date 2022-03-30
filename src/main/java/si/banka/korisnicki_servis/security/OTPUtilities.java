@@ -34,8 +34,19 @@ public class OTPUtilities {
         return base32.encodeToString(bytes);
     }
 
-    public static boolean validate(String seecretKey, String otp) {
-        return verifier.isValidCode(seecretKey, otp);
+    public static boolean isValidSeecret(String str) {
+        try{
+            Base32 base32 = new Base32();
+            return base32.decode(str).length == 20;
+        }
+        catch(Exception ex)
+        {
+            return false;
+        }
+    }
+
+    public static boolean validate(String secretKey, String otp) {
+        return verifier.isValidCode(secretKey, otp);
     }
 
     public static QrData createTOTPQRCodeData(String secretKey, String label, String issuer) {

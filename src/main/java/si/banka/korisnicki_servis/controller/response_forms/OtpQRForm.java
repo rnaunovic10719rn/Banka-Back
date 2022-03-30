@@ -9,5 +9,5 @@ import lombok.Setter;
 @Setter
 public class OtpQRForm {
     private String label;
-    private String seecret;
+    private String secret;
 }
