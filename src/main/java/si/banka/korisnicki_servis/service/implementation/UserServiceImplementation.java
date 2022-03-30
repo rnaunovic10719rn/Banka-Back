@@ -89,16 +89,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             username = username + (int)(Math.random() * (100)) + 1;
         }
         String password = createUserForm.getIme() + "Test123";
+        //TODO: Popraviti formu za otp
         User user = new User(username, createUserForm.getIme(),
                             createUserForm.getPrezime(), createUserForm.getEmail(),
                             createUserForm.getJmbg(), createUserForm.getBr_telefon(),
-                            password, true, this.getRole(createUserForm.getPozicija()));
-        //Checking password
-        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(password);
-        if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
-
+                            password, null, true, false, this.getRole(createUserForm.getPozicija()));
         log.info("Saving new user {} to the database", user.getUsername());
         String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(hash_pw);
