@@ -13,6 +13,7 @@ import si.banka.korisnicki_servis.controller.response_forms.OtpQRForm;
 import si.banka.korisnicki_servis.controller.response_forms.OtpToUserForm;
 import si.banka.korisnicki_servis.controller.response_forms.RoleToUserForm;
 import si.banka.korisnicki_servis.model.Role;
+import si.banka.korisnicki_servis.controller.response_forms.CreateUserForm;
 import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
@@ -85,8 +86,8 @@ public class UserController {
 
     //TODO: Dodati permisije na otp urleove
 
-    @PostMapping("/otp/setSeecret")
-    public ResponseEntity<?>setOtpSeecret(@RequestBody OtpToUserForm form) {
+    @PostMapping("/otp/set/{id}")
+    public ResponseEntity<?>setOtpSeecret(@PathVariable long id, @RequestBody OtpToUserForm form) {
         userService.setUserOtp(form.getUsername(), form.getSeecret());
         return ResponseEntity.ok().build();
     }
@@ -96,5 +97,6 @@ public class UserController {
         userService.clearUserOtp(username);
         return ResponseEntity.ok().build();
     }
+
 }
 
