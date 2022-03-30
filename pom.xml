@@ -8,13 +8,15 @@
 		<version>2.6.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>si</groupId>
-	<artifactId>banka</artifactId>
+	<groupId>si.banka</groupId>
+	<artifactId>korisnicki_servis</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>banka</name>
 	<description>Capstone project Banka</description>
 	<properties>
 		<java.version>11</java.version>
+		<sonar.organization>raf-si-2021-1</sonar.organization>
+  		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-credentials -->
@@ -79,6 +81,20 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>2.6.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>2.6.1</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

@@ -1,13 +1,20 @@
 package si.banka.korisnicki_servis.service.implementation;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import si.banka.korisnicki_servis.controller.response_forms.CreateUserForm;
+import si.banka.korisnicki_servis.model.Permissions;
 import si.banka.korisnicki_servis.model.Role;
 import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.repository.RoleRepository;
@@ -16,9 +23,9 @@ import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +35,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
-        if(user == null){
+        if(user == null || !(user.isAktivan())){
             log.error("User {} not found in database", username);
             throw new UsernameNotFoundException("User not found in database");
         }
@@ -52,16 +58,79 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public Optional<User> getUserById(long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
     public List<User> getUsers() {
         log.info("Showing list of users");
         return userRepository.findAll();
     }
 
     @Override
-    public User saveUser(User user) {
-        log.info("Saving new user {} to the database", user.getName());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public Role getRole(String role_name) {
+        return roleRepository.findByName(role_name);
+    }
+
+    @Override
+    public void deleteUser(User user) {
+        if(user.getRole().getName().equalsIgnoreCase("ROLE_GL_ADMIN"))
+            return;
+
+        log.info("Setting user inactive {} in database", user.getUsername());
+        user.setAktivan(false);
+    }
+
+    @Override
+    public User createUser(CreateUserForm createUserForm) {
+        String username = createUserForm.getIme().toLowerCase()+ "." + createUserForm.getPrezime().toLowerCase();
+        if(this.getUser(username) instanceof User){
+            username = username + (int)(Math.random() * (100)) + 1;
+        }
+        String password = createUserForm.getIme() + "Test123";
+        User user = new User(username, createUserForm.getIme(),
+                            createUserForm.getPrezime(), createUserForm.getEmail(),
+                            createUserForm.getJmbg(), createUserForm.getBr_telefon(),
+                            password, true, this.getRole(createUserForm.getPozicija()));
+        //Checking password
+        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(password);
+        if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
+
+        log.info("Saving new user {} to the database", user.getUsername());
+        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hash_pw);
         return userRepository.save(user);
+    }
+
+    @Override
+    public void createUserAdmin(User user){
+        log.info("Saving admin to the database");
+        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hash_pw);
+        user.setAktivan(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public User editUser(User user, String token) {
+        //Cupamo username i permisije iz tokena
+        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(token);
+
+        String usernameFromJWT = decodedJWT.getSubject();
+        String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
+        //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
+        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT)) {
+            //edit logika set na usera?
+        }else if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER)){
+            //edit logika
+        }
+
+        return user;
     }
 
     @Override
@@ -77,6 +146,14 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
     }
+
+    public boolean hasEditPermission(String[] permissions,Permissions permission){
+        if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
+            return true;
+        }
+        return false;
+    }
+
 
     @Override
     public String setUserOtp(String username, String seecret) {

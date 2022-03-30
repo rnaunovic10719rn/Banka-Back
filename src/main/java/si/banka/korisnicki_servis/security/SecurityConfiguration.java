@@ -18,7 +18,7 @@ import si.banka.korisnicki_servis.model.Permissions;
 import si.banka.korisnicki_servis.security.otp.OtpAuthenticationManager;
 import si.banka.korisnicki_servis.service.implementation.UserServiceImplementation;
 
-import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
@@ -41,7 +41,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 .antMatchers("/api/login", "/h2-console").permitAll()
-                .antMatchers(GET, "/api/users").hasAuthority(String.valueOf(Permissions.LIST_USERS));
+                .antMatchers(GET, "/api/users").hasAuthority(String.valueOf(Permissions.LIST_USERS))
+                .antMatchers(POST, "/api/user/create").hasAuthority(String.valueOf(Permissions.CREATE_USER))
+                .antMatchers(POST, "/api/user/edit/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
+                .antMatchers(DELETE, "/api/user/delete/**").hasAuthority(String.valueOf(Permissions.DELETE_USER));
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.csrf().disable();
