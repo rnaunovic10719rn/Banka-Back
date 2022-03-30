@@ -43,7 +43,8 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         log.info("Log in: {} ", username);
 
         OtpAuthenticationToken authenticationToken = new OtpAuthenticationToken(username, password, otp);
-        return authenticationManager.authenticate(authenticationToken);
+        var result = authenticationManager.authenticate(authenticationToken);
+        return result;
     }
 
     @Override

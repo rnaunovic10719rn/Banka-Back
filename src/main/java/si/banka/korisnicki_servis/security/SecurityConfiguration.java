@@ -44,6 +44,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(GET, "/api/users").hasAuthority(String.valueOf(Permissions.LIST_USERS))
                 .antMatchers(POST, "/api/user/create").hasAuthority(String.valueOf(Permissions.CREATE_USER))
                 .antMatchers(POST, "/api/user/edit/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
+                .antMatchers(POST, "/api/otp/clear/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
+                .antMatchers(POST, "/api/otp/set/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
                 .antMatchers(DELETE, "/api/user/delete/**").hasAuthority(String.valueOf(Permissions.DELETE_USER));
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
