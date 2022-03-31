@@ -46,9 +46,13 @@ public class BankaApplication {
 			//Cuvamo glavnog admina
 			userService.createUserAdmin(new User("admin", "Admin123"));
 
+			userService.createUserAdmin(new User("test", "1234", "5MYDN5OMDRTEVQPCED4F5VYKZRPZ4FRY"));
+
 			//Setujemo Rolu adminu
 			userService.setRoleToUser("admin", "ROLE_GL_ADMIN");
 			//userService.setRoleToUser("arnold", "ROLE_ADMIN");
+
+			userService.setRoleToUser("test", "ROLE_ADMIN");
 		};
 	}
 

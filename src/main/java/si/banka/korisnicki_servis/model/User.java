@@ -3,6 +3,7 @@ package si.banka.korisnicki_servis.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 
@@ -21,11 +22,19 @@ public class User {
     private String jmbg;
     private String br_telefon;
     private String password;
+    @Nullable
+    private String otpSeecret;
     private boolean aktivan;
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
+    private boolean requiresOtp;
 
-    public User(String username, String ime, String prezime, String email, String jmbg, String br_telefon, String password, boolean aktivan, Role role) {
+    public boolean hasOTP()
+    {
+        return otpSeecret != null;
+    }
+
+    public User(String username, String ime, String prezime, String email, String jmbg, String br_telefon, String password, String otpSeecret, boolean aktivan, boolean requiresOtp, Role role) {
         this.username = username;
         this.ime = ime;
         this.prezime = prezime;
@@ -33,12 +42,20 @@ public class User {
         this.jmbg = jmbg;
         this.br_telefon = br_telefon;
         this.password = password;
+        this.otpSeecret = otpSeecret;
         this.aktivan = aktivan;
         this.role = role;
+        this.requiresOtp = requiresOtp;
     }
 
     public User(String username, String password){
         this.username = username;
         this.password = password;
+    }
+
+    public User(String username, String password, String otpSeecret){
+        this.username = username;
+        this.password = password;
+        this.otpSeecret = otpSeecret;
     }
 }

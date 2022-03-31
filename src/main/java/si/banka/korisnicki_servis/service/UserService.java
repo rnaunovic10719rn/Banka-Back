@@ -12,7 +12,7 @@ public interface UserService {
     Optional<User> getUserById(long id);
     User createUser(CreateUserForm createUserForm);
     void createUserAdmin(User user);
-    User editUser(User user, String token);
+    boolean hasEditPermissions(User user, String token);
     void deleteUser(User user);
 
     List<User> getUsers();

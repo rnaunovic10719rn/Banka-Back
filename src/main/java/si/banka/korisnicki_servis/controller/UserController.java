@@ -9,7 +9,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import si.banka.korisnicki_servis.controller.response_forms.CreateUserForm;
+import si.banka.korisnicki_servis.controller.response_forms.OtpQRForm;
+import si.banka.korisnicki_servis.controller.response_forms.OtpToSecretForm;
 import si.banka.korisnicki_servis.model.User;
+import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
 
 import java.util.List;
@@ -51,13 +54,95 @@ public class UserController {
     @ApiOperation("Edit user with specific id,text fields are with existing data, the user can change them")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token) {
-        String username = userService.getUserById(id).get().getUsername();
-        if(username.equalsIgnoreCase("admin")) return ResponseEntity.badRequest().build();
+        var user = userService.getUserById(id).get();
+        if(!userService.hasEditPermissions(user, token))
+            return ResponseEntity.badRequest().build();
+        if(user.isRequiresOtp())
+            return ResponseEntity.badRequest().build();
 
-        userService.editUser(userService.getUser(username), token.substring("Bearer ".length()));
-        return ResponseEntity.ok().body(username + " edited");
+        return ResponseEntity.ok().body(user.getUsername() + " edited");
     }
 
+    @GetMapping("/otp/generateSecret")
+    @ApiOperation("Generates random secure identifier for 2FA")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<String>generateSeecret() {
+        var seecret = OTPUtilities.generateTOTPSecretKey();
+        return ResponseEntity.ok().body(seecret);
+    }
+
+    @PostMapping("/otp/generateQrImage")
+    @ApiOperation("Generates qr code for 2FA in base64 format")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<String>generateOtpQrImage(@RequestBody OtpQRForm form) {
+
+        var qr = OTPUtilities.createTOTPQRCodeBase64Png(form.getSecret(), form.getLabel(), "Banka");
+        return ResponseEntity.ok().body(qr);
+    }
+
+    @PostMapping("/otp/generateQrUri")
+    @ApiOperation("Generates text behind qr code for 2FA in base64 format")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<String>generateOtpQrUri(@RequestBody OtpQRForm form) {
+
+        var qr = OTPUtilities.createTOTPQrUri(form.getSecret(), form.getLabel(), "Banka");
+        return ResponseEntity.ok().body(qr);
+    }
+
+    @PostMapping("/otp/validate")
+    @ApiOperation("Validates otp code for specific 2FA identifier")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<Boolean>validateOtp(@RequestBody OtpToSecretForm form) {
+
+        var valid = OTPUtilities.validate(form.getSecret(), form.getOtp());
+        return ResponseEntity.ok().body(valid);
+    }
+
+
+    //TODO: Dodati permisije na otp urleove
+
+    @PostMapping("/otp/set/{id}")
+    @ApiOperation("Edit users 2FA secret with specific user id")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?>setOtp(@PathVariable long id, @RequestBody String secret, @RequestHeader("Authorization") String token) {
+        var user = userService.getUserById(id).get();
+        if(!userService.hasEditPermissions(user, token))
+            return ResponseEntity.badRequest().build();
+        if(!OTPUtilities.isValidSeecret(secret))
+            return ResponseEntity.badRequest().build();
+        user.setOtpSeecret(secret);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/otp/clear/{id}")
+    @ApiOperation("Removes users 2FA secret with specific user id")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?>clearOtp(@PathVariable long id, @RequestHeader("Authorization") String token) {
+        var user = userService.getUserById(id).get();
+        if(!userService.hasEditPermissions(user, token))
+            return ResponseEntity.badRequest().build();
+        if(user.isRequiresOtp())
+            return ResponseEntity.badRequest().build();
+        user.setOtpSeecret(null);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/otp/requires/{id}")
+    @ApiOperation("Checks if user requires 2FA code")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<Boolean>requiresOtp(@PathVariable long id) {
+        var requires = userService.getUserById(id).get().isRequiresOtp();
+        return ResponseEntity.ok().body(requires);
+    }
+
+    @PostMapping("/otp/has/{id}")
+    @ApiOperation("Checks if user has 2FA set up")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<Boolean>hasOtp(@PathVariable long id) {
+        var requires = userService.getUserById(id).get().hasOTP();
+        return ResponseEntity.ok().body(requires);
+    }
 
 }
 

@@ -19,6 +19,7 @@ import si.banka.korisnicki_servis.model.Role;
 import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.repository.RoleRepository;
 import si.banka.korisnicki_servis.repository.UserRepository;
+import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
 
 import javax.transaction.Transactional;
@@ -88,16 +89,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             username = username + (int)(Math.random() * (100)) + 1;
         }
         String password = createUserForm.getIme() + "Test123";
+        //TODO: Popraviti formu za otp
         User user = new User(username, createUserForm.getIme(),
                             createUserForm.getPrezime(), createUserForm.getEmail(),
                             createUserForm.getJmbg(), createUserForm.getBr_telefon(),
-                            password, true, this.getRole(createUserForm.getPozicija()));
-        //Checking password
-        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(password);
-        if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
-
+                            password, null, true, false, this.getRole(createUserForm.getPozicija()));
         log.info("Saving new user {} to the database", user.getUsername());
         String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(hash_pw);
@@ -114,22 +110,31 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public User editUser(User user, String token) {
+    public boolean hasEditPermissions(User user, String token) {
+        if(token.startsWith("Bearer "))
+            token = token.substring("Bearer ".length());
         //Cupamo username i permisije iz tokena
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
         String usernameFromJWT = decodedJWT.getSubject();
-        String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
-        //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
-        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT)) {
-            //edit logika set na usera?
-        }else if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER)){
-            //edit logika
+
+        //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
+        if(user.getUsername() == "admin")
+        {
+            if(usernameFromJWT.equalsIgnoreCase(user.getUsername()))
+                return true;
+            return false;
         }
 
-        return user;
+        String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
+        //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
+        if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT))
+            return true;
+        if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER))
+            return true;
+        return false;
     }
 
     @Override
@@ -145,6 +150,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
     }
+
+
 
     public boolean hasEditPermission(String[] permissions,Permissions permission){
         if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
