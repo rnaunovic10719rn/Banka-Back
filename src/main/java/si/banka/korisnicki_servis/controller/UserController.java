@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import si.banka.korisnicki_servis.controller.response_forms.CreateUserForm;
-import si.banka.korisnicki_servis.controller.response_forms.OtpQRForm;
-import si.banka.korisnicki_servis.controller.response_forms.OtpToSecretForm;
+import si.banka.korisnicki_servis.controller.response_forms.*;
 import si.banka.korisnicki_servis.model.User;
 import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
@@ -53,13 +51,14 @@ public class UserController {
     @PostMapping("/user/edit/{id}")
     @ApiOperation("Edit user with specific id,text fields are with existing data, the user can change them")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token, @RequestBody CreateUserForm createUserForm) {
         var user = userService.getUserById(id).get();
         if(!userService.hasEditPermissions(user, token))
             return ResponseEntity.badRequest().build();
-        if(user.isRequiresOtp())
-            return ResponseEntity.badRequest().build();
+        //if(user.isRequiresOtp())
+        //    return ResponseEntity.badRequest().build();
 
+        userService.editUser(user, createUserForm);
         return ResponseEntity.ok().body(user.getUsername() + " edited");
     }
 
@@ -144,5 +143,20 @@ public class UserController {
         return ResponseEntity.ok().body(requires);
     }
 
+    @PostMapping("/user/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordForm resetPasswordForm){
+        if(!userService.resetPassword(resetPasswordForm.getEmail())){
+            return ResponseEntity.badRequest().body("Mail failed to send");
+        }
+        return ResponseEntity.ok().body("Mail send to: " + resetPasswordForm.getEmail());
+    }
+
+    @PostMapping("/user/change-password/{token}")
+    public ResponseEntity<?> changePassword(@PathVariable String token, @RequestBody ChangePasswordForm changePasswordForm){
+        if(!userService.setNewPassword(changePasswordForm.getNewPassword(), token)){
+            return ResponseEntity.badRequest().body("Invalid token!");
+        }
+        return ResponseEntity.ok().body("New password!");
+    }
 }
 

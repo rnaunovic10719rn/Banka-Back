@@ -6,6 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,15 +15,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import si.banka.korisnicki_servis.controller.response_forms.CreateUserForm;
+import si.banka.korisnicki_servis.mail.PasswordResetToken;
 import si.banka.korisnicki_servis.model.Permissions;
 import si.banka.korisnicki_servis.model.Role;
 import si.banka.korisnicki_servis.model.User;
+import si.banka.korisnicki_servis.repository.PasswordTokenRepository;
 import si.banka.korisnicki_servis.repository.RoleRepository;
 import si.banka.korisnicki_servis.repository.UserRepository;
-import si.banka.korisnicki_servis.security.OTPUtilities;
 import si.banka.korisnicki_servis.service.UserService;
+import org.springframework.jms.core.JmsTemplate;
+import javax.jms.Queue;
+import org.springframework.messaging.MessagingException;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +41,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordTokenRepository passwordTokenRepository;
+    @Autowired
+    JmsTemplate jmsTemplate;
+    @Autowired
+    Queue mailQueue;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -138,6 +149,18 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public void editUser(User user, CreateUserForm newUser) {
+        user.setIme(newUser.getIme());
+        user.setPrezime(newUser.getPrezime());
+        user.setUsername(user.getIme() + "." + user.getPrezime());
+        user.setEmail(newUser.getEmail());
+        user.setJmbg(newUser.getJmbg());
+        user.setBr_telefon(newUser.getBr_telefon());
+        user.setRole(getRole(newUser.getPozicija()));
+        userRepository.save(user);
+    }
+
+    @Override
     public Role saveRole(Role role) {
         log.info("Saving new role {} to the database", role.getName());
         return roleRepository.save(role);
@@ -151,8 +174,6 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setRole(role);
     }
 
-
-
     public boolean hasEditPermission(String[] permissions,Permissions permission){
         if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
             return true;
@@ -160,4 +181,68 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         return false;
     }
 
+    public void createPasswordResetTokenForUser(User user, String token) {
+        PasswordResetToken myToken = new PasswordResetToken(token, user);
+        passwordTokenRepository.save(myToken);
+    }
+
+    @Override
+    public User getUserByEmail(String email){
+        for(User user : this.getUsers()){
+            if(user.getEmail().equalsIgnoreCase(email)){
+                return user;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean resetPassword(String email){
+        User user = this.getUserByEmail(email);
+        if(user == null){
+            return false;
+        }
+
+        String token = UUID.randomUUID().toString();
+        this.createPasswordResetTokenForUser(user, token);
+        this.sendMail(email, token);
+
+        return true;
+    }
+
+    public void sendMail(String email, String token) throws MessagingException {
+        String to = email;
+        String url = "localhost:8080/user/change-password/" + token;
+        String subject = "Password reset";
+        String content = "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<body>\n" +
+                "\n" +
+                "<h1>Link ka resetovanju passworda</h1>\n" +
+                "\n" +
+                "<p>"+ url +"</p>\n" +
+                "\n" +
+                "</body>\n" +
+                "</html>";
+        jmsTemplate.convertAndSend(mailQueue , to + "###" + subject + "###" + content);
+    }
+
+    @Override
+    public boolean setNewPassword(String password, String token) {
+        PasswordResetToken prt = this.passwordTokenRepository.findByToken(token);
+        if(prt == null){
+            return false;
+        }
+
+        //Checking password
+        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(password);
+        if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
+
+        User user = prt.getUser();
+        user.setPassword(password);
+        this.userRepository.save(user);
+        return true;
+    }
 }
