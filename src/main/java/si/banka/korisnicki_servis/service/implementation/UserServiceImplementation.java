@@ -28,6 +28,7 @@ import javax.jms.Queue;
 import org.springframework.messaging.MessagingException;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -148,8 +149,15 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public void editUser(User user) {
-
+    public void editUser(User user, CreateUserForm newUser) {
+        user.setIme(newUser.getIme());
+        user.setPrezime(newUser.getPrezime());
+        user.setUsername(user.getIme() + "." + user.getPrezime());
+        user.setEmail(newUser.getEmail());
+        user.setJmbg(newUser.getJmbg());
+        user.setBr_telefon(newUser.getBr_telefon());
+        user.setRole(getRole(newUser.getPozicija()));
+        userRepository.save(user);
     }
 
     @Override

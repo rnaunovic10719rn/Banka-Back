@@ -51,14 +51,14 @@ public class UserController {
     @PostMapping("/user/edit/{id}")
     @ApiOperation("Edit user with specific id,text fields are with existing data, the user can change them")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token, @RequestBody CreateUserForm createUserForm) {
         var user = userService.getUserById(id).get();
         if(!userService.hasEditPermissions(user, token))
             return ResponseEntity.badRequest().build();
-        if(user.isRequiresOtp())
-            return ResponseEntity.badRequest().build();
+        //if(user.isRequiresOtp())
+        //    return ResponseEntity.badRequest().build();
 
-        //Ostalo je jos ->userService.editUser();
+        userService.editUser(user, createUserForm);
         return ResponseEntity.ok().body(user.getUsername() + " edited");
     }
 
