@@ -1,4 +1,4 @@
-package com.banka.mailservice;
+package si.banka.mailservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

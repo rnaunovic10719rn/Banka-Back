@@ -1,4 +1,4 @@
-package com.banka.mailservice.smtp;
+package si.banka.mailservice.smtp;
 
 import javax.mail.MessagingException;
 

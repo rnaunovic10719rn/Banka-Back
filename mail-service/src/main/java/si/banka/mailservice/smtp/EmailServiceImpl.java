@@ -1,6 +1,5 @@
-package com.banka.mailservice.smtp;
+package si.banka.mailservice.smtp;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import java.util.logging.Logger;
 
 @Service("EmailService")
 public class EmailServiceImpl implements EmailService{
@@ -37,7 +35,6 @@ public class EmailServiceImpl implements EmailService{
 
     @Override
     public void sendHtmlMessage(String to, String subject, String htmlBody) throws MessagingException {
-
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom(ADDRESS);

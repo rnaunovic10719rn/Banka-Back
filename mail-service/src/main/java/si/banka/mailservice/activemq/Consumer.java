@@ -1,6 +1,6 @@
-package com.banka.mailservice.activemq;
+package si.banka.mailservice.activemq;
 
-import com.banka.mailservice.smtp.EmailService;
+import si.banka.mailservice.smtp.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
