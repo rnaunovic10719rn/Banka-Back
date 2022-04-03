@@ -17,6 +17,8 @@ public class FuturesUgovori {
     private String contract_unit;
     private double maintenance_margin;
     private Date settlement_date;
+    
+    private HartijaOdVrednosti hartijaOdVrednosti;
 
 
 }
