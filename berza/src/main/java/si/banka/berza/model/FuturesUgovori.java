@@ -7,18 +7,14 @@ import javax.persistence.Id;
 import java.util.Date;
 
 @Entity
-public class FuturesUgovori {
+public class FuturesUgovori extends HartijaOdVrednosti{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id_futures_ugovori;
 
     private double contract_size;
     private String contract_unit;
     private double maintenance_margin;
     private Date settlement_date;
     
-    private HartijaOdVrednosti hartijaOdVrednosti;
 
 
 }
