@@ -1,5 +1,12 @@
 package si.banka.berza.model;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Akcije extends HartijaOdVrednosti{
     private long outstanding_shares;
 
