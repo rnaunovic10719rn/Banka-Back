@@ -1,18 +1,24 @@
 package si.banka.berza.model;
 
-import javax.persistence.Entity;
+import java.util.Date;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Data;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Date;
-import java.util.List;
 
-@Entity
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public abstract class HartijaOdVrednosti {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id_hartija_od_vrednosti;
+    private long id_hartije_od_vrednosti;
 
     private String oznaka_hartije;
     private String opis_hartije;
@@ -24,6 +30,4 @@ public abstract class HartijaOdVrednosti {
     private double promena_iznos;
     private long volume;
     private List<String> istorijski_podaci;
-
-
 }
