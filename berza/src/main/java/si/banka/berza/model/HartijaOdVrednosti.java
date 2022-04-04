@@ -6,8 +6,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.Date;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Data;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public abstract class HartijaOdVrednosti {
 
     @Id
@@ -24,6 +30,4 @@ public abstract class HartijaOdVrednosti {
     private double promena_iznos;
     private long volume;
     private List<String> istorijski_podaci;
-
-
 }
