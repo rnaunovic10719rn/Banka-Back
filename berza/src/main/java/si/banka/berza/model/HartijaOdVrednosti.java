@@ -1,9 +1,19 @@
 package si.banka.berza.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.Date;
 import java.util.List;
 
+@Entity
 public abstract class HartijaOdVrednosti {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id_hartija_od_vrednosti;
+
     private String oznaka_hartije;
     private String opis_hartije;
     private Berza berza;
