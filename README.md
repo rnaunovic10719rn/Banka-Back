@@ -1,5 +1,13 @@
-## Korisnicki servis za banku
+# Korisnicki servis za banku
 
-- `localhost:8080` port gde je app
-- `localhost:8080/h2-console` ovako se pristupa bazi(trenutno), login formu koja vam iskoci popunite ovako:
-<img width="449" alt="Screenshot 2022-03-19 at 15 44 13" src="https://user-images.githubusercontent.com/76784831/159129037-f4401beb-feb5-436e-a14b-d7f834704fe4.png">
+Podaci su premesteni na PostgreSQL bazu koju cemo pokretati na Dockeru
+
+## Docker:
+U slucaju da neko nema Docker Desktop moze da ga nadje ovde `https://docs.docker.com/get-docker/`
+
+U slucaju da neko nema neku vrstu menadzera za baze, predlazem `https://dbeaver.io/download/`
+
+### Komande:
+- `docker pull postgres` komanda za ucitavanje potrebnog image
+- `docker run --name postgres-db -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres` komanda za pokretanje containera
+- `docker stop postgres-db` komanda za gasenje container-a
