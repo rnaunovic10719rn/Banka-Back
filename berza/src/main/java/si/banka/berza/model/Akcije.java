@@ -3,6 +3,8 @@ package si.banka.berza.model;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Data;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 @Entity
@@ -10,7 +12,8 @@ import javax.persistence.Entity;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Akcije extends HartijaOdVrednosti{
-    private long outstanding_shares;
+
+    private Long outstanding_shares;
 
     public double getPromenaProcenat() {
         return (100 * (super.getPromena_iznos()) / (super.getCena() - super.getPromena_iznos()) );

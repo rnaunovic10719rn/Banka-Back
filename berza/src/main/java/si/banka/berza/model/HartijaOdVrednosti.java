@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Data;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
-
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+//@MappedSuperclass
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,16 +18,21 @@ public abstract class HartijaOdVrednosti {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id_hartije_od_vrednosti;
+    private Long id_hartije_od_vrednosti;
 
     private String oznaka_hartije;
     private String opis_hartije;
+
+    @ManyToOne
     private Berza berza;
+
     private Date last_updated;
-    private double cena;
-    private double ask;
-    private double bid;
-    private double promena_iznos;
-    private long volume;
+    private Double cena;
+    private Double ask;
+    private Double bid;
+    private Double promena_iznos;
+    private Long volume;
+
+    @ElementCollection
     private List<String> istorijski_podaci;
 }
