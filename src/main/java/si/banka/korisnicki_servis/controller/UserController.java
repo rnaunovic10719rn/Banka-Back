@@ -113,7 +113,6 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-
     @PostMapping("/otp/clear/{id}")
     @ApiOperation("Removes users 2FA secret with specific user id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
@@ -159,4 +158,3 @@ public class UserController {
         return ResponseEntity.ok().body("New password!");
     }
 }
-
