@@ -8,9 +8,9 @@ import lombok.Data;
 
 import javax.persistence.*;
 
-@Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-//@MappedSuperclass
+//@Entity
+//@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@MappedSuperclass
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

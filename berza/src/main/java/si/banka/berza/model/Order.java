@@ -3,6 +3,7 @@ package si.banka.berza.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import si.banka.berza.enums.HartijaOdVrednostiType;
 import si.banka.berza.enums.OrderAction;
 import si.banka.berza.enums.OrderType;
 
@@ -19,15 +20,27 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_order;
 
-    //User
-    private Long user_id;
+    @ManyToOne
+    private UserAccount user;
 
-    @OneToOne
-    private HartijaOdVrednosti hartijaOdVrednosti;
+    private Long hartijaOdVrednosti_id;
+
+    @Enumerated(value = EnumType.STRING)
+    private HartijaOdVrednostiType hartijaOdVrednosti;
 
     private Integer kolicina;
+
+    @Enumerated(value = EnumType.STRING)
     private OrderAction action;
+    private Double ukupnaCena;
+    private Double provizija;
 
     @ElementCollection
+    @Enumerated(value = EnumType.STRING)
     private List<OrderType> typeList;
+
+
+//    public void izracunajUkupnuCenu(){
+//        ukupnaCena = kolicina * hartijaOdVrednosti.getCena();
+//    }
 }

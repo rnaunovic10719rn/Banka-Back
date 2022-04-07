@@ -9,4 +9,5 @@ public class BuyHartijaOdVrednostiRequest {
     private Long idHartijaOdVrednosti;
     private Integer kolicinaHartija;
 
+
 }
