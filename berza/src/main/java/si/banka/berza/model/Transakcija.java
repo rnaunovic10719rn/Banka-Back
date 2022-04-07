@@ -23,19 +23,7 @@ public class Transakcija {
     private Integer kolicina;
     private Double cena;
 
-    @Enumerated(EnumType.STRING)
-    private OrderAction action;
-
     @ManyToOne
     private Order order;
 
-
-//    public void izracunajCenu(){
-//        if(order.getAction().equals(OrderAction.BUY)){
-//            cena = order.getHartijaOdVrednosti().getBid() * kolicina;
-//        }
-//        else if(order.getAction().equals(OrderAction.SELL)){
-//            cena = order.getHartijaOdVrednosti().getAsk() * kolicina;
-//        }
-//    }
 }
