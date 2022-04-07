@@ -20,21 +20,9 @@ public class BerzaController {
         this.berzaServiceImplementation = berzaServiceImplementation;
     }
 
-    @PostMapping(value = "/buy", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> buy(@RequestBody BuyHartijaOdVrednostiRequest buyHartijaOdVrednostiRequest){
-
-        //response priblizna cena kolicina * cena
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping(value = "/sell", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> sell(@RequestBody SellHartijaOdVrednostiRequest sellHartijaOdVrednostiRequest){
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping(value = "/order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> makeOrder(@RequestBody OrderRequest orderRequest){
-        berzaServiceImplementation.makeOrder(orderRequest.getUser_id(), orderRequest.getHartija_od_vrednosti_id(), orderRequest.getHartija_od_vrednosti_tip(),
+        berzaServiceImplementation.makeOrder(orderRequest.getBerza_id() , orderRequest.getUser_id(), orderRequest.getHartija_od_vrednosti_id(), orderRequest.getHartija_od_vrednosti_tip(),
                 orderRequest.getKolicina(), orderRequest.getAkcija(), orderRequest.getOrder_tip());
         return ResponseEntity.ok().build();
     }

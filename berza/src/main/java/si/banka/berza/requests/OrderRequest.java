@@ -7,6 +7,7 @@ import java.util.List;
 @Data
 public class OrderRequest {
 
+    private Long berza_id;
     private Long user_id;
     private Long hartija_od_vrednosti_id;
     private String hartija_od_vrednosti_tip;

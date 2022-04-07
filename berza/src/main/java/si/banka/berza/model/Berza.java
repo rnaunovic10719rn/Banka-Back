@@ -33,6 +33,6 @@ public class Berza {
     private List<Date> praznici;
 
     @OneToMany
-    private List<Order> orderiNaCekanju;
+    private List<Order> orderi;
 
 }

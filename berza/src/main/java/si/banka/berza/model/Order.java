@@ -21,9 +21,9 @@ public class Order {
     private Long id_order;
 
     @ManyToOne
-    private UserAccount user;
+    private UserAccount userAccount;
 
-    private Long hartijaOdVrednosti_id;
+    private Long hartijaOdVrednostiId;
 
     @Enumerated(value = EnumType.STRING)
     private HartijaOdVrednostiType hartijaOdVrednosti;
@@ -31,16 +31,12 @@ public class Order {
     private Integer kolicina;
 
     @Enumerated(value = EnumType.STRING)
-    private OrderAction action;
+    private OrderAction orderAction;
     private Double ukupnaCena;
     private Double provizija;
 
     @ElementCollection
     @Enumerated(value = EnumType.STRING)
-    private List<OrderType> typeList;
+    private List<OrderType> orderTypeList;
 
-
-//    public void izracunajUkupnuCenu(){
-//        ukupnaCena = kolicina * hartijaOdVrednosti.getCena();
-//    }
 }
