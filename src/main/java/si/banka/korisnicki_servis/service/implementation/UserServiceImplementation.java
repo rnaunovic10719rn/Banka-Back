@@ -39,8 +39,11 @@ import java.util.regex.Pattern;
 @Slf4j
 public class UserServiceImplementation implements UserService, UserDetailsService {
 
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final RoleRepository roleRepository;
+    @Autowired
     private final PasswordTokenRepository passwordTokenRepository;
     @Autowired
     JmsTemplate jmsTemplate;
