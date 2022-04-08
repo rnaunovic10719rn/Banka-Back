@@ -3,7 +3,7 @@
 ## Docker:
 U slucaju da neko nema Docker moze da ga nadje ovde `https://docs.docker.com/get-docker/`
 
-Nije potrebno imati pokrenutu bazu lokalno , sobzirom da je isti port ukoliko imate postgre na lokalnoj masini , iskjucite pre pokretanja dockera.
+Nije potrebno imati pokrenutu bazu lokalno , s obzirom da je isti port ukoliko imate postgre na lokalnoj masini , iskjucite pre pokretanja dockera.
 
 ## Buildovati JAR korisnckog servisa (default u target/) pre pokretanja dockera.
 
