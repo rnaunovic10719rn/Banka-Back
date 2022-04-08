@@ -12,11 +12,13 @@
 	<artifactId>korisnicki_servis</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>banka</name>
+	<packaging>jar</packaging>
 	<description>Capstone project Banka</description>
 	<properties>
 		<java.version>11</java.version>
 		<sonar.organization>raf-si-2021-1</sonar.organization>
   		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<start-class>si.banka.korisnicki_servis.BankaApplication</start-class>
 	</properties>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-credentials -->
@@ -109,6 +111,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${project.parent.version}</version>
 				<configuration>
+					<fork>true</fork>
+					<mainClass>si.banka.korisnicki_servis.BankaApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
@@ -124,6 +128,21 @@
 					<source>16</source>
 					<target>16</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+					<mainClass>${start-class}</mainClass>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
