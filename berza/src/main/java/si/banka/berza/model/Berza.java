@@ -16,7 +16,7 @@ public class Berza {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_berze;
+    private Long id;
 
     private String oznaka_berze;
     private String naziv_name;

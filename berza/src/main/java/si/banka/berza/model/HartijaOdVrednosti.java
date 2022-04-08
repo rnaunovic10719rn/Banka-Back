@@ -10,7 +10,7 @@ import javax.persistence.*;
 
 //@Entity
 //@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@MappedSuperclass
+@MappedSuperclass // samo za kod, nema veze sa bazon
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +18,7 @@ public abstract class HartijaOdVrednosti {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_hartije_od_vrednosti;
+    private Long id;
 
     private String oznaka_hartije;
     private String opis_hartije;

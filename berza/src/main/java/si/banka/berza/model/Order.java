@@ -18,7 +18,7 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_order;
+    private Long id;
 
     @ManyToOne
     private UserAccount userAccount;
@@ -38,5 +38,4 @@ public class Order {
     @ElementCollection
     @Enumerated(value = EnumType.STRING)
     private List<OrderType> orderTypeList;
-
 }
