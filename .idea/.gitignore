@@ -2,8 +2,9 @@
 /shelf/
 /workspace.xml
 # Datasource local storage ignored files
-/../../../../../../../:\Users\asus\Documents\SI\Banka-Back\.idea/dataSources/
+/../../../../../../:\Users\S\IdeaProjects\Banka-Back\.idea/dataSources/
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+/../../../../../../../:\Users\asus\Documents\SI\Banka-Back\.idea/dataSources/
 .idea
