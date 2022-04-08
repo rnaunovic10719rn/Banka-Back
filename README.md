@@ -1,13 +1,18 @@
 # Korisnicki servis za banku
 
-Podaci su premesteni na PostgreSQL bazu koju cemo pokretati na Dockeru
-
 ## Docker:
-U slucaju da neko nema Docker Desktop moze da ga nadje ovde `https://docs.docker.com/get-docker/`
+U slucaju da neko nema Docker moze da ga nadje ovde `https://docs.docker.com/get-docker/`
 
-U slucaju da neko nema neku vrstu menadzera za baze, predlazem `https://dbeaver.io/download/`
+Nije potrebno imati pokrenutu bazu lokalno , s obzirom da je isti port ukoliko imate postgre na lokalnoj masini , iskjucite pre pokretanja dockera.
+
+## Buildovati JAR korisnckog servisa (default u target/) pre pokretanja dockera.
+
+- `mvn clean package spring-boot:repackage`
+
+Nakon uspesnog builda dovoljno je pokrenuti u terminalu 'docker-compose up'
+
 
 ### Komande:
-- `docker pull postgres` komanda za ucitavanje potrebnog image
-- `docker run --name postgres-db -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres` komanda za pokretanje containera
-- `docker stop postgres-db` komanda za gasenje container-a
+- `docker-compose up -d` komanda za build i pokretanje servisa i baze (bez -d ukoliko zelite da pratite console log)
+
+
