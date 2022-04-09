@@ -25,6 +25,51 @@ public class NasdaqFuturesScrapperController : Controller
     }
 
 
+    /// <summary>
+    /// Updates database cache without wait
+    /// </summary>
+    /// <param name="query"></param>
+    [Description("Updates database cache without wait")]    
+    [HttpPost("data/update")]
+    public void UpdateFutureData()
+    {
+        const int allowedScrapeMinutes = 10;
+        var cancellationTokenSource = new CancellationTokenSource(allowedScrapeMinutes * 60000);
+        Task.Run(async () => await UpdateWaitFutureData( cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);;
+    }
+    
+
+    /// <summary>
+    /// Updates database cache and waits for completion
+    /// </summary>
+    /// <param name="query"></param>
+    /// <param name="token"></param>
+    [Description("Updates database cache and waits for completion")]
+    [HttpPost("data/updatewait")]
+    public async Task UpdateWaitFutureData(CancellationToken token)
+    {
+
+        var results = await ScrapeFutureData(token);
+        var points = new List<PointData>();
+        using var client = InfluxDBClientFactory.Create(Constants.InfluxDBUrl, Constants.InfluxToken);
+        var measurement = "futures-data";
+
+        try
+        {
+            var writeApi = client.GetWriteApiAsync();
+            foreach (var result in results)
+            {
+                points.Add(result.ToPointData(measurement));
+            }
+
+            await writeApi.WritePointsAsync(points, Constants.InfluxBucket, Constants.InfluxOrg, token);
+            _logger.LogInformation("Writing done");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(new EventId(0), ex, "Update exception");
+        }
+    }
 
     /// <summary>
     /// Gets data directly from scrapping website
