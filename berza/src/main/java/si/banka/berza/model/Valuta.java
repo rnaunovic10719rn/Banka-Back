@@ -17,7 +17,7 @@ public class Valuta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_valute;
+    private Long id;
 
     private String kod_valute;
     private String naziv_valute;
@@ -26,7 +26,4 @@ public class Valuta {
 
     @OneToMany
     private List<IstorijaInflacije> istorija_inflacije;
-
-//    private Map<Date, Double> istorija_inflacije;
-
 }
