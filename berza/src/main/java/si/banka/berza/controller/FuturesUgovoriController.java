@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import si.banka.berza.dto.AkcijeDto;
-import si.banka.berza.model.Akcije;
+import si.banka.berza.dto.FuturesUgovoriDto;
+import si.banka.berza.model.FuturesUgovori;
 import si.banka.berza.requests.FilterHartijaOdVrednostiRequest;
 import si.banka.berza.requests.SearchHartijaOdVrednostiRequest;
-import si.banka.berza.service.impl.AkcijeService;
+import si.banka.berza.service.impl.FuturesUgovoriService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +31,7 @@ public class FuturesUgovoriController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFuturesUgovori(){
-        List<FuturesUgovori> ugovori = futuresUgovoriService.getAllAkcije();
+        List<FuturesUgovori> ugovori = futuresUgovoriService.getAllFuturesUgovori();
         return ResponseEntity.ok(ugovori.stream().map(this::convertToDto).collect(Collectors.toList()));
     }
 
@@ -68,7 +68,7 @@ public class FuturesUgovoriController {
     }
 
     private FururesUgovoriDto convertToDto(FuturesUgovori ugovori) {
-       FuturesUgovoriDto futuresuUgovoriDto = modelMapper.map(ugovori, AkcijeDto.class);
+       FuturesUgovoriDto futuresuUgovoriDto = modelMapper.map(ugovori, FuturesUgovoriDto.class);
         return futuresuUgovoriDto;
     }
 
