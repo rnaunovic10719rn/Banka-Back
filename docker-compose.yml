@@ -1,0 +1,38 @@
+version: '3.3'
+ 
+services:
+
+  artemis:
+    image: vromero/activemq-artemis:latest-alpine
+    container_name: activemq
+    environment:
+      ARTEMIS_USERNAME: banka
+      ARTEMIS_PASSWORD: banka1234
+    ports:
+      - "61616:61616/tcp"
+      
+  email-servis:
+    build: ./mail-service
+    ports:
+      - 8081:8081
+    links:
+      - artemis
+ 
+  dbpostgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: postgres
+    volumes:
+       - ./data:/var/lib/postgresql/data      
+ 
+  korisnicki-servis:
+    build: ./korisnicki-servis
+    ports:
+      - "8080:8080"
+    links:
+      - dbpostgres
+      - artemis
