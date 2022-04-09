@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using InfluxDB.Client;
+using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Future;
 using InfluxScrapper.Models.Future;
@@ -249,7 +250,16 @@ public class NasdaqFuturesScrapperController : Controller
                            $" r[\"symbol\"] == \"{query.Symbol}\" )");
         builder.AppendLine("|> schema.fieldsAsCols()");
         var queryStr = builder.ToString();
-        var tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
+        List<FluxTable> tables;
+        try
+        {
+            tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
+        }
+        catch
+        {
+            return Enumerable.Empty<FutureResult>();
+        }
+        
         return tables.SelectMany(table =>
             table.Records.Select(record => FutureResult.FromRecord(record)));
     }

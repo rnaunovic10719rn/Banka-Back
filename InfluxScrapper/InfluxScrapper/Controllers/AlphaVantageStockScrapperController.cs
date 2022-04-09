@@ -4,6 +4,7 @@ using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
 using InfluxDB.Client;
+using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Stock;
 using Microsoft.AspNetCore.Mvc;
@@ -144,7 +145,15 @@ public class AlphaVantageStockScrapperController : Controller
                            $"and  r[\"ticker\"] == \"{query.Symbol}\") ");
         builder.AppendLine("|> schema.fieldsAsCols()");
         var queryStr = builder.ToString();
-        var tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
+        List<FluxTable> tables;
+        try
+        {
+            tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
+        }
+        catch
+        {
+            return Enumerable.Empty<StockResult>();
+        }
         return tables.SelectMany(table =>
             table.Records.Select(record => StockResult.FromRecord(record)));
     }

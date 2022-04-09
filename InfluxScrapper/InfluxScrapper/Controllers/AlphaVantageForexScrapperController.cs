@@ -4,6 +4,7 @@ using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
 using InfluxDB.Client;
+using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Stock;
@@ -143,7 +144,15 @@ public class AlphaVantageForexScrapperController : Controller
                            $"and r[\"from\"] == \"{query.SymbolFrom}\" and r[\"to\"] == \"{query.SymbolTo}\")");
         builder.AppendLine("|> schema.fieldsAsCols()");
         var queryStr = builder.ToString();
-        var tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
+        List<FluxTable> tables;
+        try
+        {
+            tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
+        }
+        catch
+        {
+            return Enumerable.Empty<ForexResult>();
+        }
         return tables.SelectMany(table =>
             table.Records.Select(record => ForexResult.FromRecord(record)));
     }
