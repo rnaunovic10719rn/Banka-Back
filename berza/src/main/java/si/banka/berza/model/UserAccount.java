@@ -21,6 +21,7 @@ public class UserAccount {
     private Long idUser;
 
     private String username;
+
 //    private Long wallet;  // Treci deo spec
 
     @OneToMany

@@ -34,8 +34,11 @@ public class Order {
     private OrderAction orderAction;
     private Double ukupnaCena;
     private Double provizija;
+    private Integer limitValue;
+    private Integer stopValue;
 
-    @ElementCollection
     @Enumerated(value = EnumType.STRING)
-    private List<OrderType> orderTypeList;
+    private OrderType orderType;
+    private boolean AON;
+    private boolean margin;
 }

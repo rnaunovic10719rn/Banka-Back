@@ -22,7 +22,8 @@ public class OrderService {
     }
 
     public Order saveOrder(UserAccount userAccount, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
-                           Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija, List<OrderType> orderTypeList){
+                           Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija,
+                           OrderType orderType, boolean isAON, boolean isMargin){
         Order order = new Order();
         order.setUserAccount(userAccount);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
@@ -31,7 +32,9 @@ public class OrderService {
         order.setOrderAction(orderAction);
         order.setUkupnaCena(ukupnaCena);
         order.setProvizija(provizija);
-        order.setOrderTypeList(orderTypeList);
+        order.setOrderType(orderType);
+        order.setAON(isAON);
+        order.setMargin(isMargin);
 
         return this.orderRepository.save(order);
     }
