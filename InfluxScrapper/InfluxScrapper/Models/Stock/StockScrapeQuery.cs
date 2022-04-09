@@ -46,7 +46,7 @@ public class StockScrapeQuery : StockQuery
             builder.Append($"https://www.alphavantage.co/query?function={Function}");
             builder.Append($"&symbol={Symbol}&apikey={Constants.AlphaVantageApiKey}");
             if (Type == StockType.Intraday)
-                builder.Append($"&interval={Interval ?? "60min" }&slice={Slice}&adjusted=false");
+                builder.Append($"&interval={Interval ?? "60min"}&slice={Slice}&adjusted=false");
             else
             {
                 builder.Append("&datatype=csv");
@@ -58,5 +58,4 @@ public class StockScrapeQuery : StockQuery
         }
     }
 
-    public string Measurement => $"stock_{Type.ToString().ToLower()}";
 }
