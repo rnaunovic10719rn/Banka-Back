@@ -2,6 +2,28 @@ version: '3.3'
  
 services:
 
+  eureka:
+    build: ./eureka
+    environment:
+      server-port: 8761
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+    tty: false
+    ports:
+      - 8761:8761
+      
+      
+  zuul:
+    build: ./zuul
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+      eureka.instance.preferIpAddress: true
+    ports:
+        - "8762:8762"
+    depends_on:
+        - "eureka"
+    links:
+      - eureka
+
   artemis:
     image: vromero/activemq-artemis:latest-alpine
     container_name: activemq
@@ -17,8 +39,9 @@ services:
       - 8081:8081
     links:
       - artemis
+      - eureka
  
-  dbpostgres:
+  db-user:
     image: postgres
     ports:
       - "5432:5432"
@@ -31,8 +54,14 @@ services:
  
   korisnicki-servis:
     build: ./korisnicki-servis
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-user:5432/postgres
+      spring.application.name: user-service
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+      eureka.instance.preferIpAddress: true
     ports:
       - "8080:8080"
     links:
-      - dbpostgres
+      - db-user
       - artemis
+      - eureka
