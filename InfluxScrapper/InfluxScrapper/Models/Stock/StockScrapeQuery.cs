@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace InfluxScrapper;
+namespace InfluxScrapper.Models.Stock;
 
 public class StockScrapeQuery : StockQuery
 {
@@ -26,12 +26,13 @@ public class StockScrapeQuery : StockQuery
     [Range(1, 20)]
     [DefaultValue(1)]
     public int? Year { get; set; }
+    
 
     public string Slice => $"year{(Year is > 1 ? 2 : 1)}month{Month ?? 1}";
     public string Function => Type switch
     {
         StockType.Intraday => "TIME_SERIES_INTRADAY_EXTENDED",
-        StockType.Daily => "TIME_SERIES_DAIL",
+        StockType.Daily => "TIME_SERIES_DAILY",
         StockType.Weekly => "TIME_SERIES_WEEKLY",
         StockType.Monthly => "TIME_SERIES_MONTHLY",
         _ => throw new ArgumentOutOfRangeException()

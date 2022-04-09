@@ -4,14 +4,17 @@ using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 
-namespace InfluxScrapper;
+namespace InfluxScrapper.Models.Stock;
 
 
-public class Stock
+public class ForexResult
 {
     [Ignore]
-    [Column("ticker", IsTag = true)]
-    public string? Ticker { get; set; }
+    [Column("from", IsTag = true)]
+    public string? SymbolFrom { get; set; }
+    
+    [Column("to", IsTag = true)]
+    public string? SymbolTo { get; set; }
     
     [Index(0)]
     public string Time { get; set;}
@@ -34,32 +37,28 @@ public class Stock
     [Index(4)]
     [Column("close")]
     public double Close { get; set;}
-    
-    [Index(5)]
-    [Column("volume")]
-    public long Volume { get; set;}
 
     public PointData ToPointData(string measurement)
         => PointData.Measurement(measurement)
-            .Tag("ticker", Ticker)
+            .Tag("from", SymbolFrom)
+            .Tag("to", SymbolTo)
             .Field("open", Open)
             .Field("close", Close)
             .Field("low", Low)
             .Field("high", High)
-            .Field("volume", Volume)
             .Timestamp(Date, WritePrecision.Ns);
 
-    public static Stock FromRecord(FluxRecord record)
+    public static ForexResult FromRecord(FluxRecord record)
     {
-        var stock = new Stock();
-        stock.Ticker = record.Values["ticker"].ToString();
-        stock.Close = double.Parse(record.Values["close"].ToString());
-        stock.Open = double.Parse(record.Values["open"].ToString());
-        stock.High = double.Parse(record.Values["high"].ToString());
-        stock.Low = double.Parse(record.Values["low"].ToString());
-        stock.Volume = long.Parse(record.Values["volume"].ToString());
-        stock.Time = record.Values["_date"].ToString();
-        return stock;
+        var forex = new ForexResult();
+        forex.SymbolFrom = record.Values["from"].ToString();
+        forex.SymbolTo = record.Values["to"].ToString();
+        forex.Close = double.Parse(record.Values["close"].ToString());
+        forex.Open = double.Parse(record.Values["open"].ToString());
+        forex.High = double.Parse(record.Values["high"].ToString());
+        forex.Low = double.Parse(record.Values["low"].ToString());
+        forex.Time = record.Values["_date"].ToString();
+        return forex;
     }
 
 }

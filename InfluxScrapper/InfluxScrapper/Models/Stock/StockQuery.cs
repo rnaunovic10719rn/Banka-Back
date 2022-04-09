@@ -1,9 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc;
 
-namespace InfluxScrapper;
+namespace InfluxScrapper.Models.Stock;
 
 public abstract class StockQuery
 {

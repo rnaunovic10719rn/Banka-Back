@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using InfluxScrapper.Models.Stock;
 
 namespace InfluxScrapper;
 
