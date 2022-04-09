@@ -4,7 +4,7 @@ using System.Text;
 
 namespace InfluxScrapper.Models.Forex;
 
-public class ForexQuery
+public class ForexQuery 
 {
     [Required]
     public ForexType Type { get; set; }
@@ -47,6 +47,6 @@ public class ForexQuery
         }
     }
 
-    public string Measurement => $"forex_{Type.ToString().ToLower()}";
+    public string Measurement => $"forex_{Type.ToString().ToLower()}{(Type == ForexType.Intraday ? $"_{Interval}" : "")}";
     
 }

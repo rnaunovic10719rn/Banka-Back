@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
 using InfluxDB.Client;
@@ -124,18 +125,25 @@ public class AlphaVantageForexScrapperController : Controller
     /// <returns></returns>
     [Description("Gets cached data")]
     [HttpPost("read")]
-    public async Task<IEnumerable<ForexResult>> ReadForex([FromBody] ForexQuery query, CancellationToken token)
+    public async Task<IEnumerable<ForexResult>> ReadForex([FromBody] ForexCacheQuery query, CancellationToken token)
     {
         using var client = InfluxDBClientFactory.Create(Constants.InfluxDBUrl, Constants.InfluxToken);
         var queryApi = client.GetQueryApi();
-        var influxQuery =
-            "import \"influxdata/influxdb/schema\" " +
-            $"from(bucket:\"{Constants.InfluxBucket}\") " +
-            "|> range(start: 0) " +
-            $"|> filter(fn: (r) => r[\"_measurement\"] == \"{query.Measurement}\" " +
-            $"and r[\"from\"] == \"{query.SymbolFrom}\" and r[\"to\"] == \"{query.SymbolTo}\") "
-            +"|> schema.fieldsAsCols() ";
-        var tables = await queryApi.QueryAsync(influxQuery, Constants.InfluxOrg, token);
+        var builder = new StringBuilder();
+        builder.AppendLine("import \"influxdata/influxdb/schema\"");
+        builder.AppendLine($"from(bucket:\"{Constants.InfluxBucket}\")");
+        if (query.TimeFrom is not null && query.TimeTo is not null)
+            builder.AppendLine($"|> range(start: {DateTime.SpecifyKind(query.TimeFrom.Value, DateTimeKind.Utc):o}, " +
+                               $"stop: {DateTime.SpecifyKind(query.TimeTo.Value, DateTimeKind.Utc):o})");
+        else  if (query.TimeFrom is not null)
+            builder.AppendLine($"|> range(start: {DateTime.SpecifyKind(query.TimeFrom.Value, DateTimeKind.Utc):o})");
+        else
+            builder.AppendLine("|> range(start: 0)");
+        builder.AppendLine($"|> filter(fn: (r) => r[\"_measurement\"] == \"{query.Measurement}\" " +
+                           $"and r[\"from\"] == \"{query.SymbolFrom}\" and r[\"to\"] == \"{query.SymbolTo}\")");
+        builder.AppendLine("|> schema.fieldsAsCols()");
+        var queryStr = builder.ToString();
+        var tables = await queryApi.QueryAsync(queryStr, Constants.InfluxOrg, token);
         return tables.SelectMany(table =>
             table.Records.Select(record => ForexResult.FromRecord(record)));
     }
