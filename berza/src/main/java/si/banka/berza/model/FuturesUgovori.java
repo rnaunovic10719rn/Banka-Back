@@ -1,9 +1,6 @@
 package si.banka.berza.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
