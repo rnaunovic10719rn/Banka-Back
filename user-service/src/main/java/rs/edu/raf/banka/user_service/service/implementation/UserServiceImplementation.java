@@ -191,12 +191,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public User getUserByEmail(String email){
-        for(User user : this.getUsers()){
-            if(user.getEmail().equalsIgnoreCase(email)){
-                return user;
-            }
-        }
-        return null;
+        return userRepository.findByEmail(email);
     }
 
     @Override
