@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface TranskacijaRepository extends JpaRepository<Transakcija, Long> {
 
-    @Query("SELECT t.cena FROM Transakcija t WHERE t.order.action = si.banka.berza.enums.OrderAction.BUY " +
+    @Query("SELECT t.cena FROM Transakcija t WHERE t.order.orderAction = si.banka.berza.enums.OrderAction.BUY " +
             "AND t.vremeTranskacije = :datum ORDER BY ABS(t.cena - :cena) DESC")
     List<Double> findCeneTransakcijaBuy(@Param("datum") Date datum, @Param("cena") Double cena);
 
-    @Query("SELECT t.cena FROM Transakcija t WHERE t.order.action = si.banka.berza.enums.OrderAction.SELL " +
+    @Query("SELECT t.cena FROM Transakcija t WHERE t.order.orderAction = si.banka.berza.enums.OrderAction.SELL " +
             "AND t.vremeTranskacije = :datum ORDER BY ABS(t.cena - :cena) DESC")
     List<Double> findCeneTransakcijaSell(Date datum, @Param("cena") Double cena);
 }
