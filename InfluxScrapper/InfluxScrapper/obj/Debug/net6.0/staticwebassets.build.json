@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "A2WxXIsmx4fCbWY/ttpSCwYfCRiKAUjWAQvLQUsud9Y=",
+  "Source": "InfluxScrapper",
+  "BasePath": "_content/InfluxScrapper",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
