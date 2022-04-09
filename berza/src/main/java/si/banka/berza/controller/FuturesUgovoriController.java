@@ -10,7 +10,7 @@ import si.banka.berza.model.FuturesUgovori;
 @RequestMapping("/futures")
 public class FuturesUgovoriController {
 
-    public ResponseEntity<FuturesUgovori> GetFuturesUgovor() {
+    public ResponseEntity<FuturesUgovori> getFuturesUgovor() {
         return null;
     }
 
