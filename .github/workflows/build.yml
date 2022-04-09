@@ -35,3 +35,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_USER_SERVICE }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:user_service -Dsonar.projectName="Banka_User_Service"
+      - name: "[Mail Service] Build and analyze"
+        working-directory: ./mail-service
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_MAIL_SERVICE }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:mailservice -Dsonar.projectName="Banka_Mail_Service"
+      - name: "[Eureka] Build and analyze"
+        working-directory: ./eureka
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_EUREKA }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:eureka -Dsonar.projectName="Banka_Eureka"
+      - name: "[Zuul] Build and analyze"
+        working-directory: ./zuul
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_ZUUL }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:zuul -Dsonar.projectName="Banka_Zuul"
+      
