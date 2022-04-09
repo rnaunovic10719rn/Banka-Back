@@ -5,18 +5,17 @@ services:
   eureka:
     build: ./eureka
     environment:
-      server-port: 8761
-      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+      server-port: "8761"
+      eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
     tty: false
     ports:
       - 8761:8761
       
-      
   zuul:
     build: ./zuul
     environment:
-      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
-      eureka.instance.preferIpAddress: true
+      eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
+      eureka.instance.preferIpAddress: "true"
     ports:
         - "8762:8762"
     depends_on:
@@ -35,6 +34,9 @@ services:
       
   email-servis:
     build: ./mail-service
+    environment:
+      spring.mail.username: "banka.softverskoinzenjerstvo@gmail.com"
+      spring.mail.password: "banka1234"
     ports:
       - 8081:8081
     links:
@@ -53,12 +55,12 @@ services:
        - ./data:/var/lib/postgresql/data      
  
   korisnicki-servis:
-    build: ./korisnicki-servis
+    build: ./user-service
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-user:5432/postgres
       spring.application.name: user-service
       eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
-      eureka.instance.preferIpAddress: true
+      eureka.instance.preferIpAddress: "true"
     ports:
       - "8080:8080"
     links:
