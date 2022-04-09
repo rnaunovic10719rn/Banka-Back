@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using InfluxDB.Client;
@@ -38,7 +40,6 @@ public class NasdaqFuturesScrapperController : Controller
         Task.Run(async () => await UpdateWaitFutureData( cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);;
     }
     
-
     /// <summary>
     /// Updates database cache and waits for completion
     /// </summary>
@@ -50,19 +51,14 @@ public class NasdaqFuturesScrapperController : Controller
     {
 
         var results = await ScrapeFutureData(token);
-        var points = new List<PointData>();
-        using var client = InfluxDBClientFactory.Create(Constants.InfluxDBUrl, Constants.InfluxToken);
-        var measurement = "futures-data";
-
         try
         {
-            var writeApi = client.GetWriteApiAsync();
-            foreach (var result in results)
-            {
-                points.Add(result.ToPointData(measurement));
-            }
-
-            await writeApi.WritePointsAsync(points, Constants.InfluxBucket, Constants.InfluxOrg, token);
+            string json = JsonSerializer.Serialize(results);
+            if (!System.IO.Directory.Exists("storage"))
+                System.IO.Directory.CreateDirectory("storage");
+            if(System.IO.File.Exists("storage/futuredata.json"))
+                System.IO.File.Delete("storage/futuredata.json");
+            await System.IO.File.WriteAllTextAsync(@"storage/futuredata.json", json);
             _logger.LogInformation("Writing done");
         }
         catch (Exception ex)
@@ -110,6 +106,29 @@ public class NasdaqFuturesScrapperController : Controller
             const int sleepMinutes = 1;
             await Task.Delay(sleepMinutes * 60000, token);
         }
+    }
+    
+    /// <summary>
+    /// Gets cached data
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    [Description("Gets cached data")]
+    [HttpPost("data/read")]
+    public async Task<IEnumerable<FutureDataResult>> ReadFutureData(CancellationToken token)
+    {
+        try
+        {
+            if(!System.IO.File.Exists(@"storage/futuredata.json"))
+                return Enumerable.Empty<FutureDataResult>();
+            await using var stream = System.IO.File.OpenRead(@"storage/futuredata.json");
+            return await JsonSerializer.DeserializeAsync<IEnumerable<FutureDataResult>> (stream, cancellationToken: token) ?? Enumerable.Empty<FutureDataResult>();
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(new EventId(1), ex,"Scrape Error");
+        }
+        return Enumerable.Empty<FutureDataResult>();
     }
     
     
