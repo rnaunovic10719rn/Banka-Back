@@ -13,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 @Service("EmailService")
 public class EmailServiceImpl implements EmailService{
 
-    private static final String ADDRESS = "banka.softverskoinzenjerstvo@gmail.com";
+    private static final String ADDRESS = System.getProperty("spring.mail.username");
 
     @Autowired
     private JavaMailSender emailSender;
