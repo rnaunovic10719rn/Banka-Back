@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/user/Sources/School/SI/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj": {}
+    "/home/user/Sources/School/SI/Banka-Back/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj": {}
   },
   "projects": {
-    "/home/user/Sources/School/SI/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj": {
+    "/home/user/Sources/School/SI/Banka-Back/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/user/Sources/School/SI/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj",
+        "projectUniqueName": "/home/user/Sources/School/SI/Banka-Back/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj",
         "projectName": "InfluxScrapper",
-        "projectPath": "/home/user/Sources/School/SI/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj",
+        "projectPath": "/home/user/Sources/School/SI/Banka-Back/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj",
         "packagesPath": "/home/user/.nuget/packages/",
-        "outputPath": "/home/user/Sources/School/SI/InfluxScrapper/InfluxScrapper/obj/",
+        "outputPath": "/home/user/Sources/School/SI/Banka-Back/InfluxScrapper/InfluxScrapper/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/user/.nuget/NuGet/NuGet.Config"

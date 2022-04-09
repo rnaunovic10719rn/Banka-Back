@@ -1,6 +1,7 @@
 using CsvHelper.Configuration.Attributes;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Core;
+using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 
 namespace InfluxScrapper;
@@ -45,7 +46,20 @@ public class Stock
             .Field("close", Close)
             .Field("low", Low)
             .Field("high", High)
+            .Field("volume", Volume)
             .Timestamp(Date, WritePrecision.Ns);
 
+    public static Stock FromRecord(FluxRecord record)
+    {
+        var stock = new Stock();
+        stock.Ticker = record.Values["ticker"].ToString();
+        stock.Close = double.Parse(record.Values["close"].ToString());
+        stock.Open = double.Parse(record.Values["open"].ToString());
+        stock.High = double.Parse(record.Values["high"].ToString());
+        stock.Low = double.Parse(record.Values["low"].ToString());
+        stock.Volume = long.Parse(record.Values["volume"].ToString());
+        stock.Time = record.Values["_date"].ToString();
+        return stock;
+    }
 
 }

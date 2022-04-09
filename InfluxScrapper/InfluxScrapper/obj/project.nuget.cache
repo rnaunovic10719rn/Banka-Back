@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "1Oxmk+WLGK0L3l/wJ052tafwV6NsBJojkpF/WYWAwGm95oK7AMB++06zXsLfO0iUakZHumlE10H17chjhLKa6g==",
+  "dgSpecHash": "gfotEQSioacjL9irGl8IrokYQk6rx0oQx9Q4StlQGp1wTJ4HmpH3pi1aZ+Yq5C2PrZmb5H0zOPn7XG43hsyLkQ==",
   "success": true,
-  "projectFilePath": "/home/user/Sources/School/SI/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj",
+  "projectFilePath": "/home/user/Sources/School/SI/Banka-Back/InfluxScrapper/InfluxScrapper/InfluxScrapper.csproj",
   "expectedPackageFiles": [
     "/home/user/.nuget/packages/csvhelper/27.2.1/csvhelper.27.2.1.nupkg.sha512",
     "/home/user/.nuget/packages/influxdb.client/4.1.0-dev.5794/influxdb.client.4.1.0-dev.5794.nupkg.sha512",

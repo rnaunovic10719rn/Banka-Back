@@ -6,6 +6,10 @@ namespace InfluxScrapper;
 
 public class StockScrapeQuery : StockQuery
 {
+    public StockScrapeQuery()
+    {
+        
+    }
     public StockScrapeQuery(StockQuery query, int? month = null, int? year = null)
     {
         Month = month;
@@ -19,11 +23,11 @@ public class StockScrapeQuery : StockQuery
     [DefaultValue(1)]
     public int? Month { get; set; }
     
-    [Range(1, 2)]
+    [Range(1, 20)]
     [DefaultValue(1)]
     public int? Year { get; set; }
 
-    public string Slice => $"year{Year ?? 1}month{Month ?? 1}";
+    public string Slice => $"year{(Year is > 1 ? 2 : 1)}month{Month ?? 1}";
     public string Function => Type switch
     {
         StockType.Intraday => "TIME_SERIES_INTRADAY_EXTENDED",
@@ -52,4 +56,6 @@ public class StockScrapeQuery : StockQuery
             return builder.ToString();
         }
     }
+
+    public string Measurement => $"stock_{Type.ToString().ToLower()}_{Symbol.ToLower()}";
 }
