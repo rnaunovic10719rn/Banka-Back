@@ -19,7 +19,7 @@ public class UserAccount {
     private Long id;
 
     private String username;
-    private Long wallet;
+//    private Long wallet;
 
     @OneToMany
     private List<Order> orders;
