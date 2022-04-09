@@ -58,7 +58,7 @@ public class StockResult
         stock.High = double.Parse(record.Values["high"].ToString());
         stock.Low = double.Parse(record.Values["low"].ToString());
         stock.Volume = long.Parse(record.Values["volume"].ToString());
-        stock.Time = record.Values["_date"].ToString();
+        stock.Time = record.GetTime().ToString();
         return stock;
     }
 

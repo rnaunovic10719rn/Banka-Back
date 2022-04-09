@@ -9,7 +9,7 @@ public class FutureQuery
     
     
     [Required]
-    [RegularExpression("^[a-zA-Z]{3,6}\\d{4}$")]
+    [RegularExpression("^[a-zA-Z]{2,6}\\d{4}$")]
     [DefaultValue("FVSJ2022")]
     public string Symbol { get; set; }
 

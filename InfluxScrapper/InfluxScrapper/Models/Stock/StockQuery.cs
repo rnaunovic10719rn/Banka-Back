@@ -9,7 +9,7 @@ public abstract class StockQuery
     public StockType Type { get; set; }
     
     [Required]
-    [RegularExpression("^[a-zA-Z]{3,6}$")]
+    [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue("aapl")]
     public string Symbol { get; set; }
     

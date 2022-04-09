@@ -18,6 +18,8 @@ public class ForexResult
     
     [Index(0)]
     public string Time { get; set;}
+    
+    [Ignore]
 
     [Column(IsTimestamp = true)] 
     public DateTime Date => DateTime.SpecifyKind(DateTime.Parse(Time), DateTimeKind.Utc);
@@ -57,7 +59,7 @@ public class ForexResult
         forex.Open = double.Parse(record.Values["open"].ToString());
         forex.High = double.Parse(record.Values["high"].ToString());
         forex.Low = double.Parse(record.Values["low"].ToString());
-        forex.Time = record.Values["_date"].ToString();
+        forex.Time = record.GetTime().ToString();;
         return forex;
     }
 
