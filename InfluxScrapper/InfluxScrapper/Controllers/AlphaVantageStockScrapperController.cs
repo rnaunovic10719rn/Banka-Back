@@ -33,7 +33,7 @@ public class AlphaVantageStockScrapperController : Controller
         const int allowedScrapeMinutes = 60;
         var cancellationTokenSource = new CancellationTokenSource(allowedScrapeMinutes * 60000);
         foreach (var task in GenerateUpdateStockTasks(query, cancellationTokenSource.Token))
-            Task.Run(async () => await task).ConfigureAwait(false);
+            Task.Run(async () => await task, cancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public class AlphaVantageStockScrapperController : Controller
         var queryApi = client.GetQueryApi();
         var influxQuery =
             "import \"influxdata/influxdb/schema\" " +
-            "from(bucket:\"stocks\") " +
+            $"from(bucket:\"{Constants.InfluxBucket}\") " +
             "|> range(start: 0) " +
             $"|> filter(fn: (r) => r[\"_measurement\"] == \"{query.Measurement}\") "
             +"|> schema.fieldsAsCols() ";

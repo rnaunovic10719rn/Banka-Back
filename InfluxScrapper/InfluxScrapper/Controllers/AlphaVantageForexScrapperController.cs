@@ -33,7 +33,7 @@ public class AlphaVantageForexScrapperController : Controller
     {
         const int allowedScrapeMinutes = 60;
         var cancellationTokenSource = new CancellationTokenSource(allowedScrapeMinutes * 60000);
-        Task.Run(async () => await UpdateForex(query, cancellationTokenSource.Token)).ConfigureAwait(false);
+        Task.Run(async () => await UpdateForex(query, cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public class AlphaVantageForexScrapperController : Controller
         var queryApi = client.GetQueryApi();
         var influxQuery =
             "import \"influxdata/influxdb/schema\" " +
-            "from(bucket:\"Forexs\") " +
+            $"from(bucket:\"{Constants.InfluxBucket}\") " +
             "|> range(start: 0) " +
             $"|> filter(fn: (r) => r[\"_measurement\"] == \"{query.Measurement}\") "
             +"|> schema.fieldsAsCols() ";
