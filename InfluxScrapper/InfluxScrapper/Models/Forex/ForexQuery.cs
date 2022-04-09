@@ -8,16 +8,16 @@ public class ForexQuery
 {
     [Required]
     public ForexType Type { get; set; }
-    
+
     [Required]
     [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue("usd")]
-    public string SymbolTo { get; set; }
+    public string SymbolTo { get; set; } = "";
     
     [Required]
     [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue("eur")]
-    public string SymbolFrom { get; set; }
+    public string SymbolFrom { get; set; } = "";
     
     [RegularExpression("^(1|5|15|30|60)min$")]
     [DefaultValue("1min")]
@@ -47,6 +47,6 @@ public class ForexQuery
         }
     }
 
-    public string Measurement => $"stock_{Type.ToString().ToLower()}_{SymbolFrom.ToLower()}_{SymbolTo.ToLower()}";
+    public string Measurement => $"forex_{Type.ToString().ToLower()}";
     
 }

@@ -132,7 +132,8 @@ public class AlphaVantageForexScrapperController : Controller
             "import \"influxdata/influxdb/schema\" " +
             $"from(bucket:\"{Constants.InfluxBucket}\") " +
             "|> range(start: 0) " +
-            $"|> filter(fn: (r) => r[\"_measurement\"] == \"{query.Measurement}\") "
+            $"|> filter(fn: (r) => r[\"_measurement\"] == \"{query.Measurement}\" " +
+            $"and r[\"from\"] == \"{query.SymbolFrom}\" and r[\"to\"] == \"{query.SymbolTo}\") "
             +"|> schema.fieldsAsCols() ";
         var tables = await queryApi.QueryAsync(influxQuery, Constants.InfluxOrg, token);
         return tables.SelectMany(table =>

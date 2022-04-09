@@ -13,6 +13,7 @@ public class ForexResult
     [Column("from", IsTag = true)]
     public string? SymbolFrom { get; set; }
     
+    [Ignore]
     [Column("to", IsTag = true)]
     public string? SymbolTo { get; set; }
     
@@ -20,7 +21,6 @@ public class ForexResult
     public string Time { get; set;}
     
     [Ignore]
-
     [Column(IsTimestamp = true)] 
     public DateTime Date => DateTime.SpecifyKind(DateTime.Parse(Time), DateTimeKind.Utc);
     

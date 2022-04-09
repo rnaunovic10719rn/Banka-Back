@@ -58,5 +58,5 @@ public class StockScrapeQuery : StockQuery
         }
     }
 
-    public string Measurement => $"stock_{Type.ToString().ToLower()}_{Symbol.ToLower()}";
+    public string Measurement => $"stock_{Type.ToString().ToLower()}";
 }
