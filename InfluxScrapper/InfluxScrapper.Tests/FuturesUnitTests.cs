@@ -43,8 +43,10 @@ public class FuturesUnitTests
         Assert.NotEmpty(result);
     }
     
-    [Fact]
-    public async Task TestUpdateAndReadFuture()
+    [Theory]
+    [InlineData("FVSJ2022")]
+    [InlineData("FCEU2020")]
+    public async Task TestUpdateAndReadFuture(string symbol)
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
@@ -52,14 +54,14 @@ public class FuturesUnitTests
 
         var updateQuery = new FutureQuery()
         {
-            Symbol = "FVSJ2022"
+            Symbol = symbol
         };
         
         await controller.UpdateWaitFuture(updateQuery, tokenSource.Token);
         
         var cacheQuery = new FutureCacheQuery()
         {
-            Symbol = "FVSJ2022",
+            Symbol = symbol,
             TimeFrom = DateTime.Now.Subtract(TimeSpan.FromDays(60)),
             TimeTo = DateTime.Now
         };
@@ -67,5 +69,33 @@ public class FuturesUnitTests
         var result = await controller.ReadFuture(cacheQuery, tokenSource.Token);
 
         Assert.NotEmpty(result);
+
+        Assert.All(result,
+            futureResult =>
+            {
+                Assert.InRange(futureResult.Date, cacheQuery.TimeFrom.Value, cacheQuery.TimeTo.Value);
+            });
     }
+    
+    
+    [Theory]
+    [InlineData("FRDXZ2022")]
+    [InlineData("FMWOH2019")]
+    public async Task TestReadFutureEmpty(string symbol)
+    {
+        var controller = GenerateController();
+        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+
+        var cacheQuery = new FutureCacheQuery()
+        {
+            Symbol = symbol,
+            TimeFrom = DateTime.Now.Subtract(TimeSpan.FromDays(60)),
+            TimeTo = DateTime.Now
+        };
+        
+        var result = await controller.ReadFuture(cacheQuery, tokenSource.Token);
+
+        Assert.Empty(result);
+    }
+    
 }
