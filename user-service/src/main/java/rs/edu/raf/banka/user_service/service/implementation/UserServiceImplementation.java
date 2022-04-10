@@ -3,6 +3,7 @@ package rs.edu.raf.banka.user_service.service.implementation;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,6 +116,25 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public User getUserByToken(String token) {
+        try {
+            DecodedJWT decodedToken = decodeToken(token);
+            String username = decodedToken.getSubject();
+            User user = userRepository.findByUsername(username);
+
+            if (user == null || !(user.isAktivan())) {
+                log.error("User {} not found in database", username);
+                throw new UsernameNotFoundException("User not found in database");
+            }
+
+            return user;
+        } catch (JWTVerificationException e) {
+            // TODO find a better exception for this case
+            throw new UsernameNotFoundException("Token is invalid");
+        }
+    }
+
+    @Override
     public void createUserAdmin(User user){
         log.info("Saving admin to the database");
         String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -135,7 +155,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         String usernameFromJWT = decodedJWT.getSubject();
 
         //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
-        if(user.getUsername() == "admin")
+        if(user.getUsername().equals("admin"))
         {
             if(usernameFromJWT.equalsIgnoreCase(user.getUsername()))
                 return true;
@@ -155,7 +175,6 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     public void editUser(User user, CreateUserForm newUser) {
         user.setIme(newUser.getIme());
         user.setPrezime(newUser.getPrezime());
-        user.setUsername(user.getIme() + "." + user.getPrezime());
         user.setEmail(newUser.getEmail());
         user.setJmbg(newUser.getJmbg());
         user.setBr_telefon(newUser.getBr_telefon());
@@ -242,5 +261,16 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setPassword(password);
         this.userRepository.save(user);
         return true;
+    }
+
+    private DecodedJWT decodeToken(String token) throws JWTVerificationException {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring("Bearer ".length());
+        }
+
+        Algorithm   algorithm = Algorithm.HMAC256("secret".getBytes());
+        JWTVerifier verifier  = JWT.require(algorithm).build();
+        DecodedJWT  decoded   = verifier.verify(token);
+        return decoded;
     }
 }
