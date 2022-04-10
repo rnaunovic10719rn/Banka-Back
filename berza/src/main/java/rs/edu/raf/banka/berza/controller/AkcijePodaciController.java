@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.berza.dto.AkcijeDto;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
+import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.requests.FilterHartijaOdVrednostiRequest;
 import rs.edu.raf.banka.berza.requests.SearchHartijaOdVrednostiRequest;
@@ -40,6 +41,23 @@ public class AkcijePodaciController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(akcijePodaciService.getAkcijaByTicker(ticker));
+    }
+
+    @GetMapping(value = "/timeseries/{type}/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeTimeseries(@PathVariable String type, @PathVariable String symbol){
+        if(type == null || type.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if(symbol == null || symbol.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        AkcijeTimeseriesUpdateRequest req = AkcijeTimeseriesUpdateRequest.getForType(type, symbol);
+        if(req == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(akcijePodaciService.getAkcijeTimeseries(req));
     }
 
 //    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
