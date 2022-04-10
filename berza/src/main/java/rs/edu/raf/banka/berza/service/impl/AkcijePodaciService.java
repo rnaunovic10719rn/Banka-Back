@@ -16,14 +16,12 @@ import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AkcijePodaciService {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
     private final WebClient influxApiClient;
     private final Config alphavantageApiClient;
@@ -42,18 +40,13 @@ public class AkcijePodaciService {
     }
 
     public List<AkcijePodaciDto> getOdabraneAkcije() {
-//        AkcijePodaciRequest req = new AkcijePodaciRequest(odabraneAkcije);
+        ArrayList<AkcijePodaciDto> dtos = new ArrayList<>();
+        for(String akcija: odabraneAkcije) {
+            AkcijePodaciDto dto = getAkcijaByTicker(akcija);
+            dtos.add(dto);
+        }
 
-        return null;
-//        return influxApiClient
-//                .post()
-//                .uri("/test/")
-//                .accept(MediaType.APPLICATION_JSON)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromObject(req))
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-//                .block(REQUEST_TIMEOUT);
+        return dtos;
     }
 
     public AkcijePodaciDto getAkcijaByTicker(String ticker) {
@@ -86,44 +79,32 @@ public class AkcijePodaciService {
             akcijeRepository.save(akcija);
         }
 
-        AkcijePodaciDto dto = new AkcijePodaciDto();
+        List<String> symbols = Arrays.asList(ticker);
+        HashMap<String, List<String>> req = new HashMap<>();
+        req.put("symbols", symbols);
+
+        List<AkcijePodaciDto> dtoList = influxApiClient
+            .post()
+            .uri("/alphavantage/stock/quote/updateread/")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromObject(req))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
+            .block(REQUEST_TIMEOUT);
+        if(dtoList == null || dtoList.size() == 0) {
+            return null;
+        }
+
+        AkcijePodaciDto dto = dtoList.get(0);
         dto.setTicker(ticker);
         dto.setOpisHartije(akcija.getOpis_hartije());
-        dto.setOpen(0.0);
-        dto.setClose(0.0);
-        dto.setLow(0.0);
-        dto.setHigh(0.0);
         dto.setOutstandingShares(akcija.getOutstanding_shares());
 
         return dto;
-
-
-//        influxApiClient
-//                .post()
-//                .uri("/alphavantage/")
-//                .accept(MediaType.APPLICATION_JSON)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromObject(req))
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-//                .block(REQUEST_TIMEOUT);
-
-//        AkcijePodaciRequest req = new AkcijePodaciRequest(odabraneAkcije);
-//
-//        return influxApiClient
-//                .post()
-//                .uri("/test/")
-//                .accept(MediaType.APPLICATION_JSON)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromObject(req))
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-//                .block(REQUEST_TIMEOUT);
     }
 
-    public List<Akcije> getAllAkcije(){
-        return akcijeRepository.findAll();
-    }
+
 
     public Page<Akcije> search(String oznakaHartije, String opisHartije, Integer page, Integer size){
         Akcije akcije = new Akcije();

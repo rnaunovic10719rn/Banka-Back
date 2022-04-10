@@ -31,11 +31,17 @@ public class BootstrapData implements CommandLineRunner {
     public void run(String... args) throws Exception {
         System.out.println("Loading Data...");
 
-        URL website = new URL("https://www.alphavantage.co/physical_currency_list/");
-        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-        FileOutputStream fos = new FileOutputStream("currency.csv");
-        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        fos.close();
+        FileOutputStream fos = null;
+        try {
+            URL website = new URL("https://www.alphavantage.co/physical_currency_list/");
+            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+            fos = new FileOutputStream("currency.csv");
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            fos.close();
+        }
 
         String fileName = "currency.csv";
 

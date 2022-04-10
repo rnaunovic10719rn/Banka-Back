@@ -15,7 +15,7 @@ import java.util.*;
 @Service
 public class FuturesUgovoriPodaciService {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
     private final WebClient influxApiClient;
 
