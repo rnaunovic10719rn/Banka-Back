@@ -54,6 +54,17 @@ services:
     volumes:
       - db-user:/var/lib/postgresql/data
 
+  db-berza:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: postgres
+    volumes:
+      - db-berza:/var/lib/postgresql/data
+
   db-influx:
     image: influxdb:2.1.1
     environment:
@@ -92,7 +103,21 @@ services:
       - artemis
       - eureka
 
+  berza:
+    build: ./berza
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-berza:5432/postgres
+      spring.application.name: berza
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+      eureka.instance.preferIpAddress: "true"
+    ports:
+      - "8082:8082"
+    links:
+      - db-berza
+      - eureka
+
 volumes:
   db-user:
+  db-berza:
   influx-data:
   influx-config:
