@@ -157,4 +157,13 @@ public class UserController {
         }
         return ResponseEntity.ok().body("New password!");
     }
+
+    @PostMapping("/user/getId/{token}")
+    public ResponseEntity<?> getUserId(@PathVariable String token){
+        var id = userService.getUserId(token);
+        if(id == null){
+            return ResponseEntity.badRequest().body("Invalid token!");
+        }
+        return ResponseEntity.ok().body(id);
+    }
 }
