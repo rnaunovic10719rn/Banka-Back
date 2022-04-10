@@ -8,7 +8,7 @@ namespace InfluxScrapper.Models.Stock;
 
 public class StockQuoteResult
 {
-    [Index(0)]
+    [Ignore]
 
     [Column("ticker", IsTag = true)]
     public string? Ticker { get; set; }
@@ -62,12 +62,12 @@ public class StockQuoteResult
             .Field("previousClose", PreviousClose)
             .Field("change", Change)
             .Field("changePercent", ChangePercent)
-            .Timestamp(Time, WritePrecision.S);
+            .Timestamp(Time, WritePrecision.Ns);
 
     public static StockQuoteResult FromRecord(FluxRecord record)
     {
         var stock = new StockQuoteResult();
-        stock.Ticker = record.Values["ticker"].ToString();
+        stock.Ticker = record.Values["symbol"].ToString();
         stock.Open = double.Parse(record.Values["open"].ToString());
         stock.High = double.Parse(record.Values["high"].ToString());
         stock.Low = double.Parse(record.Values["low"].ToString());

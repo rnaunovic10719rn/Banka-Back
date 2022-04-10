@@ -20,7 +20,19 @@ public static class AlphaVantageScrapper
         results?.ForEach(r => r.Ticker = query.Symbol);
         return results;
     }
+    
+    public static async Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRate(ForexExchangeRateQuery query, IHttpClientFactory httpFactory)
+    {
+        var result = await ParseJson<ForexExchangeRateResult>(query.Url, httpFactory);
 
+        if (result is null) 
+            return null;
+        
+        result.FromCurrency = query.FromCurrency;
+        result.ToCurrency = query.ToCurrency;
+        return new []{result};
+    }
+    
     
     private static async Task<List<T>?> ParseCSV<T>(string url, IHttpClientFactory httpFactory)
     {
@@ -37,6 +49,17 @@ public static class AlphaVantageScrapper
             {
                 PrepareHeaderForMatch = args => args.Header.ToLower()
             });
-        return csv.GetRecords<T>().ToList();
+        return csv.GetRecords<T>()?.ToList();
+    }
+    
+    private static async Task<T?> ParseJson<T>(string url, IHttpClientFactory httpFactory) where T : class
+    {
+        var httpClient = httpFactory.CreateClient();
+        var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+        var httpResponseMessage = await httpClient.SendAsync(httpRequest);
+        if (!httpResponseMessage.IsSuccessStatusCode)
+            return null;
+        var result =  await httpResponseMessage.Content.ReadFromJsonAsync<T?>();
+        return result;
     }
 }

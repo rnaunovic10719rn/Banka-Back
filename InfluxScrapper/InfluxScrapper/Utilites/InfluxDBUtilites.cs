@@ -35,6 +35,23 @@ public static class InfluxDBUtilites
         return builder.ToString();
     }
 
+    public static string ConstructQuery(ForexExchangeRateCacheQuery cacheCacheQuery, bool onlyLastResult = true)
+    {
+        var builder = new StringBuilder();
+        AppendQueryBase(builder);
+        AppendTimeRange(cacheCacheQuery.TimeFrom, cacheCacheQuery.TimeTo, builder);
+        AppendMeasurementFilter(builder, cacheCacheQuery.Measurement);
+        AppendOrFilter2(builder,
+            cacheCacheQuery.Currencies.Select(s => (("from", s.SymbolFrom), ("to", s.SymbolTo))).ToArray());
+        if (onlyLastResult)
+            AppendQueryLastResult(builder);
+        AppendQueryEnd(builder);
+        return builder.ToString();
+    }
+
+
+
+
     private static void AppendQueryBase(StringBuilder builder)
     {
         builder.AppendLine("import \"influxdata/influxdb/schema\"");
@@ -70,6 +87,20 @@ public static class InfluxDBUtilites
         {
             builder.Append(first ? " " : " or ");
             builder.Append($" r[\"{key}\"] == \"{value}\" ");
+            first = false;
+        }
+
+        builder.AppendLine(")");
+    }
+    
+    private static void AppendOrFilter2(StringBuilder builder, params ((string Key, string Value) p1,(string Key, string Value) p2)[] checks)
+    {
+        builder.Append($"|> filter(fn: (r) => ");
+        var first = true;
+        foreach (var ((key1, value1),(key2, value2)) in checks)
+        {
+            builder.Append(first ? " " : " or ");
+            builder.Append($" r[\"{key1}\"] == \"{value1}\" and r[\"{key2}\"] == \"{value2}\" ");
             first = false;
         }
 
