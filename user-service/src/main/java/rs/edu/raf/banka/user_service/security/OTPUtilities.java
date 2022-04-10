@@ -8,13 +8,8 @@ import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import org.apache.commons.codec.binary.Base32;
-import org.apache.commons.codec.binary.Hex;
 
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.security.SecureRandom;
-import java.util.Base64;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
