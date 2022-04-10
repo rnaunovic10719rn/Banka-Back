@@ -1,8 +1,6 @@
 package si.banka.berza.service.impl;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import si.banka.berza.enums.HartijaOdVrednostiType;
@@ -12,7 +10,7 @@ import si.banka.berza.model.*;
 import si.banka.berza.repository.*;
 import si.banka.berza.response.MakeOrderResponse;
 import si.banka.berza.response.OrderStatusResponse;
-import si.banka.berza.service.BerzaServiceRepository;
+import si.banka.berza.repository.BerzaRepository;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -20,9 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-public class BerzaServiceImplementation {
+public class BerzaService {
 
-    private BerzaServiceRepository berzaRepository;
+    private BerzaRepository berzaRepository;
     private UserAccountRepository userAccountRepository;
     private AkcijeRepository akcijeRepository;
     private ForexRepository forexRepository;
@@ -31,9 +29,9 @@ public class BerzaServiceImplementation {
     private TransakcijaService transakcijaService;
 
     @Autowired
-    public BerzaServiceImplementation(BerzaServiceRepository berzaRepository, UserAccountRepository userAccountRepository,
-                                      AkcijeRepository akcijeRepository, ForexRepository forexRepository, FuturesUgovoriRepository futuresUgovoriRepository,
-                                      TransakcijaService transakcijaService, OrderService orderService){
+    public BerzaService(BerzaRepository berzaRepository, UserAccountRepository userAccountRepository,
+                        AkcijeRepository akcijeRepository, ForexRepository forexRepository, FuturesUgovoriRepository futuresUgovoriRepository,
+                        TransakcijaService transakcijaService, OrderService orderService){
         this.berzaRepository = berzaRepository;
         this.userAccountRepository = userAccountRepository;
         this.akcijeRepository = akcijeRepository;
@@ -45,7 +43,7 @@ public class BerzaServiceImplementation {
 
 
     public void addOrderToBerza(Order order, Long berzaId){
-        Berza berza = berzaRepository.findById_berze(berzaId);
+        Berza berza = berzaRepository.findBerzaById(berzaId);
         berza.getOrderi().add(order);
         berzaRepository.save(berza);
     }
@@ -250,7 +248,7 @@ public class BerzaServiceImplementation {
     }
 
     public OrderStatusResponse getOrderStatus(Long id){
-        Berza berza = berzaRepository.findById_berze(id);
+        Berza berza = berzaRepository.findBerzaById(id);
         Date date = new Date();
 
         //format 9:30 a.m. to 4:00 p.m.

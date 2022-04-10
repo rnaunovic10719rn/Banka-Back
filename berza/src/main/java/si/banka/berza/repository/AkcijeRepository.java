@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface AkcijeRepository extends JpaRepository<Akcije, Long>, JpaSpecificationExecutor<Akcije> {
 
-    Akcije findAkcijeById_hartije_od_vrednosti(Long id);
+    Akcije findAkcijeById(Long id);
 
     @Query("SELECT a FROM Akcije a WHERE (:berzaPrefix IS NULL OR LOWER(a.berza.naziv_name) LIKE CONCAT('%', :berzaPrefix)) AND " +
             "(:priceLowBound = 0 OR a.cena >= :priceLowBound) AND (:priceUpperBound = 0 OR a.cena <= :priceUpperBound) AND " +

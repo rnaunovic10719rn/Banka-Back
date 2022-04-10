@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface FuturesUgovoriRepository extends JpaRepository<FuturesUgovori, Long>, JpaSpecificationExecutor<FuturesUgovori> {
 
-    FuturesUgovori findAkcijeById_hartije_od_vrednosti(Long id);
+    FuturesUgovori findFuturesById(Long id);
 
     @Query("SELECT f FROM FuturesUgovori f WHERE (:berzaPrefix IS NULL OR LOWER(f.berza.naziv_name) LIKE CONCAT('%', :berzaPrefix)) AND " +
             "(:priceLowBound = 0 OR f.cena >= :priceLowBound) AND (:priceUpperBound = 0 OR f.cena <= :priceUpperBound) AND " +
