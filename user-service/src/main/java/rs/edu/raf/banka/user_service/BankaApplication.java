@@ -29,33 +29,37 @@ public class BankaApplication {
 
 	@Bean
 	CommandLineRunner run(UserService userService){
-		return args -> {
-			//Punimo Role permisijama
-			Collection<String> admin_permissions = new ArrayList<>();
-			admin_permissions.add(String.valueOf(Permissions.CREATE_USER));
-			admin_permissions.add(String.valueOf(Permissions.DELETE_USER));
-			admin_permissions.add(String.valueOf(Permissions.LIST_USERS));
-			admin_permissions.add(String.valueOf(Permissions.EDIT_USER));
-			admin_permissions.add(String.valueOf(Permissions.MY_EDIT));
+		//dummy check
+		if (!userService.getUserById(1).isPresent()) {
+			return args -> {
+				//Punimo Role permisijama
+				Collection<String> admin_permissions = new ArrayList<>();
+				admin_permissions.add(String.valueOf(Permissions.CREATE_USER));
+				admin_permissions.add(String.valueOf(Permissions.DELETE_USER));
+				admin_permissions.add(String.valueOf(Permissions.LIST_USERS));
+				admin_permissions.add(String.valueOf(Permissions.EDIT_USER));
+				admin_permissions.add(String.valueOf(Permissions.MY_EDIT));
 
-			Collection<String> neka_pozicija_permissions = new ArrayList<>();
-			neka_pozicija_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
+				Collection<String> neka_pozicija_permissions = new ArrayList<>();
+				neka_pozicija_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
 
-			//Punimo bazu Rolama
-			userService.saveRole(new Role(null, "ROLE_GL_ADMIN", admin_permissions));
-			userService.saveRole(new Role(null, "ROLE_ADMIN", admin_permissions));
+				//Punimo bazu Rolama
+				userService.saveRole(new Role(null, "ROLE_GL_ADMIN", admin_permissions));
+				userService.saveRole(new Role(null, "ROLE_ADMIN", admin_permissions));
 
-			//Cuvamo glavnog admina
-			userService.createUserAdmin(new User("admin", "Admin123"));
+				//Cuvamo glavnog admina
+				userService.createUserAdmin(new User("admin", "Admin123"));
 
-			userService.createUserAdmin(new User("test", "1234", "5MYDN5OMDRTEVQPCED4F5VYKZRPZ4FRY"));
+				userService.createUserAdmin(new User("test", "1234", "5MYDN5OMDRTEVQPCED4F5VYKZRPZ4FRY"));
 
-			//Setujemo Rolu adminu
-			userService.setRoleToUser("admin", "ROLE_GL_ADMIN");
-			//userService.setRoleToUser("arnold", "ROLE_ADMIN");
+				//Setujemo Rolu adminu
+				userService.setRoleToUser("admin", "ROLE_GL_ADMIN");
+				//userService.setRoleToUser("arnold", "ROLE_ADMIN");
 
-			userService.setRoleToUser("test", "ROLE_ADMIN");
-		};
+				userService.setRoleToUser("test", "ROLE_ADMIN");
+			};
+		}
+		return null;
 	}
 
 }
