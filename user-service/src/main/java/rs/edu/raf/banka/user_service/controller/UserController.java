@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import java.util.Optional;
 @Api(value = "UserControllerAPI", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
+    @Autowired
     private final UserService userService;
 
     @GetMapping("/users")
@@ -42,7 +44,7 @@ public class UserController {
     @ApiOperation("Delete user with specific id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>deleteUser(@PathVariable long id) {
-        Optional<User> user= userService.getUserById(id);
+        Optional<User> user = userService.getUserById(id);
         if(user.get() == null){ResponseEntity.badRequest().build();}
         userService.deleteUser(user.get());
         return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
