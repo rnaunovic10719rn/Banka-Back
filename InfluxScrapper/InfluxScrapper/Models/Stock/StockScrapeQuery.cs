@@ -51,7 +51,7 @@ public class StockScrapeQuery : StockQuery
             {
                 builder.Append("&datatype=csv");
                 if (Type == StockType.Daily)
-                    builder.Append("outputsize=full");
+                    builder.Append("&outputsize=full");
             }
 
             return builder.ToString();

@@ -42,7 +42,7 @@ public class ForexQuery
             if (Type == ForexType.Intraday)
                 builder.Append($"&interval={Interval ?? "60min" }&outputsize=full");
             else if (Type == ForexType.Daily)
-                builder.Append("outputsize=full");
+                builder.Append("&outputsize=full");
             return builder.ToString();
         }
     }
