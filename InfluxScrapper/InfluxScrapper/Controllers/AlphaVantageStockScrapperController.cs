@@ -113,7 +113,7 @@ public class AlphaVantageStockScrapperController : Controller
 
     [Description("Updates database cache and waits for completion")]
     [HttpPost("quote/updatewait")]
-    public async Task<bool> UpdateWaitStock([FromBody] StockQuoteCacheQuery query, CancellationToken token) =>
+    public async Task<bool> UpdateWaitStockQuote([FromBody] StockQuoteCacheQuery query, CancellationToken token) =>
         (await RetryUtilities.UpdateWaitAll(_logger, token, GenerateUpdateStockQuoteTasks(query).ToArray()))
         .All(r => r);
 
