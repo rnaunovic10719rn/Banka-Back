@@ -12,11 +12,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
+import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
+import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
+import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+
+import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 
 @Service
 public class AkcijePodaciService {
@@ -104,7 +114,86 @@ public class AkcijePodaciService {
         return dto;
     }
 
+    public List<AkcijeTimeseriesDto> getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest req) {
+        influxApiClient
+                .post()
+                .uri("/alphavantage/stock/updatewait/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromObject(req))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
+                .block(REQUEST_TIMEOUT);
 
+        DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
+        DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        String endDate = zonedDateTime.format(endFormatter);
+
+        if(req.getType().equals("intraday") && req.getInterval().equals("5min")) {
+            switch (zonedDateTime.getDayOfWeek()) {
+                case SATURDAY:
+                case SUNDAY:
+                    zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
+                    break;
+                case MONDAY:
+                    if (zonedDateTime.getHour() < 16) {
+                        zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
+                    }
+                    break;
+            }
+        } else if(req.getType().equals("intraday") && req.getInterval().equals("30min")) {
+            switch (zonedDateTime.getDayOfWeek()) {
+                case SATURDAY:
+                case SUNDAY:
+                    zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                    break;
+                case MONDAY:
+                    zonedDateTime = zonedDateTime.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
+                    break;
+                default:
+                    zonedDateTime = zonedDateTime.minusDays(7); // 7 zbog vikenda
+            }
+        } else {
+            switch (req.getRequestType()) {
+                case "1m":
+                    zonedDateTime = zonedDateTime.minusMonths(1);
+                    break;
+                case "6m":
+                    zonedDateTime = zonedDateTime.minusMonths(6);
+                    break;
+                case "1y":
+                    zonedDateTime = zonedDateTime.minusMonths(12);
+                    break;
+                case "2y":
+                    zonedDateTime = zonedDateTime.minusMonths(24);
+                    break;
+                case "ytd":
+                    zonedDateTime = zonedDateTime.with(firstDayOfYear());
+                    break;
+            }
+        }
+
+        String startDate = zonedDateTime.format(startFormatter);
+
+        AkcijeTimeseriesReadRequest readReq = new AkcijeTimeseriesReadRequest();
+        readReq.setType(req.getType());
+        readReq.setSymbol(req.getSymbol());
+        readReq.setInterval(req.getInterval());
+        readReq.setTimeFrom(startDate);
+        readReq.setTimeTo(endDate);
+
+        return influxApiClient
+                .post()
+                .uri("/alphavantage/stock/read/")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromObject(readReq))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<AkcijeTimeseriesDto>>() {})
+                .block(REQUEST_TIMEOUT);
+    }
 
     public Page<Akcije> search(String oznakaHartije, String opisHartije, Integer page, Integer size){
         Akcije akcije = new Akcije();
