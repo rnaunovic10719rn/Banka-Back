@@ -146,10 +146,21 @@ public class AlphaVantageStockScrapperController : Controller
             token);
 
 
-    [Description("Gets cached data")]
+    [Description("Reads cached data")]
     [HttpPost("quote/read")]
     public Task<IEnumerable<StockQuoteResult>> ReadStockQuote([FromBody] StockQuoteCacheQuery cacheQuery,
         CancellationToken token) =>
         RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(cacheQuery, true), StockQuoteResult.FromRecord,
             token);
+    
+    [Description("Updates data, if fails schedule updating and reads cached data")]
+    [HttpPost("quote/updateread")]
+    public async Task<IEnumerable<StockQuoteResult>> UpdateOnceReadStockQuote([FromBody] StockQuoteCacheQuery cacheQuery,
+        CancellationToken token)
+    {
+        await UpdateWaitStockOnce(cacheQuery, token);
+        return await RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(cacheQuery, true),
+            StockQuoteResult.FromRecord,
+            token);
+    }
 }

@@ -8,44 +8,48 @@ namespace InfluxScrapper.Models.Stock;
 
 public class StockQuoteResult
 {
-    [Ignore]
+    [Index(0)]
+
     [Column("ticker", IsTag = true)]
     public string? Ticker { get; set; }
     
+    [Ignore]
     [Column(IsTimestamp = true)] 
     public DateTime Time { get; set; } =  DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
     
-    [Index(0)]
+    [Index(1)]
     [Column("open")]
     public double Open { get; set;}
     
-    [Index(1)]
+    [Index(2)]
     [Column("high")]
     public double High { get; set;}
     
-    [Index(2)]
+    [Index(3)]
     [Column("low")]
     public double Low { get; set;}
     
-    [Index(3)]
+    [Index(4)]
     [Column("price")]
     public double Price { get; set;}
     
-    [Index(4)]
+    [Index(5)]
     [Column("volume")]
     public long Volume { get; set;}
     
-    [Index(5)]
+    [Index(7)]
     [Column("previousClose")]
     public double PreviousClose { get; set;}
     
-    [Index(6)]
+    [Index(8)]
     [Column("change")]
     public double Change { get; set;}
     
-    [Index(7)]
+    [Index(9)]
     [Column("changePercent")]
-    public double ChangePercent { get; set;}
+    public string ChangePercentStr { get; set;}
+
+    [Ignore] public double ChangePercent => double.Parse(ChangePercentStr.Replace("%", ""));
 
     public PointData ToPointData(string measurement)
         => PointData.Measurement(measurement)
@@ -58,7 +62,7 @@ public class StockQuoteResult
             .Field("previousClose", PreviousClose)
             .Field("change", Change)
             .Field("changePercent", ChangePercent)
-            .Timestamp(Time, WritePrecision.Ns);
+            .Timestamp(Time, WritePrecision.S);
 
     public static StockQuoteResult FromRecord(FluxRecord record)
     {
@@ -71,7 +75,7 @@ public class StockQuoteResult
         stock.Price = double.Parse(record.Values["price"].ToString());
         stock.PreviousClose = double.Parse(record.Values["previousClose"].ToString());
         stock.Change = double.Parse(record.Values["change"].ToString());
-        stock.ChangePercent = double.Parse(record.Values["changePercent"].ToString());
+        stock.ChangePercentStr = record.Values["changePercent"].ToString() + "%";
         if(record.GetTime() is not null)
             stock.Time = record.GetTime()!.Value.ToDateTimeUtc();
         return stock;

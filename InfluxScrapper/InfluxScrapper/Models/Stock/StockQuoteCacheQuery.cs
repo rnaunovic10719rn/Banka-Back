@@ -6,11 +6,11 @@ namespace InfluxScrapper.Models.Stock;
 public class StockQuoteCacheQuery
 {
     [Required]
-    [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue(new [] {"aapl", "msft"})]
     public string[] Symbols { get; set; }
-    public DateTime? TimeFrom { get; set; }
-    public DateTime? TimeTo { get; set; }
+
+    public DateTime? TimeFrom => null;//{ get; set; }
+    public DateTime? TimeTo => null; //{ get; set; }
 
     public string Measurement => "stock_quote";
 
