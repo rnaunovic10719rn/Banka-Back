@@ -9,7 +9,7 @@ services:
       eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
     tty: false
     ports:
-      - 8761:8761
+      - "8761:8761"
       
   zuul:
     build: ./zuul
@@ -17,9 +17,9 @@ services:
       eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
       eureka.instance.preferIpAddress: "true"
     ports:
-        - "8762:8762"
+      - "8762:8762"
     depends_on:
-        - "eureka"
+      - "eureka"
     links:
       - eureka
 
@@ -35,10 +35,10 @@ services:
   email-servis:
     build: ./mail-service
     environment:
-      spring.mail.username: "banka.softverskoinzenjerstvo@gmail.com"
-      spring.mail.password: "banka1234"
+      spring.mail.username: "email"
+      spring.mail.password: "password"
     ports:
-      - 8081:8081
+      - "8081:8081"
     links:
       - artemis
       - eureka
@@ -52,8 +52,32 @@ services:
       POSTGRES_PASSWORD: docker
       POSTGRES_DB: postgres
     volumes:
-       - ./data:/var/lib/postgresql/data      
- 
+      - db-user:/var/lib/postgresql/data
+
+  db-influx:
+    image: influxdb:2.1.1
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: raf
+      DOCKER_INFLUXDB_INIT_PASSWORD: 12345678
+      DOCKER_INFLUXDB_INIT_ORG: raf
+      DOCKER_INFLUXDB_INIT_BUCKET: stocks
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mytoken
+    ports:
+      - "8086:8086"
+    volumes:
+      - influx-data:/var/lib/influxdb2
+      - influx-config:/etc/influxdb2
+
+  influx-scrapper:
+    build: ./InfluxScrapper
+    ports:
+      - "8000:80"
+    links:
+      - db-influx
+    depends_on:
+      - db-influx
+
   korisnicki-servis:
     build: ./user-service
     environment:
@@ -67,3 +91,8 @@ services:
       - db-user
       - artemis
       - eureka
+
+volumes:
+  db-user:
+  influx-data:
+  influx-config:
