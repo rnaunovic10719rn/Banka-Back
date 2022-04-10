@@ -3,7 +3,6 @@ package rs.edu.raf.banka.berza.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.model.Forex;
 import rs.edu.raf.banka.berza.repository.ForexRepository;
 
@@ -26,7 +25,7 @@ public class ForexService {
 
     public Page<Forex> search(String oznakaHartije, String opisHartije, Integer page, Integer size){
         Forex forex = new Forex();
-        forex.setOznaka_hartije(oznakaHartije);
+        forex.setOznakaHartije(oznakaHartije);
         forex.setOpis_hartije(opisHartije);
 
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
