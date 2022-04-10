@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.user_service.controller.response_forms.*;
 import rs.edu.raf.banka.user_service.model.User;
@@ -29,6 +30,35 @@ public class UserController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<List<User>>getUsers() {
         return ResponseEntity.ok().body(userService.getUsers());
+    }
+
+    @GetMapping("/user")
+    @ApiOperation("Gets user by JWT token")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<User>getUser(@RequestHeader("Authorization") String token) {
+        try {
+            User user = userService.getUserByToken(token);
+            return ResponseEntity.ok().body(user);
+        } catch (AuthenticationException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/user")
+    @ApiOperation("Patches user by JWT token")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<User>editUserFromToken(@RequestHeader("Authorization") String token, @RequestBody CreateUserForm createUserForm) {
+        try {
+            User user = userService.getUserByToken(token);
+            if(!userService.hasEditPermissions(user, token))
+                return ResponseEntity.badRequest().build();
+
+            userService.editUser(user, createUserForm);
+
+            return ResponseEntity.ok().body(userService.getUser(user.getUsername()));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/user/create")
