@@ -43,6 +43,6 @@ public class AkcijeService {
     }
 
     public Akcije getByID(Long id){
-        return akcijeRepository.findAkcijeById_hartije_od_vrednosti(id);
+        return akcijeRepository.findAkcijeById(id);
     }
 }

@@ -44,7 +44,7 @@ public class ForexService {
     }
 
     public Forex getByID(Long id){
-        return forexRepository.findAkcijeById_hartije_od_vrednosti(id);
+        return forexRepository.findForexById(id);
     }
 
 }
