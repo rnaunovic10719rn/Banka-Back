@@ -203,7 +203,7 @@ public class AlphaVantageForexScrapperController : Controller
 
     [Description("Reads cached data")]
     [HttpPost("exchangerate/read")]
-    public Task<IEnumerable<ForexExchangeRateResult>> ReadSForexExchangeRate([FromBody] ForexExchangeRateCacheQuery query,
+    public Task<IEnumerable<ForexExchangeRateResult>> ReadForexExchangeRate([FromBody] ForexExchangeRateCacheQuery query,
         CancellationToken token) =>
         RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true), ForexExchangeRateResult.FromRecord,
             token);

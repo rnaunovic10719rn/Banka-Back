@@ -61,6 +61,8 @@ public class AlphaVantageStockScrapperController : Controller
         {
             var measurement = query.Measurement;
             var results = await ScrapeStock(query, token);
+            if (results is null)
+                return false;
             await InfluxDBUtilites.UploadData(results, r => r.ToPointData(measurement), token);
             _logger.LogInformation("Writing done");
             return true;
@@ -75,14 +77,14 @@ public class AlphaVantageStockScrapperController : Controller
 
     [Description("Gets data directly from scrapping website")]
     [HttpPost("scrape")]
-    public Task<IEnumerable<StockResult>> ScrapeStock([FromBody] StockScrapeQuery query, CancellationToken token) =>
+    public Task<IEnumerable<StockResult>?> ScrapeStock([FromBody] StockScrapeQuery query, CancellationToken token) =>
         RetryUtilities.Scrape(_logger,
             () => AlphaVantageScrapper.ScrapeStock(query, _httpClientFactory),
             token);
 
     [Description("Gets data directly from scrapping website")]
     [HttpPost("scrapewait")]
-    public Task<IEnumerable<StockResult>> ScrapeStockWait([FromBody] StockScrapeQuery query, CancellationToken token) =>
+    public Task<IEnumerable<StockResult>?> ScrapeStockWait([FromBody] StockScrapeQuery query, CancellationToken token) =>
         RetryUtilities.ScrapeRetry(_logger,
             () => AlphaVantageScrapper.ScrapeStock(query, _httpClientFactory),
             token);
@@ -111,7 +113,7 @@ public class AlphaVantageStockScrapperController : Controller
 
     [Description("Updates database cache and waits for completion")]
     [HttpPost("quote/updatewait")]
-    public async Task<bool> UpdateWaitStock([FromBody] StockQuoteCacheQuery query, CancellationToken token) =>
+    public async Task<bool> UpdateWaitStockQuote([FromBody] StockQuoteCacheQuery query, CancellationToken token) =>
         (await RetryUtilities.UpdateWaitAll(_logger, token, GenerateUpdateStockQuoteTasks(query).ToArray()))
         .All(r => r);
 
