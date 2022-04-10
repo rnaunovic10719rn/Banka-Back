@@ -130,7 +130,7 @@ public class AlphaVantageStockScrapperController : Controller
 
 
     [Description("Gets data directly from scrapping website")]
-    [HttpPost("qutoe/scrape")]
+    [HttpPost("quote/scrape")]
     public Task<IEnumerable<StockQuoteResult>?> ScrapeStockQuote([FromBody] StockQuoteQuery query,
         CancellationToken token) =>
         RetryUtilities.Scrape(_logger,
@@ -138,7 +138,7 @@ public class AlphaVantageStockScrapperController : Controller
             token);
 
     [Description("Gets data directly from scrapping website and repeats untill sucssess or timeout")]
-    [HttpPost("qutoe/scrapewait")]
+    [HttpPost("quote/scrapewait")]
     public Task<IEnumerable<StockQuoteResult>?> ScrapeStockQuoteWait([FromBody] StockQuoteQuery query,
         CancellationToken token) =>
         RetryUtilities.ScrapeRetry(_logger,

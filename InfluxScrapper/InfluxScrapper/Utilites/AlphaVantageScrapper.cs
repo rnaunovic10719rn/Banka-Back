@@ -1,6 +1,7 @@
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Stock;
 
 namespace InfluxScrapper.Utilites;
@@ -23,11 +24,14 @@ public static class AlphaVantageScrapper
     
     public static async Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRate(ForexExchangeRateQuery query, IHttpClientFactory httpFactory)
     {
-        var result = await ParseJson<ForexExchangeRateResult>(query.Url, httpFactory);
+        var resultJson = await ParseJson<ForexExchangeRateJson>(query.Url, httpFactory);
 
-        if (result is null) 
+        if (resultJson is null) 
             return null;
-        
+        var result = new ForexExchangeRateResult();
+        result.Ask = resultJson.Body.Ask;
+        result.Bid = resultJson.Body.Bid;
+        result.ExchangeRate = resultJson.Body.ExchangeRate;
         result.FromCurrency = query.FromCurrency;
         result.ToCurrency = query.ToCurrency;
         return new []{result};

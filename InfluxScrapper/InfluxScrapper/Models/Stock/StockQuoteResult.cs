@@ -67,7 +67,7 @@ public class StockQuoteResult
     public static StockQuoteResult FromRecord(FluxRecord record)
     {
         var stock = new StockQuoteResult();
-        stock.Ticker = record.Values["symbol"].ToString();
+        stock.Ticker = record.Values["ticker"].ToString();
         stock.Open = double.Parse(record.Values["open"].ToString());
         stock.High = double.Parse(record.Values["high"].ToString());
         stock.Low = double.Parse(record.Values["low"].ToString());

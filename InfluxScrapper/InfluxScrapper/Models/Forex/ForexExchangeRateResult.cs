@@ -23,15 +23,12 @@ public class ForexExchangeRateResult
     [Column(IsTimestamp = true)] 
     public DateTime Time { get; set; } =  DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
     
-    [JsonPropertyName("5. Exchange Rate")]
     [Column("exchangeRate")]
     public double ExchangeRate { get; set;}
     
-    [JsonPropertyName("8. Bid Price")]
     [Column("bid")]
     public double Bid { get; set;}
     
-    [JsonPropertyName("9. Ask Price")]
     [Column("ask")]
     public double Ask { get; set;}
 
