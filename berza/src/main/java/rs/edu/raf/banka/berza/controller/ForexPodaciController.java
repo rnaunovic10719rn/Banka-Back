@@ -6,6 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.berza.dto.ForexDto;
+import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
+import rs.edu.raf.banka.berza.dto.request.ForexTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Forex;
 import rs.edu.raf.banka.berza.requests.FilterHartijaOdVrednostiRequest;
 import rs.edu.raf.banka.berza.requests.SearchHartijaOdVrednostiRequest;
@@ -42,6 +44,26 @@ public class ForexPodaciController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(forexPodaciService.getForexBySymbol(from, to));
+    }
+
+    @GetMapping(value = "/timeseries/{type}/{symbolFrom}/{symbolTo}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeTimeseries(@PathVariable String type, @PathVariable String symbolFrom, @PathVariable String symbolTo){
+        if(type == null || type.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if(symbolTo == null || symbolTo.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if(symbolFrom == null || symbolFrom.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        ForexTimeseriesUpdateRequest req = ForexTimeseriesUpdateRequest.getForType(type, symbolTo, symbolFrom);
+        if(req == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(forexPodaciService.getForexTimeseries(req));
     }
 
 //    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
