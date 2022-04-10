@@ -10,11 +10,27 @@ import lombok.NoArgsConstructor;
 public class AkcijePodaciDto {
     String ticker;
     String opisHartije;
-    String lastUpdate;
+    String time;
     Double open;
     Double high;
     Double low;
-    Double close;
+    Double price;
     Long volume;
+    Double previousClose;
+    Double change;
+    Double changePercent;
     Long outstandingShares;
+
+    // Calculated
+    Double priceVolume;
+    Double marketCap;
+
+    public Double getPriceVolume() {
+        return volume * price;
+    }
+
+    public Double getMarketCap() {
+        return outstandingShares * price;
+    }
+
 }
