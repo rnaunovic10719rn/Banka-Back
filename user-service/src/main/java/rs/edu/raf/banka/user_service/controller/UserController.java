@@ -126,21 +126,23 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/otp/requires/{id}")
+    @PostMapping("/otp/requires/{username}")
     @ApiOperation("Checks if user requires 2FA code")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<Boolean>requiresOtp(@PathVariable long id) {
-        var requires = userService.getUserById(id).get().isRequiresOtp();
+    public ResponseEntity<Boolean>requiresOtp(@PathVariable String username) {
+        var requires = userService.getUser(username).isRequiresOtp();
         return ResponseEntity.ok().body(requires);
     }
 
-    @PostMapping("/otp/has/{id}")
+    @PostMapping("/otp/has/{username}")
     @ApiOperation("Checks if user has 2FA set up")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<Boolean>hasOtp(@PathVariable long id) {
-        var requires = userService.getUserById(id).get().hasOTP();
+    public ResponseEntity<Boolean>hasOtp(@PathVariable String username) {
+        var requires = userService.getUser(username).hasOTP();
         return ResponseEntity.ok().body(requires);
     }
+
+
 
     @PostMapping("/user/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordForm resetPasswordForm){
