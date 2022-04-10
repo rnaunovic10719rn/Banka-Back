@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using InfluxScrapper.Controllers;
-using InfluxScrapper.Future;
 using InfluxScrapper.Models.Future;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace InfluxScrapper.Tests;
