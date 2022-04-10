@@ -161,6 +161,19 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public Long getUserId(String token) {
+        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(token);
+
+        String usernameFromJWT = decodedJWT.getSubject();
+        var user = this.getUser(usernameFromJWT);
+        if(user == null)
+            return null;
+        return user.getId();
+    }
+
+    @Override
     public void editUser(User user, CreateUserForm newUser) {
         user.setIme(newUser.getIme());
         user.setPrezime(newUser.getPrezime());
