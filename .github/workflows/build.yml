@@ -42,11 +42,11 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_MAIL_SERVICE }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:mailservice -Dsonar.projectName="Banka_Mail_Service"
       - name: "[Berza] Build and analyze"
-          working-directory: ./berza
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BERZA }}
-          run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:berza -Dsonar.projectName="Banka_Berza_Service"
+        working-directory: ./berza
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BERZA }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:berza -Dsonar.projectName="Banka_Berza_Service"
       - name: "[Eureka] Build and analyze"
         working-directory: ./eureka
         env:
