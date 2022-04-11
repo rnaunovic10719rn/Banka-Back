@@ -180,8 +180,8 @@ public class UserController {
         return ResponseEntity.ok().body("Mail send to: " + resetPasswordForm.getEmail());
     }
 
-    @PostMapping("/user/change-password/{token}")
-    public ResponseEntity<?> changePassword(@PathVariable String token, @RequestBody ChangePasswordForm changePasswordForm){
+    @PostMapping("/user/change-password")
+    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordForm changePasswordForm){
         if(!userService.setNewPassword(changePasswordForm.getNewPassword(), token)){
             return ResponseEntity.badRequest().body("Invalid token!");
         }

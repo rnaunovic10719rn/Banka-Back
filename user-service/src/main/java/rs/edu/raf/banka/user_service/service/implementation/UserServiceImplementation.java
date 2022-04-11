@@ -246,6 +246,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public boolean setNewPassword(String password, String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring("Bearer ".length());
+        }
+
         PasswordResetToken prt = this.passwordTokenRepository.findByToken(token);
         if(prt == null){
             return false;
