@@ -35,7 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 @Slf4j
 public class UserServiceImplementation implements UserService, UserDetailsService {
@@ -51,9 +50,16 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Autowired
     Queue mailQueue;
 
+    @Autowired
+    public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordTokenRepository = passwordTokenRepository;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         if(user == null || !(user.isAktivan())){
             log.error("User {} not found in database", username);
             throw new UsernameNotFoundException("User not found in database");
@@ -69,7 +75,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public User getUser(String username) {
         log.info("Showing user {}", username);
-        return userRepository.findByUsername(username);
+        if(userRepository.findByUsername(username).isEmpty()){
+            return null;
+        }
+        return userRepository.findByUsername(username).get();
     }
 
     @Override
@@ -104,7 +113,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             username = username + (int)(Math.random() * (100)) + 1;
         }
         String password = createUserForm.getIme() + "Test123";
-        //TODO: Popraviti formu za otp
+
         User user = new User(username, createUserForm.getIme(),
                             createUserForm.getPrezime(), createUserForm.getEmail(),
                             createUserForm.getJmbg(), createUserForm.getBr_telefon(),
@@ -172,6 +181,19 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public Long getUserId(String token) {
+        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(token);
+
+        String usernameFromJWT = decodedJWT.getSubject();
+        var user = this.getUser(usernameFromJWT);
+        if(user == null)
+            return null;
+        return user.getId();
+    }
+
+    @Override
     public void editUser(User user, CreateUserForm newUser) {
         user.setIme(newUser.getIme());
         user.setPrezime(newUser.getPrezime());
@@ -191,7 +213,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public void setRoleToUser(String username, String role_name) {
         log.info("Adding role {} to user {} to the database", role_name, username);
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
     }
@@ -210,7 +232,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public User getUserByEmail(String email){
-        return userRepository.findByEmail(email);
+        if(userRepository.findByEmail(email).isEmpty()){
+            return null;
+        }
+        return userRepository.findByEmail(email).get();
     }
 
     @Override

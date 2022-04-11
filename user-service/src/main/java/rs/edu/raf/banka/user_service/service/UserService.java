@@ -13,6 +13,7 @@ public interface UserService {
     User createUser(CreateUserForm createUserForm);
     void createUserAdmin(User user);
     boolean hasEditPermissions(User user, String token);
+    Long getUserId(String token);
     void editUser(User user, CreateUserForm createUserForm);
     User getUserByEmail(String email);
     User getUserByToken(String token);

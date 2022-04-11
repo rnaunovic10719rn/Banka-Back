@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -23,6 +24,7 @@ import java.util.Optional;
 @Api(value = "UserControllerAPI", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
+    @Autowired
     private final UserService userService;
 
     @GetMapping("/users")
@@ -72,7 +74,7 @@ public class UserController {
     @ApiOperation("Delete user with specific id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>deleteUser(@PathVariable long id) {
-        Optional<User> user= userService.getUserById(id);
+        Optional<User> user = userService.getUserById(id);
         if(user.get() == null){ResponseEntity.badRequest().build();}
         userService.deleteUser(user.get());
         return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
@@ -156,21 +158,23 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/otp/requires/{id}")
+    @PostMapping("/otp/requires/{username}")
     @ApiOperation("Checks if user requires 2FA code")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<Boolean>requiresOtp(@PathVariable long id) {
-        var requires = userService.getUserById(id).get().isRequiresOtp();
+    public ResponseEntity<Boolean>requiresOtp(@PathVariable String username) {
+        var requires = userService.getUser(username).isRequiresOtp();
         return ResponseEntity.ok().body(requires);
     }
 
-    @PostMapping("/otp/has/{id}")
+    @PostMapping("/otp/has/{username}")
     @ApiOperation("Checks if user has 2FA set up")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<Boolean>hasOtp(@PathVariable long id) {
-        var requires = userService.getUserById(id).get().hasOTP();
+    public ResponseEntity<Boolean>hasOtp(@PathVariable String username) {
+        var requires = userService.getUser(username).hasOTP();
         return ResponseEntity.ok().body(requires);
     }
+
+
 
     @PostMapping("/user/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordForm resetPasswordForm){
@@ -186,5 +190,14 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid token!");
         }
         return ResponseEntity.ok().body("New password!");
+    }
+
+    @PostMapping("/user/getId/{token}")
+    public ResponseEntity<?> getUserId(@PathVariable String token){
+        var id = userService.getUserId(token);
+        if(id == null){
+            return ResponseEntity.badRequest().body("Invalid token!");
+        }
+        return ResponseEntity.ok().body(id);
     }
 }
