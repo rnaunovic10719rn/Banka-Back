@@ -136,7 +136,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
                 throw new UsernameNotFoundException("User not found in database");
             }
 
-            return user;
+            return user.get();
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
             throw new UsernameNotFoundException("Token is invalid");
