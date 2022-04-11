@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesUgovoriDto;
+import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.requests.FilterHartijaOdVrednostiRequest;
 import rs.edu.raf.banka.berza.requests.SearchHartijaOdVrednostiRequest;
@@ -39,6 +40,17 @@ public class FuturesUgovoriPodaciController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesUgovor(symbol));
+    }
+
+    @GetMapping(value = "/timeseries/{type}/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeTimeseries(@PathVariable String type, @PathVariable String symbol){
+        if(type == null || type.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if(symbol == null || symbol.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesTimeseries(type, symbol));
     }
 
 //    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
