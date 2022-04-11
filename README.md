@@ -13,6 +13,6 @@ Nakon uspesnog builda dovoljno je pokrenuti u terminalu 'docker-compose up'
 
 
 ### Komande:
-- `docker-compose up -d` komanda za build i pokretanje servisa i baze (bez -d ukoliko zelite da pratite console log)
+- `docker-compose up --build -d` komanda za build i pokretanje servisa i baze (bez -d ukoliko zelite da pratite console log)
 
 

@@ -8,6 +8,7 @@ using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Stock;
+using InfluxScrapper.Utilites;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InfluxScrapper.Controllers;
@@ -157,4 +158,65 @@ public class AlphaVantageForexScrapperController : Controller
             table.Records.Select(record => ForexResult.FromRecord(record)));
     }
 
+    
+    [Description("Updates database cache without wait")]
+    [HttpPost("exchangerate/update")]
+    public void UpdateForexExchangeRate([FromBody] ForexExchangeRateCacheQuery cacheCacheQuery)
+        => RetryUtilities.ScheduleUpdates(_logger, GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray());
+
+    [Description("Updates database cache and waits for completion")]
+    [HttpPost("exchangerate/updatewait")]
+    public async Task<bool> UpdateWaitForexExchangeRate([FromBody] ForexExchangeRateCacheQuery cacheCacheQuery, CancellationToken token) =>
+        (await RetryUtilities.UpdateWaitAll(_logger, token, GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray()))
+        .All(r => r);
+
+    [Description("Updates database cache and waits once for completion")]
+    [HttpPost("exchangerate/updatewaitonce")]
+    public async Task<bool> UpdateWaitForexExchangeRateOnce([FromBody] ForexExchangeRateCacheQuery cacheCacheQuery, CancellationToken token) =>
+        (await RetryUtilities.UpdateWaitOnceOrScheduleUpdate(_logger, token,
+            GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray()))
+        .All(r => r);
+
+    private IEnumerable<Func<CancellationToken, Task<bool>>> GenerateUpdateForexExchangeRateTasks(ForexExchangeRateCacheQuery cacheCacheQuery)
+        => cacheCacheQuery.ToQuotes().Select(scrapeQuery => new Func<CancellationToken, Task<bool>>(
+            token => RetryUtilities.Update(_logger
+                , AlphaVantageScrapper.ScrapeForexExchangeRate(scrapeQuery, _httpClientFactory),
+                r => r.ToPointData(cacheCacheQuery.Measurement), token)));
+
+
+    [Description("Gets data directly from scrapping website")]
+    [HttpPost("exchangerate/scrape")]
+    public Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRate([FromBody] ForexExchangeRateQuery cacheQuery,
+        CancellationToken token) =>
+        RetryUtilities.Scrape(_logger,
+            () => AlphaVantageScrapper.ScrapeForexExchangeRate(cacheQuery, _httpClientFactory),
+            token);
+
+    [Description("Gets data directly from scrapping website and repeats untill sucssess or timeout")]
+    [HttpPost("exchangerate/scrapewait")]
+    public Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRateForexExchangeRate([FromBody] ForexExchangeRateQuery cacheQuery,
+        CancellationToken token) =>
+        RetryUtilities.ScrapeRetry(_logger,
+            () => AlphaVantageScrapper.ScrapeForexExchangeRate(cacheQuery, _httpClientFactory),
+            token);
+
+
+    [Description("Reads cached data")]
+    [HttpPost("exchangerate/read")]
+    public Task<IEnumerable<ForexExchangeRateResult>> ReadForexExchangeRate([FromBody] ForexExchangeRateCacheQuery query,
+        CancellationToken token) =>
+        RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true), ForexExchangeRateResult.FromRecord,
+            token);
+    
+    [Description("Updates data, if fails schedule updating and reads cached data")]
+    [HttpPost("exchangerate/updateread")]
+    public async Task<IEnumerable<ForexExchangeRateResult>> UpdateOnceReadForexExchangeRate([FromBody] ForexExchangeRateCacheQuery query,
+        CancellationToken token)
+    {
+        await UpdateWaitForexExchangeRateOnce(query, token);
+        return await RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true),
+            ForexExchangeRateResult.FromRecord,
+            token);
+    }
+    
 }
