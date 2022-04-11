@@ -129,14 +129,14 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         try {
             DecodedJWT decodedToken = decodeToken(token);
             String username = decodedToken.getSubject();
-            User user = userRepository.findByUsername(username);
+            var user = userRepository.findByUsername(username);
 
-            if (user == null || !(user.isAktivan())) {
+            if (user == null || user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
                 throw new UsernameNotFoundException("User not found in database");
             }
 
-            return user;
+            return user.get();
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
             throw new UsernameNotFoundException("Token is invalid");
