@@ -16,8 +16,7 @@ public interface UserService {
     Long getUserId(String token);
     void editUser(User user, CreateUserForm createUserForm);
     User getUserByEmail(String email);
-    User getUserByToken(String token);
-    void deleteUser(User user);
+    boolean deleteUser(User user);
     boolean resetPassword(String email);
     boolean setNewPassword(String password, String token);
     List<User> getUsers();

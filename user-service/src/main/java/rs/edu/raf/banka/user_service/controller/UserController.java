@@ -76,7 +76,9 @@ public class UserController {
     public ResponseEntity<?>deleteUser(@PathVariable long id) {
         Optional<User> user = userService.getUserById(id);
         if(user.get() == null){ResponseEntity.badRequest().build();}
-        userService.deleteUser(user.get());
+        if(!userService.deleteUser(user.get())){
+            return ResponseEntity.badRequest().body("Can't delete admin");
+        }
         return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
     }
 
@@ -84,9 +86,9 @@ public class UserController {
     @ApiOperation("Edit user with specific id,text fields are with existing data, the user can change them")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token, @RequestBody CreateUserForm createUserForm) {
-        var user = userService.getUserById(id).get();
-        if(!userService.hasEditPermissions(user, token))
-            return ResponseEntity.badRequest().build();
+        User user = userService.getUserById(id).get();
+        if (!userService.hasEditPermissions(user, token))
+        return ResponseEntity.badRequest().build();
         //if(user.isRequiresOtp())
         //    return ResponseEntity.badRequest().build();
 

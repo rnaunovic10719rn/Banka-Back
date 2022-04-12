@@ -98,12 +98,14 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public void deleteUser(User user) {
-        if(user.getRole().getName().equalsIgnoreCase("ROLE_GL_ADMIN"))
-            return;
+    public boolean deleteUser(User user){
+        if(user.getRole().getName().equalsIgnoreCase("ROLE_GL_ADMIN")){
+            return false;
+        }
 
         log.info("Setting user inactive {} in database", user.getUsername());
         user.setAktivan(false);
+        return true;
     }
 
     @Override
