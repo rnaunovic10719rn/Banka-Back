@@ -86,9 +86,12 @@ public class UserController {
     @ApiOperation("Edit user with specific id,text fields are with existing data, the user can change them")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token, @RequestBody CreateUserForm createUserForm) {
+        if(userService.getUserById(id).isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
         User user = userService.getUserById(id).get();
         if (!userService.hasEditPermissions(user, token))
-        return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().build();
         //if(user.isRequiresOtp())
         //    return ResponseEntity.badRequest().build();
 
