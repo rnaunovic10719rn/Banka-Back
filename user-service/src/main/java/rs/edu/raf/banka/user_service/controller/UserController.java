@@ -79,9 +79,8 @@ public class UserController {
             if(!userService.deleteUser(user.get())){
                 return ResponseEntity.badRequest().body("Can't delete admin");
             }
-        }else {ResponseEntity.badRequest().build();}
-
-        return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
+            return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
+        }else {return ResponseEntity.badRequest().build();}
     }
 
     @PostMapping("/user/edit/{id}")
