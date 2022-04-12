@@ -75,8 +75,7 @@ public class UserController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>deleteUser(@PathVariable long id) {
         Optional<User> user = userService.getUserById(id);
-        if(userService.getUserById(id).isPresent()){
-            user = userService.getUserById(id);
+        if(user.isPresent()){
             if(!userService.deleteUser(user.get())){
                 return ResponseEntity.badRequest().body("Can't delete admin");
             }
@@ -89,20 +88,19 @@ public class UserController {
     @ApiOperation("Edit user with specific id,text fields are with existing data, the user can change them")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>editUser(@PathVariable long id, @RequestHeader("Authorization") String token, @RequestBody CreateUserForm createUserForm) {
-        User user = null;
-        if(userService.getUserById(id).isPresent()){
-           user = userService.getUserById(id).get();
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            //Sonnar pass
+            if (!userService.hasEditPermissions(user.get(), token))
+                return ResponseEntity.badRequest().build();
+            //if(user.isRequiresOtp())
+            //    return ResponseEntity.badRequest().build();
+
+            userService.editUser(user.get(), createUserForm);
+            return ResponseEntity.ok().body(user.get().getUsername() + " edited");
         }else{
             return ResponseEntity.badRequest().build();
         }
-
-        if (!userService.hasEditPermissions(user, token))
-            return ResponseEntity.badRequest().build();
-        //if(user.isRequiresOtp())
-        //    return ResponseEntity.badRequest().build();
-
-        userService.editUser(user, createUserForm);
-        return ResponseEntity.ok().body(user.getUsername() + " edited");
     }
 
     @GetMapping("/otp/generateSecret")
