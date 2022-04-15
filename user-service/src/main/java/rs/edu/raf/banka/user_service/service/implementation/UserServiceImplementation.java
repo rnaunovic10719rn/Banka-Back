@@ -254,6 +254,19 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         return true;
     }
 
+    public boolean changePassword(String password, User user){
+        //Checking password
+        String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(password);
+        if(!matcher.matches()) return false;
+
+        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hash_pw);
+        userRepository.save(user);
+        return true;
+    }
+
     public void sendMail(String email, String token) throws MessagingException {
         String to = email;
         String url = "localhost:8080/user/change-password/" + token;
@@ -289,7 +302,9 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
 
         User user = prt.getUser();
-        user.setPassword(password);
+        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hash_pw);
+
         this.userRepository.save(user);
         return true;
     }

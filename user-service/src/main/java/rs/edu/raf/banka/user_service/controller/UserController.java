@@ -182,8 +182,6 @@ public class UserController {
         return ResponseEntity.ok().body(requires);
     }
 
-
-
     @PostMapping("/user/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordForm resetPasswordForm){
         if(!userService.resetPassword(resetPasswordForm.getEmail())){
@@ -198,6 +196,17 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid token!");
         }
         return ResponseEntity.ok().body("New password!");
+    }
+
+    @PostMapping("/user/new-password/{id}")
+    public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody ChangePasswordForm changePasswordForm){
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            if(!userService.changePassword(changePasswordForm.getNewPassword(), user.get())){
+                return ResponseEntity.badRequest().body("Check your pass again");
+            }
+            return ResponseEntity.ok().body("Password changed for user " + user.get().getUsername());
+        }else {return ResponseEntity.badRequest().body("Invalid id");}
     }
 
     @PostMapping("/user/getId/{token}")
