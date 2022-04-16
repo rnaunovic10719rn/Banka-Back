@@ -7,11 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
-import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
-import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 
 import java.time.DayOfWeek;
