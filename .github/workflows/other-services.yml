@@ -1,0 +1,36 @@
+name: Other services (Zuul, Eureka...)
+on:
+  push:
+    branches:
+      - '**' # matchuj sve brancheve, posto dosta koristimo feature brancheve (po defaultu je samo master)
+    paths:
+      - 'pom.xml'
+      - 'zuul/**'
+      - 'eureka/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'pom.xml'
+      - 'zuul/**'
+      - 'eureka/**'
+jobs:
+  build:
+    name: Build other services
+    runs-on: ubuntu-latest
+    steps:
+      - uses: RAF-SI-2021/sonar-cloud-prep@v0.0.1
+        with:
+          java-version: 17
+      - name: "[Eureka] Build and analyze"
+        working-directory: ./eureka
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_EUREKA }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:eureka -Dsonar.projectName="Banka_Eureka" sonar:sonar -Pcoverage
+      - name: "[Zuul] Build and analyze"
+        working-directory: ./zuul
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_ZUUL }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:zuul -Dsonar.projectName="Banka_Zuul" sonar:sonar -Pcoverage
+
