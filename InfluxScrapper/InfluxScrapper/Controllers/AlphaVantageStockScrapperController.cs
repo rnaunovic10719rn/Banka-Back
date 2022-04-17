@@ -154,13 +154,21 @@ public class AlphaVantageStockScrapperController : Controller
         CancellationToken token) =>
         RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(cacheQuery, true), StockQuoteResult.FromRecord,
             token);
-    
+
     [Description("Updates data, if fails schedule updating and reads cached data")]
     [HttpPost("quote/updateread")]
-    public async Task<IEnumerable<StockQuoteResult>> UpdateOnceReadStockQuote([FromBody] StockQuoteCacheQuery cacheQuery,
+    public async Task<IEnumerable<StockQuoteResult>> UpdateOnceReadStockQuote(
+        [FromBody] StockQuoteCacheQuery cacheQuery,
         CancellationToken token)
     {
-        await UpdateWaitStockOnce(cacheQuery, token);
+        var cachedResult = await RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(cacheQuery, true),
+            StockQuoteResult.FromRecord,
+            token);
+
+        var allowedTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(15));
+        if (cachedResult.FirstOrDefault() is not {Time: { } time} || time < allowedTime)
+            await UpdateWaitStockOnce(cacheQuery, token);
+
         return await RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(cacheQuery, true),
             StockQuoteResult.FromRecord,
             token);
