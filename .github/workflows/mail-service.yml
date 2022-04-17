@@ -1,0 +1,28 @@
+name: Mail service
+on:
+  push:
+    branches:
+      - '**' # matchuj sve brancheve, posto dosta koristimo feature brancheve (po defaultu je samo master)
+    paths:
+      - 'pom.xml'
+      - 'mail-service/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'pom.xml'
+      - 'mail-service/**'
+jobs:
+  build:
+    name: Build Mail service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: RAF-SI-2021/sonar-cloud-prep@v0.0.1
+        with:
+          java-version: 17
+      - name: "[Mail Service] Build and analyze"
+        working-directory: ./mail-service
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_MAIL_SERVICE }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:mailservice -Dsonar.projectName="Banka_Mail_Service" sonar:sonar -Pcoverage
+
