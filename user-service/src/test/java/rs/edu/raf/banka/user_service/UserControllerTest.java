@@ -130,6 +130,13 @@ public class UserControllerTest {
 
     @Test
     void testEditUserFromToken() throws Exception{
+
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.getUserByToken(anyString())).thenReturn(user);
+
         mockMvc.perform(patch("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(userMockForm)))
@@ -146,6 +153,13 @@ public class UserControllerTest {
 
     @Test
     void testResetPassword() throws Exception{
+
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.getUserByEmail("mock@test")).thenReturn(user);
+
         mockMvc.perform(post("/api/user/reset-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(resetPasswordForm)))
@@ -155,14 +169,11 @@ public class UserControllerTest {
 
     @Test
     void testInvalidResetPassword() throws Exception{
-        resetPasswordForm.setEmail("wrong@wrong.com");
         mockMvc.perform(post("/api/user/reset-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(resetPasswordForm)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Mail failed to send"));
-
-        resetPasswordForm.setEmail("mock@test");
     }
 
     @Test
