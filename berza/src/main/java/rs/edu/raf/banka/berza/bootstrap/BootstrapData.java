@@ -79,12 +79,12 @@ public class BootstrapData implements CommandLineRunner {
         fileName = "resources/berze.csv";
 
         List<BerzaCSV> berzeCSV = new CsvToBeanBuilder(new FileReader(fileName))
-                .withType(CurrencyCSV.class)
+                .withType(BerzaCSV.class)
                 .withSkipLines(1)
                 .build()
                 .parse();
 
-        for(BerzaCSV bc: berzeCSV) {
+        for(BerzaCSV bc : berzeCSV) {
             Berza berza = new Berza();
             berza.setDrzava(bc.getCountry());
             berza.setNaziv(bc.getExchangeName());
