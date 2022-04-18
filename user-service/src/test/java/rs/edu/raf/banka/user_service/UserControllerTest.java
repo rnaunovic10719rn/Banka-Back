@@ -146,7 +146,7 @@ public class UserControllerTest {
 
     @Test
     void testResetPassword() throws Exception{
-        mockMvc.perform(post("/user/reset-password", 2L)
+        mockMvc.perform(post("/api/user/reset-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(resetPasswordForm)))
                 .andExpect(status().isOk())
@@ -156,7 +156,7 @@ public class UserControllerTest {
     @Test
     void testInvalidResetPassword() throws Exception{
         resetPasswordForm.setEmail("wrong@wrong.com");
-        mockMvc.perform(post("/user/reset-password", 2L)
+        mockMvc.perform(post("/api/user/reset-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(resetPasswordForm)))
                 .andExpect(status().isOk())
@@ -167,7 +167,7 @@ public class UserControllerTest {
 
     @Test
     void testChangePassword() throws Exception{
-        mockMvc.perform(post("/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+        mockMvc.perform(post("/api/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(changePasswordForm)))
                 .andExpect(status().isOk())
@@ -177,13 +177,13 @@ public class UserControllerTest {
 
     @Test
     void testInvalidChangePassword() throws Exception{
-        mockMvc.perform(post("/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
+        mockMvc.perform(post("/api/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(changePasswordForm)))
-                .andExpect(status().isOk())
+                .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Invalid token!"));
     }
- 
+
 
 
     @Test
