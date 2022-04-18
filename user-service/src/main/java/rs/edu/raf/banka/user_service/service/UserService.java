@@ -11,6 +11,7 @@ public interface UserService {
     User getUser(String username);
     Optional<User> getUserById(long id);
     User createUser(CreateUserForm createUserForm);
+    User getUserByToken(String token);
     void createUserAdmin(User user);
     boolean hasEditPermissions(User user, String token);
     Long getUserId(String token);
