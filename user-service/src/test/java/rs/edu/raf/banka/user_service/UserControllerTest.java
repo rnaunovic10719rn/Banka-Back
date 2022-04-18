@@ -135,6 +135,7 @@ public class UserControllerTest {
         user.setId(2L);
         user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
 
+        when(userServiceImplementation.hasEditPermissions(user,anyString())).thenReturn(true);
         when(userServiceImplementation.getUserByToken(anyString())).thenReturn(user);
 
         mockMvc.perform(patch("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)

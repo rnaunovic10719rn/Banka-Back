@@ -90,8 +90,10 @@ public class UserServiceTest {
     void testCreateUser(){
         CreateUserForm userMockForm = new CreateUserForm();
         userMockForm.setIme("MockName");
+        userMockForm.setPrezime("MockSurname");
+        userMockForm.setBr_telefon("020000");
+        userMockForm.setJmbg("2222");
         userMockForm.setEmail("mock@mock.com");
-
         userService.createUser(userMockForm);
 
         assertEquals(userMockForm.getEmail(), userService.getUserByEmail("mock@mock.com").getEmail());
