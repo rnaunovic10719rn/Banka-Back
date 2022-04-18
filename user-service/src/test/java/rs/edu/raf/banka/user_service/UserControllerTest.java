@@ -167,6 +167,9 @@ public class UserControllerTest {
 
     @Test
     void testChangePassword() throws Exception{
+
+        when(userServiceImplementation.setNewPassword(anyString(),anyString())).thenReturn(true);
+
         mockMvc.perform(post("/api/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(changePasswordForm)))
