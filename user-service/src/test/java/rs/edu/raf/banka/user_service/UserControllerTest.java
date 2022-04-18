@@ -14,7 +14,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import rs.edu.raf.banka.user_service.controller.UserController;
+import rs.edu.raf.banka.user_service.controller.response_forms.ChangePasswordForm;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
+import rs.edu.raf.banka.user_service.controller.response_forms.ResetPasswordForm;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
@@ -41,6 +43,8 @@ public class UserControllerTest {
     String validJWToken = initValidJWT();
     String invalidJWToken = initInvalidJWT();
     CreateUserForm userMockForm = initUserMockForm();
+    ResetPasswordForm resetPasswordForm = initResetPasswordForm();
+    ChangePasswordForm changePasswordForm = initChangePasswordForm();
     String dummyName = "Mock";
 
     @Test
@@ -125,6 +129,64 @@ public class UserControllerTest {
     }
 
     @Test
+    void testEditUserFromToken() throws Exception{
+        mockMvc.perform(patch("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userMockForm)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testEditUserFromInvalidToken() throws Exception{
+        mockMvc.perform(patch("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userMockForm)))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void testResetPassword() throws Exception{
+        mockMvc.perform(post("/user/reset-password", 2L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(resetPasswordForm)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Mail send to: " + resetPasswordForm.getEmail()));
+    }
+
+    @Test
+    void testInvalidResetPassword() throws Exception{
+        resetPasswordForm.setEmail("wrong@wrong.com");
+        mockMvc.perform(post("/user/reset-password", 2L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(resetPasswordForm)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Mail failed to send"));
+
+        resetPasswordForm.setEmail("mock@test");
+    }
+
+    @Test
+    void testChangePassword() throws Exception{
+        mockMvc.perform(post("/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(changePasswordForm)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("New password!"));
+
+    }
+
+    @Test
+    void testInvalidChangePassword() throws Exception{
+        mockMvc.perform(post("/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(changePasswordForm)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Invalid token!"));
+    }
+ 
+
+
+    @Test
     void testInvalidDelete() throws Exception{
         mockMvc.perform(delete("/api/user/delete/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -185,4 +247,17 @@ public class UserControllerTest {
 
         return userMockForm;
     }
+
+    private ResetPasswordForm initResetPasswordForm() {
+        ResetPasswordForm resetPassMockForm = new ResetPasswordForm();
+        resetPassMockForm.setEmail("mock@test");
+        return resetPassMockForm;
+    }
+
+    private ChangePasswordForm initChangePasswordForm() {
+        ChangePasswordForm changePasswordForm = new ChangePasswordForm();
+        changePasswordForm.setNewPassword("mockPass");
+        return  changePasswordForm;
+    }
+
 }

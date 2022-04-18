@@ -133,7 +133,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             String username = decodedToken.getSubject();
             var user = userRepository.findByUsername(username);
 
-            if (user == null || user.isPresent() || !(user.get().isAktivan())) {
+            if (user == null || !user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
                 throw new UsernameNotFoundException("User not found in database");
             }
