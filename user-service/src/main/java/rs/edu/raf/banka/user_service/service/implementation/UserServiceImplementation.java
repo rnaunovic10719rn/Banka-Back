@@ -261,7 +261,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Matcher matcher = pattern.matcher(password);
         if(!matcher.matches()) return false;
 
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
         user.setPassword(hash_pw);
         userRepository.save(user);
         return true;
