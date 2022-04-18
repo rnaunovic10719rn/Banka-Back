@@ -183,6 +183,7 @@ public class UserController {
     }
 
     @PostMapping("/user/reset-password")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordForm resetPasswordForm){
         if(!userService.resetPassword(resetPasswordForm.getEmail())){
             return ResponseEntity.badRequest().body("Mail failed to send");
@@ -191,6 +192,7 @@ public class UserController {
     }
 
     @PostMapping("/user/change-password")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
     public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordForm changePasswordForm){
         if(!userService.setNewPassword(changePasswordForm.getNewPassword(), token)){
             return ResponseEntity.badRequest().body("Invalid token!");
@@ -199,6 +201,7 @@ public class UserController {
     }
 
     @PostMapping("/user/new-password/{id}")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
     public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody ChangePasswordForm changePasswordForm){
         Optional<User> user = userService.getUserById(id);
         if(user.isPresent()){
