@@ -4,8 +4,11 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import rs.edu.raf.banka.berza.dto.BerzaCSV;
 import rs.edu.raf.banka.berza.dto.CurrencyCSV;
+import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Valuta;
+import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.repository.ValutaRepository;
 
 import java.io.FileOutputStream;
@@ -21,10 +24,12 @@ import java.util.List;
 public class BootstrapData implements CommandLineRunner {
 
     private final ValutaRepository valutaRepository;
+    private final BerzaRepository berzaRepository;
 
     @Autowired
-    public BootstrapData(ValutaRepository valutaRepository) {
+    public BootstrapData(ValutaRepository valutaRepository, BerzaRepository berzaRepo) {
         this.valutaRepository = valutaRepository;
+        this.berzaRepository = berzaRepo;
     }
 
     @Override
@@ -68,5 +73,33 @@ public class BootstrapData implements CommandLineRunner {
             valute.add(v);
         }
         valutaRepository.saveAll(valute);
+
+        //Dodavanje informacija o berzi
+        List<Berza> berze = new ArrayList<>();
+        fileName = "resources/berze.csv";
+
+        List<BerzaCSV> berzeCSV = new CsvToBeanBuilder(new FileReader(fileName))
+                .withType(CurrencyCSV.class)
+                .withSkipLines(1)
+                .build()
+                .parse();
+
+        for(BerzaCSV bc: berzeCSV) {
+            Berza berza = new Berza();
+            berza.setDrzava(bc.getCountry());
+            berza.setNaziv(bc.getExchangeName());
+            berza.setOznakaBerze(bc.getExchangeAcronym());
+            berza.setVremenskaZona(bc.getTimeZone());
+            berza.setMicCode(bc.getExchangeMicCode());
+            berza.setOpenTime(bc.getOpenTime());
+            berza.setCloseTime(bc.getCloseTime());
+            //Samo dodat string valuta mora da se napravi nova, tj. da se stavi neka metoda u repozitorijum
+            //po kojoj cemo da setujemo valutu npr. valutaRepo.findByCountry(bc.getCountry()) ALI treba prvo podesiti
+            //da nazivi iz drzava iz valute.csv odgovaraju onima iz berze.csv ..
+            berza.setValutaString(bc.getCurrency());
+
+            berze.add(berza);
+        }
+        berzaRepository.saveAll(berze);
     }
 }
