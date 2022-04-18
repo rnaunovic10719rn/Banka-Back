@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
@@ -83,6 +84,36 @@ public class UserServiceTest {
         userService.deleteUser(user);
 
         assertEquals(true, user.isAktivan());
+    }
+
+    @Test
+    void testCreateUser(){
+        CreateUserForm userMockForm = new CreateUserForm();
+        userMockForm.setIme("MockName");
+        userMockForm.setEmail("mock@mock.com");
+
+        userService.createUser(userMockForm);
+
+        assertEquals(userMockForm.getEmail(), userService.getUserByEmail("mock@mock.com").getEmail());
+    }
+
+    @Test
+    void testEditUser() {
+        User user = new User("UserXY","XY");
+
+        List<String> mockPermissions = new ArrayList<>();
+        mockPermissions.add("mock_permission");
+        user.setRole(new Role(null, "ROLE_ADMIN", mockPermissions));
+        user.setAktivan(true);
+
+        CreateUserForm userMockForm = new CreateUserForm();
+        userMockForm.setIme("MockName");
+
+        userService.editUser(user,userMockForm);
+
+        user = userService.getUser("UserXY");
+
+        assertEquals(userMockForm.getIme(), user.getIme());
     }
 
     @Test
