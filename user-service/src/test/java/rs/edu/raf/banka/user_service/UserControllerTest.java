@@ -159,7 +159,7 @@ public class UserControllerTest {
         mockMvc.perform(post("/api/user/reset-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(resetPasswordForm)))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().string("Mail failed to send"));
 
         resetPasswordForm.setEmail("mock@test");
