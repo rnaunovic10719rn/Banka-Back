@@ -3,6 +3,7 @@ using System.Text;
 using InfluxDB.Client;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
+using InfluxScrapper.Models.Exchange;
 using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;

@@ -5,7 +5,7 @@ using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Forex;
 
 
 public class ForexResult : InvfluxRecord<ForexResult>

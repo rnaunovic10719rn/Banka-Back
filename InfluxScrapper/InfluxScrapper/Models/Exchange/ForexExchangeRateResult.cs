@@ -1,13 +1,13 @@
-using System.Text.Json.Serialization;
 using CsvHelper.Configuration.Attributes;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
+using InfluxScrapper.Models.Influx;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Exchange;
 
-public class ForexExchangeRateResult
+public class ForexExchangeRateResult : InvfluxRecord<ForexExchangeRateResult>
 {
     [Index(0)]
 
@@ -32,14 +32,15 @@ public class ForexExchangeRateResult
     [Column("ask")]
     public double Ask { get; set;}
 
-    public PointData ToPointData(string measurement)
+    public static PointData ToPointData(ForexExchangeRateResult item, string measurement)
         => PointData.Measurement(measurement)
-            .Tag("from", FromCurrency)
-            .Tag("to", ToCurrency)
-            .Field("exchangeRate", ExchangeRate)
-            .Field("bid", Bid)
-            .Field("ask", Ask)
-            .Timestamp(Time, WritePrecision.S);
+            .Tag("from", item.FromCurrency)
+            .Tag("to", item.ToCurrency)
+            .Field("exchangeRate", item.ExchangeRate)
+            .Field("bid", item.Bid)
+            .Field("ask", item.Ask)
+            .Timestamp(item.Time, WritePrecision.S);
+
 
     public static ForexExchangeRateResult FromRecord(FluxRecord record)
     {
