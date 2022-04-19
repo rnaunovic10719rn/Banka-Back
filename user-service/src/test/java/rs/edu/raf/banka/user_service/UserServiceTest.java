@@ -5,6 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
@@ -98,6 +100,29 @@ public class UserServiceTest {
         assertEquals(user, userService.getUserByEmail("user@mock"));
     }
 
+    @Test
+    void testChangePassword(){
+        User user = new User("UserX","X");
+        user.setEmail("user@mock");
+
+        userService.changePassword("mockPass123",user);
+
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
+    }
+
+    @Test
+    void testInvalidPasswordChangePassword(){
+        User user = new User("UserX","X");
+        user.setEmail("user@mock");
+
+        userService.changePassword("mockPass",user);
+
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        assertEquals(passwordEncoder.matches("mockPass", user.getPassword()), false);
+    }
 
     @Test
     void testGetUserByEmailInvalid() {
