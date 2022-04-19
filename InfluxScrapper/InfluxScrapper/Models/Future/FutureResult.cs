@@ -14,9 +14,8 @@ public class FutureResult : InvfluxRecord<FutureResult>
     [Ignore]
     [Column("symbol", IsTag = true)]
     public string? Symbol { get; set; }
-    
-    [Index(0)]
-    public string Date { get; set;}
+
+    [Index(0)] public string Date { get; set; } = "";
     
     [Ignore]
     [Column(IsTimestamp = true)] 
@@ -75,14 +74,14 @@ public class FutureResult : InvfluxRecord<FutureResult>
     {
         var future = new FutureResult();
         future.Symbol = record.Values["symbol"].ToString();
-        future.Settle = double.Parse(record.Values["settle"].ToString());
-        future.Open = double.Parse(record.Values["open"].ToString());
-        future.High = double.Parse(record.Values["high"].ToString());
-        future.Low = double.Parse(record.Values["low"].ToString());
-        future.VolumeDouble = long.Parse(record.Values["volume"].ToString());
-        future.PreviousDouble = long.Parse(record.Values["previous"].ToString());
-        future.Date = record.GetTime().ToString();
-        future.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
+        future.Settle = double.Parse(record.Values["settle"].ToString()!);
+        future.Open = double.Parse(record.Values["open"].ToString()!);
+        future.High = double.Parse(record.Values["high"].ToString()!);
+        future.Low = double.Parse(record.Values["low"].ToString()!);
+        future.VolumeDouble = long.Parse(record.Values["volume"].ToString()!);
+        future.PreviousDouble = long.Parse(record.Values["previous"].ToString()!);
+        future.Date = record.GetTime().ToString()!;
+        future.TimeWritten = long.Parse(record.Values["written"].ToString()!).ToDateTime();
         return future;
     }
 

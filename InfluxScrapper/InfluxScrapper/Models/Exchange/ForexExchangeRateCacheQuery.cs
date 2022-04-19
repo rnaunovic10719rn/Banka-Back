@@ -8,8 +8,7 @@ namespace InfluxScrapper.Models.Exchange;
 
 public class ForexExchangeRateCacheQuery : InfluxCacheQuery<ForexExchangeRateCacheQuery>, IInfluxMeasurementHolder
 {
-    [Required]
-    public ForexBody[] Currencies { get; set; }
+    [Required] public ForexBody[] Currencies { get; set; } = Array.Empty<ForexBody>();
 
     public DateTime? TimeFrom { get; init; }
     public DateTime? TimeTo { get; init; }

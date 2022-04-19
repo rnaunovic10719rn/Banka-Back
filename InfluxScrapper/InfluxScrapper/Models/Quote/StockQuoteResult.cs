@@ -50,10 +50,9 @@ public class StockQuoteResult : InvfluxRecord<StockQuoteResult>
     [Index(8)]
     [Column("change")]
     public double Change { get; set;}
-    
-    [Index(9)]
-    [Column("changePercent")]
-    public string ChangePercentStr { get; set;}
+
+    [Index(9)] [Column("changePercent")] 
+    public string ChangePercentStr { get; set; } = "";
 
     [Ignore] public double ChangePercent => double.Parse(ChangePercentStr.Replace("%", ""));
 
@@ -75,17 +74,17 @@ public class StockQuoteResult : InvfluxRecord<StockQuoteResult>
     {
         var stock = new StockQuoteResult();
         stock.Ticker = record.Values["ticker"].ToString();
-        stock.Open = double.Parse(record.Values["open"].ToString());
-        stock.High = double.Parse(record.Values["high"].ToString());
-        stock.Low = double.Parse(record.Values["low"].ToString());
-        stock.Volume = long.Parse(record.Values["volume"].ToString());
-        stock.Price = double.Parse(record.Values["price"].ToString());
-        stock.PreviousClose = double.Parse(record.Values["previousClose"].ToString());
-        stock.Change = double.Parse(record.Values["change"].ToString());
-        stock.ChangePercentStr = record.Values["changePercent"].ToString() + "%";
+        stock.Open = double.Parse(record.Values["open"].ToString()!);
+        stock.High = double.Parse(record.Values["high"].ToString()!);
+        stock.Low = double.Parse(record.Values["low"].ToString()!);
+        stock.Volume = long.Parse(record.Values["volume"].ToString()!);
+        stock.Price = double.Parse(record.Values["price"].ToString()!);
+        stock.PreviousClose = double.Parse(record.Values["previousClose"].ToString()!);
+        stock.Change = double.Parse(record.Values["change"].ToString()!);
+        stock.ChangePercentStr = record.Values["changePercent"].ToString()! + "%";
         if(record.GetTime() is not null)
             stock.Time = record.GetTime()!.Value.ToDateTimeUtc();
-        stock.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
+        stock.TimeWritten = long.Parse(record.Values["written"].ToString()!).ToDateTime();
         return stock;
     }
 }
