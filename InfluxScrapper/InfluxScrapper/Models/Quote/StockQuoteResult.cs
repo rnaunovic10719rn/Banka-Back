@@ -18,6 +18,10 @@ public class StockQuoteResult : InvfluxRecord<StockQuoteResult>
     [Column(IsTimestamp = true)] 
     public DateTime Time { get; set; } =  DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
     
+    [Ignore]
+    public DateTime TimeWritten { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+    
+    
     [Index(1)]
     [Column("open")]
     public double Open { get; set;}

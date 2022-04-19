@@ -29,6 +29,9 @@ public class ForexResult : InvfluxRecord<ForexResult>
         set => Date = DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString("o");
     }
     
+    [Ignore]
+    public DateTime TimeWritten { get; set; } = DateTime.Now;
+    
     [Index(1)]
     [Column("open")]
     public double Open { get; set;}

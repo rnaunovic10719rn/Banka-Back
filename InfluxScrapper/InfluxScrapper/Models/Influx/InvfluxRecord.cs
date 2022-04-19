@@ -5,7 +5,7 @@ namespace InfluxScrapper.Models.Influx;
 
 public interface InvfluxRecord<TSelf>
 {
-    public DateTime Time { get; set; }
+    public DateTime TimeWritten { get; set; }
     static abstract PointData ToPointData(TSelf item, string measurement);
     static abstract TSelf FromRecord(FluxRecord record);
 }

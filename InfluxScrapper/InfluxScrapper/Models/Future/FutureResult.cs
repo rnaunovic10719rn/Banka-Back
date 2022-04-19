@@ -25,6 +25,9 @@ public class FutureResult : InvfluxRecord<FutureResult>
         set => Date = DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString("o");
     }
     
+    [Ignore]
+    public DateTime TimeWritten { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+    
     [Index(1)]
     [Column("open")]
     public double Open { get; set;}

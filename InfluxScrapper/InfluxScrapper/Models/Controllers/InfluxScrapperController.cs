@@ -116,7 +116,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         if (cache is not null && cache.FirstOrDefault() is { } top)
         {
             LogInformation(eventId,
-                $"Top Result: {top}, time: {top.Time}, minTime {DateTime.Now.Subtract(_chacheValiditySpan)}, is cached: {top.Time >= DateTime.Now.Subtract(_chacheValiditySpan)}");
+                $"Top Result: {top}, time: {top.TimeWritten}, minTime {DateTime.Now.Subtract(_chacheValiditySpan)}, is cached: {top.TimeWritten >= DateTime.Now.Subtract(_chacheValiditySpan)}");
         }
         else
         {
@@ -124,7 +124,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         }
         LogInformation(eventId, $"TopResult: ");
         if (cache is not null && cache.FirstOrDefault() is { } topResult
-                              && topResult.Time >= DateTime.Now.Subtract(_chacheValiditySpan) &&
+                              && topResult.TimeWritten >= DateTime.Now.Subtract(_chacheValiditySpan) &&
                               await ReadInternal(readQuery, false, token, eventId) is { } result)
             return result;
 

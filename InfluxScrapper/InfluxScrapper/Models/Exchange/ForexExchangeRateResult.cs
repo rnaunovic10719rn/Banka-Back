@@ -22,6 +22,7 @@ public class ForexExchangeRateResult : InvfluxRecord<ForexExchangeRateResult>
     [Ignore]
     [Column(IsTimestamp = true)] 
     public DateTime Time { get; set; } =  DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+    public DateTime TimeWritten { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
     
     [Column("exchangeRate")]
     public double ExchangeRate { get; set;}

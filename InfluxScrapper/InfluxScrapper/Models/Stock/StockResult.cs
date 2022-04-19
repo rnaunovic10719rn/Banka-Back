@@ -25,6 +25,9 @@ public class StockResult : InvfluxRecord<StockResult>
         set => Date = DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString("o");
     } 
     
+    [Ignore]
+    public DateTime TimeWritten { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+    
     [Index(1)]
     [Column("open")]
     public double Open { get; set;}
@@ -53,6 +56,7 @@ public class StockResult : InvfluxRecord<StockResult>
             .Field("low", item.Low)
             .Field("high", item.High)
             .Field("volume", item.Volume)
+            .Field("written", item.TimeWritten)
             .Timestamp(item.Time, WritePrecision.Ns);
 
     public static StockResult FromRecord(FluxRecord record)
@@ -65,6 +69,7 @@ public class StockResult : InvfluxRecord<StockResult>
         stock.Low = double.Parse(record.Values["low"].ToString());
         stock.Volume = long.Parse(record.Values["volume"].ToString());
         stock.Date = record.GetTime().ToString();
+        stock.TimeWritten = DateTime.SpecifyKind(DateTime.Parse(record.Values["written"].ToString()), DateTimeKind.Utc);
         return stock;
     }
 
