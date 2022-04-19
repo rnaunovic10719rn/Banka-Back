@@ -130,12 +130,11 @@ public class UserControllerTest {
 
     @Test
     void testEditUserFromToken() throws Exception{
-
         User user = new User(dummyName, "Test");
         user.setId(2L);
         user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
 
-        when(userServiceImplementation.hasEditPermissions(user,anyString())).thenReturn(true);
+        when(userServiceImplementation.hasEditPermissions(any(),anyString())).thenReturn(true);
         when(userServiceImplementation.getUserByToken(anyString())).thenReturn(user);
 
         mockMvc.perform(patch("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
@@ -154,12 +153,7 @@ public class UserControllerTest {
 
     @Test
     void testResetPassword() throws Exception{
-
-        User user = new User(dummyName, "Test");
-        user.setId(2L);
-        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
-
-        when(userServiceImplementation.getUserByEmail("mock@test")).thenReturn(user);
+        when(userServiceImplementation.resetPassword("mock@test")).thenReturn(true);
 
         mockMvc.perform(post("/api/user/reset-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)

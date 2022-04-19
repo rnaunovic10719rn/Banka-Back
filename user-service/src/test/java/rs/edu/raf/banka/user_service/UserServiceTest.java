@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
+import rs.edu.raf.banka.user_service.repository.RoleRepository;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
@@ -16,7 +17,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -26,6 +29,9 @@ public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserRepository roleRepository;
 
     @Test
     void testGetUser() {
@@ -94,6 +100,11 @@ public class UserServiceTest {
         userMockForm.setBr_telefon("020000");
         userMockForm.setJmbg("2222");
         userMockForm.setEmail("mock@mock.com");
+        userMockForm.setPozicija("ROLE_GL_ADMIN");
+        List<String> mockPermissions = new ArrayList<>();
+        mockPermissions.add("mock_permission");
+
+        when(userService.getRole(anyString())).thenReturn(new Role(null, "ROLE_GL_ADMIN", mockPermissions));
         userService.createUser(userMockForm);
 
         assertEquals(userMockForm.getEmail(), userService.getUserByEmail("mock@mock.com").getEmail());
@@ -110,7 +121,9 @@ public class UserServiceTest {
 
         CreateUserForm userMockForm = new CreateUserForm();
         userMockForm.setIme("MockName");
+        Role role = new Role(null, "ROLE_GL_ADMIN", mockPermissions);
 
+        when(userService.getRole(anyString())).thenReturn(role);
         userService.editUser(user,userMockForm);
 
         user = userService.getUser("UserXY");
