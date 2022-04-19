@@ -32,7 +32,7 @@ public class FutureDataScrapperController : Controller
     {
         const int allowedScrapeMinutes = 10;
         var cancellationTokenSource = new CancellationTokenSource(allowedScrapeMinutes * 60000);
-        Task.Run(async () => await UpdateWaitFutureData( cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);;
+        Task.Run(async () => await UpdateWait( cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);;
     }
     
     /// <summary>
@@ -42,7 +42,7 @@ public class FutureDataScrapperController : Controller
     /// <param name="token"></param>
     [Description("Updates database cache and waits for completion")]
     [HttpPost("data/updatewait")]
-    public async Task UpdateWaitFutureData(CancellationToken token)
+    public async Task UpdateWait(CancellationToken token)
     {
 
         var results = await ScrapeFutureData(token);
@@ -110,7 +110,7 @@ public class FutureDataScrapperController : Controller
     /// <returns></returns>
     [Description("Gets cached data")]
     [HttpPost("data/read")]
-    public async Task<IEnumerable<FutureDataResult>> ReadFutureData(CancellationToken token)
+    public async Task<IEnumerable<FutureDataResult>> ReadCache(CancellationToken token)
     {
         try
         {
