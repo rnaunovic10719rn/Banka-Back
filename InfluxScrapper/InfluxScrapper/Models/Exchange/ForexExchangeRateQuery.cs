@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using InfluxScrapper.Models.Influx;
 
+namespace InfluxScrapper.Models.Exchange;
 
-namespace InfluxScrapper.Models.Stock;
-
-public class ForexExchangeRateQuery
+public class ForexExchangeRateQuery : IInfluxMeasurementHolder
 {
     [Required]
     [RegularExpression("^[a-zA-Z]{2,6}$")]

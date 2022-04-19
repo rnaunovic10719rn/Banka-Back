@@ -3,10 +3,12 @@ using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
+using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Utilites;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Quote;
 
-public class StockQuoteResult
+public class StockQuoteResult : InvfluxRecord<StockQuoteResult>
 {
     [Ignore]
 
@@ -16,6 +18,10 @@ public class StockQuoteResult
     [Ignore]
     [Column(IsTimestamp = true)] 
     public DateTime Time { get; set; } =  DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+    
+    [Ignore]
+    public DateTime TimeWritten { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+    
     
     [Index(1)]
     [Column("open")]
@@ -51,18 +57,19 @@ public class StockQuoteResult
 
     [Ignore] public double ChangePercent => double.Parse(ChangePercentStr.Replace("%", ""));
 
-    public PointData ToPointData(string measurement)
+    public static PointData ToPointData(StockQuoteResult item, string measurement)
         => PointData.Measurement(measurement)
-            .Tag("ticker", Ticker)
-            .Field("open", Open)
-            .Field("low", Low)
-            .Field("high", High)
-            .Field("volume", Volume)
-            .Field("price", Price)
-            .Field("previousClose", PreviousClose)
-            .Field("change", Change)
-            .Field("changePercent", ChangePercent)
-            .Timestamp(Time, WritePrecision.Ns);
+            .Tag("ticker", item.Ticker)
+            .Field("open", item.Open)
+            .Field("low", item.Low)
+            .Field("high", item.High)
+            .Field("volume", item.Volume)
+            .Field("price", item.Price)
+            .Field("previousClose", item.PreviousClose)
+            .Field("change", item.Change)
+            .Field("changePercent", item.ChangePercent)
+            .Field("written", item.TimeWritten.ToUnixTimestamp())
+            .Timestamp(item.Time, WritePrecision.Ns);
 
     public static StockQuoteResult FromRecord(FluxRecord record)
     {
@@ -78,6 +85,7 @@ public class StockQuoteResult
         stock.ChangePercentStr = record.Values["changePercent"].ToString() + "%";
         if(record.GetTime() is not null)
             stock.Time = record.GetTime()!.Value.ToDateTimeUtc();
+        stock.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
         return stock;
     }
 }

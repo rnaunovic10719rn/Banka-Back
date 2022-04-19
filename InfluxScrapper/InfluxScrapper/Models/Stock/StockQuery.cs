@@ -1,9 +1,10 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using InfluxScrapper.Models.Influx;
 
 namespace InfluxScrapper.Models.Stock;
 
-public abstract class StockQuery
+public abstract class StockQuery : IInfluxMeasurementHolder
 {
     [Required]
     public StockType Type { get; set; }

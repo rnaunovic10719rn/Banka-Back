@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using InfluxScrapper.Models.Influx;
 
 namespace InfluxScrapper.Models.Forex;
 
-public class ForexQuery 
+public class ForexQuery  : IInfluxMeasurementHolder
 {
     [Required]
     public ForexType Type { get; set; }

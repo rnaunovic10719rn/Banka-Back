@@ -11,6 +11,8 @@ public interface ForexRepository extends JpaRepository<Forex, Long>, JpaSpecific
 
     Forex findForexById(Long id);
 
+    Forex findForexByOznakaHartije(String oznakaHartije);
+
     @Query("SELECT f FROM Forex f WHERE (:berzaPrefix IS NULL OR LOWER(f.berza.naziv) LIKE CONCAT('%', :berzaPrefix)) AND " +
             "(:priceLowBound = 0 OR f.cena >= :priceLowBound) AND (:priceUpperBound = 0 OR f.cena <= :priceUpperBound) AND " +
             "(:askLowBound = 0 OR f.ask >= :askLowBound) AND (:askUpperBound = 0 OR f.ask <= :askUpperBound) AND " +
