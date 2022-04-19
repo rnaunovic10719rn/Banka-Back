@@ -30,9 +30,6 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private UserRepository roleRepository;
-
     @Test
     void testGetUser() {
         User user = new User("UserX","X");
@@ -90,45 +87,6 @@ public class UserServiceTest {
         userService.deleteUser(user);
 
         assertEquals(true, user.isAktivan());
-    }
-
-    @Test
-    void testCreateUser(){
-        CreateUserForm userMockForm = new CreateUserForm();
-        userMockForm.setIme("MockName");
-        userMockForm.setPrezime("MockSurname");
-        userMockForm.setBr_telefon("020000");
-        userMockForm.setJmbg("2222");
-        userMockForm.setEmail("mock@mock.com");
-        userMockForm.setPozicija("ROLE_GL_ADMIN");
-        List<String> mockPermissions = new ArrayList<>();
-        mockPermissions.add("mock_permission");
-
-        when(userService.getRole(anyString())).thenReturn(new Role(null, "ROLE_GL_ADMIN", mockPermissions));
-        userService.createUser(userMockForm);
-
-        assertEquals(userMockForm.getEmail(), userService.getUserByEmail("mock@mock.com").getEmail());
-    }
-
-    @Test
-    void testEditUser() {
-        User user = new User("UserXY","XY");
-
-        List<String> mockPermissions = new ArrayList<>();
-        mockPermissions.add("mock_permission");
-        user.setRole(new Role(null, "ROLE_ADMIN", mockPermissions));
-        user.setAktivan(true);
-
-        CreateUserForm userMockForm = new CreateUserForm();
-        userMockForm.setIme("MockName");
-        Role role = new Role(null, "ROLE_GL_ADMIN", mockPermissions);
-
-        when(userService.getRole(anyString())).thenReturn(role);
-        userService.editUser(user,userMockForm);
-
-        user = userService.getUser("UserXY");
-
-        assertEquals(userMockForm.getIme(), user.getIme());
     }
 
     @Test
