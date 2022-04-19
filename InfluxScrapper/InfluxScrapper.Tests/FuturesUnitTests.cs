@@ -1,8 +1,9 @@
-/*using System;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using InfluxScrapper.Controllers;
+using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Future;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,32 +14,24 @@ namespace InfluxScrapper.Tests;
 public class FuturesUnitTests
 {
 
-    private static NasdaqFuturesScrapperController GenerateController()
+    private static FutureInfluxScrapperController GenerateController()
     {
+        var influxManager = new InfluxManager(Constants.InfluxDBUrl, Constants.InfluxToken, Constants.InfluxOrg,
+            Constants.InfluxBucket);
+        
         var serviceProvider = new ServiceCollection()
             .AddLogging()
             .AddHttpClient()
+            .AddSingleton(influxManager)
             .BuildServiceProvider();
         
         var factory = serviceProvider.GetService<ILoggerFactory>();
-        var logger = factory.CreateLogger<NasdaqFuturesScrapperController>();
-
+        var logger = factory!.CreateLogger<FutureInfluxScrapperController>();
         var httpFactory = serviceProvider.GetService<IHttpClientFactory>();
-        return new NasdaqFuturesScrapperController(httpFactory!, logger);
-    }
-    
-    [Fact]
-    public async Task TestUpdateAndReadFutureData()
-    {
-        var controller = GenerateController();
-        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        
-        await controller.UpdateWaitFutureData(tokenSource.Token);
-        var result = await controller.ReadFutureData(tokenSource.Token);
 
-        Assert.NotEmpty(result);
+        return new FutureInfluxScrapperController(httpFactory!, logger, influxManager!);
     }
-    
+
     [Theory]
     [InlineData("FVSJ2022")]
     [InlineData("FCEU2020")]
@@ -48,28 +41,28 @@ public class FuturesUnitTests
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
 
-        var updateQuery = new FutureQuery()
+        var updateQuery = new FutureCacheQuery()
         {
             Symbol = symbol
         };
         
-        await controller.UpdateWaitFuture(updateQuery, tokenSource.Token);
+        await controller.UpdateWait(updateQuery, tokenSource.Token);
         
         var cacheQuery = new FutureCacheQuery()
         {
             Symbol = symbol,
             TimeFrom = DateTime.Now.Subtract(TimeSpan.FromDays(60)),
-            TimeTo = DateTime.Now
+            TimeTo = DateTime.Now.AddDays(3)
         };
         
-        var result = await controller.ReadFuture(cacheQuery, tokenSource.Token);
+        var result = await controller.ReadCache(cacheQuery, tokenSource.Token);
 
         Assert.NotEmpty(result);
 
         Assert.All(result,
             futureResult =>
             {
-                Assert.InRange(futureResult.Date, cacheQuery.TimeFrom.Value, cacheQuery.TimeTo.Value);
+                Assert.InRange(futureResult.Time, cacheQuery.TimeFrom.Value, cacheQuery.TimeTo.Value);
             });
     }
     
@@ -86,12 +79,12 @@ public class FuturesUnitTests
         {
             Symbol = symbol,
             TimeFrom = DateTime.Now.Subtract(TimeSpan.FromDays(60)),
-            TimeTo = DateTime.Now
+            TimeTo = DateTime.Now.AddDays(3)
         };
         
-        var result = await controller.ReadFuture(cacheQuery, tokenSource.Token);
+        var result = await controller.ReadCache(cacheQuery, tokenSource.Token);
 
         Assert.Empty(result);
     }
     
-}*/
+}
