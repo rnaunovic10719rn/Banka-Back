@@ -4,6 +4,7 @@ using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Utilites;
 
 namespace InfluxScrapper.Models.Stock;
 
@@ -56,7 +57,7 @@ public class StockResult : InvfluxRecord<StockResult>
             .Field("low", item.Low)
             .Field("high", item.High)
             .Field("volume", item.Volume)
-            .Field("written", item.TimeWritten)
+            .Field("written", item.TimeWritten.ToUnixTimestamp())
             .Timestamp(item.Time, WritePrecision.Ns);
 
     public static StockResult FromRecord(FluxRecord record)
@@ -69,7 +70,7 @@ public class StockResult : InvfluxRecord<StockResult>
         stock.Low = double.Parse(record.Values["low"].ToString());
         stock.Volume = long.Parse(record.Values["volume"].ToString());
         stock.Date = record.GetTime().ToString();
-        stock.TimeWritten = DateTime.SpecifyKind(DateTime.Parse(record.Values["written"].ToString()), DateTimeKind.Utc);
+        stock.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
         return stock;
     }
 
