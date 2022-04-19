@@ -134,8 +134,13 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         }
                               
         var updateQuery = ConvertToUpdateQueryInternal(readQuery, lastFound);
-        await UpdateWaitAllInternal(updateQuery, token, eventId);
-        return await ReadInternal(readQuery, false, token, eventId) ?? Enumerable.Empty<TResult>();
+        
+        var cancellationTokenSource = new CancellationTokenSource(_scrapeDelayTime);
+        var scheduleToken = cancellationTokenSource.Token;
+        var results = await ReadInternal(readQuery, false, token, eventId) ?? Enumerable.Empty<TResult>();
+        
+        Task.Run(async () =>  await UpdateWaitAllInternal(updateQuery, scheduleToken, eventId),scheduleToken);
+        return results;
     }
 
 
