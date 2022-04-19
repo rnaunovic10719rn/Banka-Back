@@ -112,7 +112,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         CancellationToken token)
     {
         const int eventId = 6;
-        var cache = await ReadInternal(readQuery, false, token, eventId);
+        var cache = await ReadInternal(readQuery, true, token, eventId);
         if (cache is not null && cache.FirstOrDefault() is { } topResult
                               && topResult.Time >= DateTime.Now.Subtract(_chacheValiditySpan) &&
                               await ReadInternal(readQuery, false, token, eventId) is { } result)
