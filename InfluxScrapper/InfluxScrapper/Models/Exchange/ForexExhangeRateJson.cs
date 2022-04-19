@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace InfluxScrapper.Models.Forex;
+namespace InfluxScrapper.Models.Exchange;
 
 public class ForexExchangeRateJson
 {

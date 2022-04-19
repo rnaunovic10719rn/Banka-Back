@@ -3,6 +3,10 @@ using System.Text;
 using InfluxDB.Client;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
+using InfluxScrapper.Models.Exchange;
+using InfluxScrapper.Models.Forex;
+using InfluxScrapper.Models.Future;
+using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;
 
 namespace InfluxScrapper.Utilites;
@@ -34,6 +38,7 @@ public static class InfluxDBUtilites
         AppendQueryEnd(builder);
         return builder.ToString();
     }
+    
 
     public static string ConstructQuery(ForexExchangeRateCacheQuery cacheCacheQuery, bool onlyLastResult = true)
     {
@@ -49,7 +54,31 @@ public static class InfluxDBUtilites
         return builder.ToString();
     }
 
-
+    public static string ConstructQuery(ForexCacheQuery cacheCacheQuery, bool onlyLastResult = true)
+    {
+        var builder = new StringBuilder();
+        AppendQueryBase(builder);
+        AppendTimeRange(cacheCacheQuery.TimeFrom, cacheCacheQuery.TimeTo, builder);
+        AppendMeasurementFilter(builder, cacheCacheQuery.Measurement);
+        AppendOrFilter2(builder, (("from", cacheCacheQuery.SymbolFrom), ("to", cacheCacheQuery.SymbolTo)));
+        if (onlyLastResult)
+            AppendQueryLastResult(builder);
+        AppendQueryEnd(builder);
+        return builder.ToString();
+    }
+    
+    public static string ConstructQuery(FutureCacheQuery cacheQuery, bool onlyLastResult = true)
+    {
+        var builder = new StringBuilder();
+        AppendQueryBase(builder);
+        AppendTimeRange(cacheQuery.TimeFrom, cacheQuery.TimeTo, builder);
+        AppendMeasurementFilter(builder, cacheQuery.Measurement);
+        AppendFilter(builder, "symbol", cacheQuery.Symbol);
+        if (onlyLastResult)
+            AppendQueryLastResult(builder);
+        AppendQueryEnd(builder);
+        return builder.ToString();
+    }
 
 
     private static void AppendQueryBase(StringBuilder builder)

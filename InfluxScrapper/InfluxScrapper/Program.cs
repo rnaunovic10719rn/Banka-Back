@@ -1,5 +1,9 @@
+using System.Reflection.Metadata;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using InfluxScrapper;
+using InfluxScrapper.Influx;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +19,12 @@ builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.DefaultIgnoreCondition =
         JsonIgnoreCondition.WhenWritingNull;
 });
+
 builder.Services.AddHttpClient();
+
+var influxManager = new InfluxManager(Constants.InfluxDBUrl, Constants.InfluxToken, Constants.InfluxOrg,
+    Constants.InfluxBucket);
+builder.Services.AddSingleton(influxManager);
 
 var app = builder.Build();
 
