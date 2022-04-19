@@ -18,7 +18,6 @@ public class FutureResult : InvfluxRecord<FutureResult>
     public string Date { get; set;}
     
     [Ignore]
-
     [Column(IsTimestamp = true)] 
     public DateTime Time
     {

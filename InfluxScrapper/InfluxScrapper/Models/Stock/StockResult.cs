@@ -17,6 +17,7 @@ public class StockResult : InvfluxRecord<StockResult>
     [Index(0)]
     public string Date { get; set;}
 
+    [Ignore]
     [Column(IsTimestamp = true)]
     public DateTime Time
     {
