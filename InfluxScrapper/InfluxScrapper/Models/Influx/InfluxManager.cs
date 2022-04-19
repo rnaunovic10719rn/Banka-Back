@@ -23,7 +23,7 @@ public class InfluxManager : IInfluxManager
     {
         using var client = InfluxDBClientFactory.Create(_url, _token);
         var queryApi = client.GetQueryApi();
-        var tables = await queryApi.QueryAsync(query, Constants.InfluxOrg, token);
+        var tables = await queryApi.QueryAsync(query, _org, token);
         return tables.SelectMany(table => table.Records.Select(T.FromRecord));
     }
     
