@@ -83,16 +83,6 @@ public class ForexPodaciService {
     }
 
     public List<ForexTimeseriesDto> getForexTimeseries(ForexTimeseriesUpdateRequest req) {
-        influxApiClient
-                .post()
-                .uri("/alphavantage/forex/updatewait/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
-
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
         DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
@@ -155,7 +145,7 @@ public class ForexPodaciService {
 
         return influxApiClient
                 .post()
-                .uri("/alphavantage/forex/read/")
+                .uri("/alphavantage/forex/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromObject(readReq))
