@@ -68,7 +68,7 @@ public class ForexResult : InvfluxRecord<ForexResult>
         forex.Open = double.Parse(record.Values["open"].ToString()!);
         forex.High = double.Parse(record.Values["high"].ToString()!);
         forex.Low = double.Parse(record.Values["low"].ToString()!);
-        forex.Date = record.GetTime().ToString()!;;
+        forex.Date = record.GetTime().ToString()!;
         forex.TimeWritten = long.Parse(record.Values["written"].ToString()!).ToDateTime();
         return forex;
     }
