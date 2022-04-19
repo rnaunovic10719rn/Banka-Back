@@ -27,13 +27,14 @@ public static class InfluxDBUtilites
         var builder = new StringBuilder();
         AppendQueryBase(builder);
         AppendTimeRange(cacheQuery.TimeFrom, cacheQuery.TimeTo, builder);
-        AppendMeasurementFilter(builder, cacheQuery.Measurement);
+        AppendMeasurementFilter(builder, cacheQuery.Measurement2);
         AppendOrFilter(builder, cacheQuery.Symbols.Select(s => ("ticker", s)).ToArray());
         if (onlyLastResult)
             AppendQueryLastResult(builder);
         AppendQueryEnd(builder);
         return builder.ToString();
     }
+    
 
     public static string ConstructQuery(ForexExchangeRateCacheQuery cacheCacheQuery, bool onlyLastResult = true)
     {

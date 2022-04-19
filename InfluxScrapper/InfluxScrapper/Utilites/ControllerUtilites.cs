@@ -4,7 +4,7 @@ using InfluxScrapper.Models.Stock;
 
 namespace InfluxScrapper.Utilites;
 
-public static class RetryUtilities
+public static class ControllerUtilites
 {
     private static readonly TimeSpan RetryWaitTime = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan ScheduleWaitTime = TimeSpan.FromMinutes(60);

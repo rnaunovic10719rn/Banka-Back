@@ -1,4 +1,4 @@
-using System.ComponentModel;
+/*using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using CsvHelper;
@@ -162,25 +162,25 @@ public class AlphaVantageForexScrapperController : Controller
     [Description("Updates database cache without wait")]
     [HttpPost("exchangerate/update")]
     public void UpdateForexExchangeRate([FromBody] ForexExchangeRateCacheQuery cacheCacheQuery)
-        => RetryUtilities.ScheduleUpdates(_logger, GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray());
+        => ControllerUtilites.ScheduleUpdates(_logger, GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray());
 
     [Description("Updates database cache and waits for completion")]
     [HttpPost("exchangerate/updatewait")]
     public async Task<bool> UpdateWaitForexExchangeRate([FromBody] ForexExchangeRateCacheQuery cacheCacheQuery, CancellationToken token) =>
-        (await RetryUtilities.UpdateWaitAll(_logger, token, GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray()))
+        (await ControllerUtilites.UpdateWaitAll(_logger, token, GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray()))
         .All(r => r);
 
     [Description("Updates database cache and waits once for completion")]
     [HttpPost("exchangerate/updatewaitonce")]
     public async Task<bool> UpdateWaitForexExchangeRateOnce([FromBody] ForexExchangeRateCacheQuery cacheCacheQuery, CancellationToken token) =>
-        (await RetryUtilities.UpdateWaitOnceOrScheduleUpdate(_logger, token,
+        (await ControllerUtilites.UpdateWaitOnceOrScheduleUpdate(_logger, token,
             GenerateUpdateForexExchangeRateTasks(cacheCacheQuery).ToArray()))
         .All(r => r);
 
     private IEnumerable<Func<CancellationToken, Task<bool>>> GenerateUpdateForexExchangeRateTasks(ForexExchangeRateCacheQuery cacheCacheQuery)
         => cacheCacheQuery.ToQuotes().Select(scrapeQuery => new Func<CancellationToken, Task<bool>>(
-            token => RetryUtilities.Update(_logger
-                , AlphaVantageScrapper.ScrapeForexExchangeRate(scrapeQuery, _httpClientFactory),
+            token => ControllerUtilites.Update(_logger
+                , HttpUtilities.ScrapeForexExchangeRate(scrapeQuery, _httpClientFactory),
                 r => r.ToPointData(cacheCacheQuery.Measurement), token)));
 
 
@@ -188,16 +188,16 @@ public class AlphaVantageForexScrapperController : Controller
     [HttpPost("exchangerate/scrape")]
     public Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRate([FromBody] ForexExchangeRateQuery cacheQuery,
         CancellationToken token) =>
-        RetryUtilities.Scrape(_logger,
-            () => AlphaVantageScrapper.ScrapeForexExchangeRate(cacheQuery, _httpClientFactory),
+        ControllerUtilites.Scrape(_logger,
+            () => HttpUtilities.ScrapeForexExchangeRate(cacheQuery, _httpClientFactory),
             token);
 
     [Description("Gets data directly from scrapping website and repeats untill sucssess or timeout")]
     [HttpPost("exchangerate/scrapewait")]
     public Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRateForexExchangeRate([FromBody] ForexExchangeRateQuery cacheQuery,
         CancellationToken token) =>
-        RetryUtilities.ScrapeRetry(_logger,
-            () => AlphaVantageScrapper.ScrapeForexExchangeRate(cacheQuery, _httpClientFactory),
+        ControllerUtilites.ScrapeRetry(_logger,
+            () => HttpUtilities.ScrapeForexExchangeRate(cacheQuery, _httpClientFactory),
             token);
 
 
@@ -205,7 +205,7 @@ public class AlphaVantageForexScrapperController : Controller
     [HttpPost("exchangerate/read")]
     public Task<IEnumerable<ForexExchangeRateResult>> ReadForexExchangeRate([FromBody] ForexExchangeRateCacheQuery query,
         CancellationToken token) =>
-        RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true), ForexExchangeRateResult.FromRecord,
+        ControllerUtilites.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true), ForexExchangeRateResult.FromRecord,
             token);
     
     [Description("Updates data, if fails schedule updating and reads cached data")]
@@ -214,9 +214,9 @@ public class AlphaVantageForexScrapperController : Controller
         CancellationToken token)
     {
         await UpdateWaitForexExchangeRateOnce(query, token);
-        return await RetryUtilities.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true),
+        return await ControllerUtilites.Query(_logger, InfluxDBUtilites.ConstructQuery(query, true),
             ForexExchangeRateResult.FromRecord,
             token);
     }
     
-}
+}*/

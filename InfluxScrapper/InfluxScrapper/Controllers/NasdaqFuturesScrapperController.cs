@@ -1,4 +1,4 @@
-using System.ComponentModel;
+/*using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -264,4 +264,4 @@ public class NasdaqFuturesScrapperController : Controller
             table.Records.Select(record => FutureResult.FromRecord(record)));
     }
 
-}
+}*/
