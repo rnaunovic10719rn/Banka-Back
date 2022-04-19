@@ -10,39 +10,6 @@ namespace InfluxScrapper.Utilites;
 
 public static class HttpUtilities
 {
-    public static async Task<IEnumerable<StockResult>?> ScrapeStock(StockScrapeQuery query, IHttpClientFactory httpFactory)
-    {
-        /*var results = await GetCSV<StockResult>(query.Url, httpFactory);
-        results?.ForEach(r => r.Ticker = query.Symbol);
-        return results;*/
-        return ArraySegment<StockResult>.Empty;
-    }
-    
-    public static async Task<IEnumerable<StockQuoteResult>?> ScrapeStockQuote(StockQuoteQuery query, IHttpClientFactory httpFactory)
-    {
-        /*var results = await GetCSV<StockQuoteResult>(query.Url, httpFactory);
-        results?.ForEach(r => r.Ticker = query.Symbol);
-        return results;*/
-        return  ArraySegment<StockQuoteResult>.Empty;
-    }
-    
-    public static async Task<IEnumerable<ForexExchangeRateResult>?> ScrapeForexExchangeRate(ForexExchangeRateQuery query, IHttpClientFactory httpFactory)
-    {
-        return ArraySegment<ForexExchangeRateResult>.Empty;
-        /*var resultJson = await GetJSON<ForexExchangeRateJson>(query.Url, httpFactory);
-
-        if (resultJson is null) 
-            return null;
-        var result = new ForexExchangeRateResult();
-        result.Ask = resultJson.Body.Ask;
-        result.Bid = resultJson.Body.Bid;
-        result.ExchangeRate = resultJson.Body.ExchangeRate;
-        result.FromCurrency = query.FromCurrency;
-        result.ToCurrency = query.ToCurrency;
-        return new []{result};*/
-    }
-    
-    
     public static async Task<List<T>?> GetCSV<T>(string url, IHttpClientFactory httpFactory, CancellationToken token)
     {
         var httpClient = httpFactory.CreateClient();
