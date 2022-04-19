@@ -21,6 +21,10 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
+    public List<Order> getOrders() {
+        return orderRepository.findAll();
+    }
+
     public Order saveOrder(Long userAccount, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
                            Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija,
                            OrderType orderType, boolean isAON, boolean isMargin){
