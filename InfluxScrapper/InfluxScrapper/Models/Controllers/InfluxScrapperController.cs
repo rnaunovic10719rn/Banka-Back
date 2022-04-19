@@ -115,12 +115,12 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         var cache = await ReadInternal(readQuery, true, token, eventId);
         if (cache is not null && cache.FirstOrDefault() is { } top)
         {
-            LogInformation(
+            LogInformation(eventId,
                 $"Top Result: {top}, time: {top.Time}, minTime {DateTime.Now.Subtract(_chacheValiditySpan)}, is cached: {topResult.Time >= DateTime.Now.Subtract(_chacheValiditySpan)}");
         }
         else
         {
-            LogInformation("cache empty");
+            LogInformation(eventId, "cache empty");
         }
         LogInformation(eventId, $"TopResult: ");
         if (cache is not null && cache.FirstOrDefault() is { } topResult
