@@ -51,23 +51,12 @@ public class FuturesUgovoriPodaciService {
     public FuturesPodaciDto getFuturesUgovor(String symbol) {
         final HashMap<String, String> params = new HashMap<>();
         params.put("symbol", symbol);
-
-        influxApiClient
-                .post()
-                .uri("/nasdaq/futures/updatewait")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(params))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<FuturesPodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
-
         params.put("timeFrom", "2022-04-05T13:34:51.966Z");
         params.put("timeTo", "2022-04-10T13:34:51.966Z");
 
         List<FuturesPodaciDto> res = influxApiClient
                 .post()
-                .uri("/nasdaq/futures/read")
+                .uri("/nasdaq/future/updateread")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromObject(params))
@@ -83,19 +72,6 @@ public class FuturesUgovoriPodaciService {
     }
 
     public List<FuturesTimeseriesDto> getFuturesTimeseries(String type, String symbol) {
-        HashMap<String, String> req = new HashMap<>();
-        req.put("symbol", symbol);
-
-        influxApiClient
-                .post()
-                .uri("/nasdaq/futures/updatewait/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
-
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
         DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
@@ -155,7 +131,7 @@ public class FuturesUgovoriPodaciService {
 
         return influxApiClient
                 .post()
-                .uri("/nasdaq/futures/read/")
+                .uri("/nasdaq/future/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromObject(readReq))

@@ -126,20 +126,13 @@ public class AkcijePodaciService {
     }
 
     public List<AkcijeTimeseriesDto> getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest req) {
-        influxApiClient
-                .post()
-                .uri("/alphavantage/stock/updatewait/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
-
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
         DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        // TODO: Ispraviti ovo.
+        // Ovo radimo zato sto AlphaVantage API baguje i nema uvek najsvezije podatke.
+        // Npr. desilo se da nemaju podatke za ceo jedan dan iako je taj dan berza vec zatvorena.
+        ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(2);
         String endDate = zonedDateTime.format(endFormatter);
 
         if(req.getType().equals("intraday") && req.getInterval().equals("5min")) {
@@ -153,6 +146,10 @@ public class AkcijePodaciService {
                         zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
                     }
                     break;
+                default:
+                    // Ovo radimo zato sto AlphaVantage API baguje i nema uvek najsvezije podatke.
+                    // Npr. desilo se da nemaju podatke za ceo jedan dan iako je taj dan berza vec zatvorena.
+                    zonedDateTime = zonedDateTime.minusDays(2);
             }
         } else if(req.getType().equals("intraday") && req.getInterval().equals("30min")) {
             switch (zonedDateTime.getDayOfWeek()) {
@@ -197,7 +194,7 @@ public class AkcijePodaciService {
 
         return influxApiClient
                 .post()
-                .uri("/alphavantage/stock/read/")
+                .uri("/alphavantage/stock/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromObject(readReq))
