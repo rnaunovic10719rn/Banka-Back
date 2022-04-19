@@ -12,7 +12,9 @@ import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.*;
 import rs.edu.raf.banka.berza.model.Forex;
+import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.ForexRepository;
+import rs.edu.raf.banka.berza.repository.ValutaRepository;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -29,6 +31,7 @@ public class ForexPodaciService {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
     private ForexRepository forexRepository;
+    private ValutaRepository valutaRepository;
 
     private final WebClient influxApiClient;
     private final Config alphavantageApiClient;
@@ -36,10 +39,11 @@ public class ForexPodaciService {
     private final List<String> odabaraniParovi = Arrays.asList("EUR/USD", "EUR/RSD", "USD/RSD");
 
     @Autowired
-    public ForexPodaciService(ForexRepository forexRepository,
+    public ForexPodaciService(ForexRepository forexRepository, ValutaRepository valutaRepository,
                               WebClient influxApiClient,
                               Config alphavantageApiClient){
         this.forexRepository = forexRepository;
+        this.valutaRepository = valutaRepository;
         this.influxApiClient = influxApiClient;
         this.alphavantageApiClient = alphavantageApiClient;
     }
@@ -57,6 +61,18 @@ public class ForexPodaciService {
     }
 
     public ForexPodaciDto getForexBySymbol(String symbolFrom, String symbolTo) {
+        Valuta valuta1 = valutaRepository.findByOznakaValute(symbolFrom);
+        Valuta valuta2 = valutaRepository.findByOznakaValute(symbolTo);
+        Forex forex = null;
+        if(valuta1 != null && valuta2 != null)
+            forex = forexRepository.findForexByBaseCurrencyAndQuoteCurrency(valuta1, valuta2);
+        if(forex == null){
+            forex = new Forex();
+            forex.setBaseCurrency(valuta1);
+            forex.setQuoteCurrency(valuta2);
+            forexRepository.save(forex);
+        }
+
         List<ForexExchangeRequest> reqs = new ArrayList<>();
         ForexExchangeRequest fer = new ForexExchangeRequest();
         fer.setSymbolFrom(symbolFrom);
@@ -79,6 +95,8 @@ public class ForexPodaciService {
             return null;
         }
 
+        ForexPodaciDto forexPodaciDto = dtoList.get(0);
+        forexPodaciDto.setId(forex.getId());
         return dtoList.get(0);
     }
 

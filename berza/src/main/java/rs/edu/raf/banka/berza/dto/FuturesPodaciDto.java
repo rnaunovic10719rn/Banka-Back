@@ -20,5 +20,6 @@ public class FuturesPodaciDto {
     private Integer previousDouble;
     private Integer volume;
     private Integer previous;
+    private Long id;
 
 }

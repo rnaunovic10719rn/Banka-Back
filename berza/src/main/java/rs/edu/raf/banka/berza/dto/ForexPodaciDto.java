@@ -15,5 +15,6 @@ public class ForexPodaciDto {
     Double exchangeRate;
     Double bid;
     Double ask;
+    Long id;
 
 }
