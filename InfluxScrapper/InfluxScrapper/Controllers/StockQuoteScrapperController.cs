@@ -1,5 +1,6 @@
 using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Controllers;
+using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;
 using InfluxScrapper.Utilites;
 using Microsoft.AspNetCore.Mvc;
@@ -7,12 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace InfluxScrapper.Controllers;
 
 [ApiController]
-[Route("alphavantage/stock/quote2")]
+[Route("alphavantage/stock/quote")]
 public class StockQuoteScrapperController : ScrapperController<StockQuoteCacheQuery, StockQuoteQuery, StockQuoteCacheQuery,
     StockQuoteResult>
 {
     public StockQuoteScrapperController(IHttpClientFactory httpClientFactory,
-        ILogger<ScrapperController<StockQuoteCacheQuery, StockQuoteQuery, StockQuoteCacheQuery, StockQuoteResult>>
+        ILogger<StockQuoteScrapperController>
             logger, InfluxManager influxManager) : base(httpClientFactory, logger, influxManager)
     {
     }

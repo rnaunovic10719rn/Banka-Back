@@ -1,6 +1,10 @@
+using System.Text;
+using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Utilites;
+
 namespace InfluxScrapper.Models.Stock;
 
-public class StockCacheQuery : StockQuery
+public class StockCacheQuery : StockQuery, InfluxCacheQuery<StockCacheQuery> 
 {
     public StockCacheQuery()
     {
@@ -11,9 +15,11 @@ public class StockCacheQuery : StockQuery
         Type = query.Type;
         Symbol = query.Symbol;
         Interval = query.Interval;
-        
+        TimeFrom = timeFrom;
+        TimeTo = timeTo;
     }
-    public DateTime? TimeFrom { get; set; }
-    public DateTime? TimeTo { get; set; }
-    
+    public DateTime? TimeFrom { get; init; }
+    public DateTime? TimeTo { get; init; }
+
+    public string ToQuery(bool singleFile = false) => InfluxDBUtilites.ConstructQuery(this, singleFile);
 }

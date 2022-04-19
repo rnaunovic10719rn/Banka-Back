@@ -2,8 +2,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Models.Stock;
+using InfluxScrapper.Utilites;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Quote;
 
 public class StockQuoteCacheQuery : InfluxCacheQuery<StockQuoteCacheQuery>
 {
@@ -14,15 +16,8 @@ public class StockQuoteCacheQuery : InfluxCacheQuery<StockQuoteCacheQuery>
     public DateTime? TimeFrom { get; init; } = null;
     public DateTime? TimeTo { get; init; } = null;
     public string Measurement  => "stock_quote";
-    public string BuildFilter(StringBuilder builder)
-    {
-        throw new NotImplementedException();
-    }
 
-    public string ToQuery(bool singleFile = false)
-    {
-        throw new NotImplementedException();
-    }
+    public string ToQuery(bool singleFile = false) => InfluxDBUtilites.ConstructQuery(this, singleFile);
 
     public string Measurement2 => "stock_quote";
 

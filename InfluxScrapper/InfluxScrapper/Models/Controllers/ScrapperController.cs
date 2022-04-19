@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace InfluxScrapper.Models.Controllers;
 
 public abstract class ScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>
-    where TResult : InvfluxRecord<TResult> where TReadQuery : InfluxCacheQuery<TUpdateQuery> 
+    where TResult : InvfluxRecord<TResult> where TReadQuery : InfluxCacheQuery<TReadQuery> 
     where TUpdateQuery : IInfluxMeasurementHolder
 {
     internal readonly IHttpClientFactory _httpClientFactory;

@@ -2,6 +2,7 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using InfluxScrapper.Models.Forex;
+using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;
 
 namespace InfluxScrapper.Utilites;

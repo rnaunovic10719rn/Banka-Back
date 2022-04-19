@@ -5,7 +5,7 @@ using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Quote;
 
 public class StockQuoteResult : InvfluxRecord<StockQuoteResult>
 {

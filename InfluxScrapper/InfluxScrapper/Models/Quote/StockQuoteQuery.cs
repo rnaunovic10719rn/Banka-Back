@@ -1,9 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using NodaTime;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Quote;
 
 public class StockQuoteQuery
 {
