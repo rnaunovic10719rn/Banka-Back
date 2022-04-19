@@ -4,6 +4,7 @@ using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Utilites;
 
 namespace InfluxScrapper.Models.Exchange;
 
@@ -40,6 +41,7 @@ public class ForexExchangeRateResult : InvfluxRecord<ForexExchangeRateResult>
             .Field("exchangeRate", item.ExchangeRate)
             .Field("bid", item.Bid)
             .Field("ask", item.Ask)
+            .Field("written", item.TimeWritten.ToUnixTimestamp())
             .Timestamp(item.Time, WritePrecision.S);
 
 
@@ -53,6 +55,7 @@ public class ForexExchangeRateResult : InvfluxRecord<ForexExchangeRateResult>
         stock.Ask = double.Parse(record.Values["ask"].ToString());
         if(record.GetTime() is not null)
             stock.Time = record.GetTime()!.Value.ToDateTimeUtc();
+        stock.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
         return stock;
     }
 }

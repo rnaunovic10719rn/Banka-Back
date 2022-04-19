@@ -4,6 +4,7 @@ using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Utilites;
 
 namespace InfluxScrapper.Models.Forex;
 
@@ -56,6 +57,7 @@ public class ForexResult : InvfluxRecord<ForexResult>
             .Field("close", item.Close)
             .Field("low", item.Low)
             .Field("high", item.High)
+            .Field("written", item.TimeWritten.ToUnixTimestamp())
             .Timestamp(item.Time, WritePrecision.Ns);
 
     public static ForexResult FromRecord(FluxRecord record)
@@ -68,6 +70,7 @@ public class ForexResult : InvfluxRecord<ForexResult>
         forex.High = double.Parse(record.Values["high"].ToString());
         forex.Low = double.Parse(record.Values["low"].ToString());
         forex.Date = record.GetTime().ToString();;
+        forex.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
         return forex;
     }
 

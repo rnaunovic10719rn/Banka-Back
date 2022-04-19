@@ -4,6 +4,7 @@ using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
+using InfluxScrapper.Utilites;
 
 namespace InfluxScrapper.Models.Stock;
 
@@ -67,6 +68,7 @@ public class FutureResult : InvfluxRecord<FutureResult>
             .Field("settle", item.Settle)
             .Field("volume", item.Volume)
             .Field("previous", item.Previous)
+            .Field("written", item.TimeWritten.ToUnixTimestamp())
             .Timestamp(item.Time, WritePrecision.Ns);
 
     public static FutureResult FromRecord(FluxRecord record)
@@ -80,6 +82,7 @@ public class FutureResult : InvfluxRecord<FutureResult>
         future.VolumeDouble = long.Parse(record.Values["volume"].ToString());
         future.PreviousDouble = long.Parse(record.Values["previous"].ToString());
         future.Date = record.GetTime().ToString();
+        future.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
         return future;
     }
 
