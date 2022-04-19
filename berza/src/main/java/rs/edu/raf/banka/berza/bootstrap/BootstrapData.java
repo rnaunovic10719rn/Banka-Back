@@ -76,7 +76,7 @@ public class BootstrapData implements CommandLineRunner {
 
         //Dodavanje informacija o berzi
         List<Berza> berze = new ArrayList<>();
-        fileName = "resources/berze.csv";
+        fileName = "berze.csv";
 
         List<BerzaCSV> berzeCSV = new CsvToBeanBuilder(new FileReader(fileName))
                 .withType(BerzaCSV.class)
