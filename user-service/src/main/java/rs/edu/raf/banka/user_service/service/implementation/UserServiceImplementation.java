@@ -133,7 +133,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             String username = decodedToken.getSubject();
             var user = userRepository.findByUsername(username);
 
-            if (user == null || user.isPresent() || !(user.get().isAktivan())) {
+            if (user == null || !user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
                 throw new UsernameNotFoundException("User not found in database");
             }
@@ -261,7 +261,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Matcher matcher = pattern.matcher(password);
         if(!matcher.matches()) return false;
 
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
         user.setPassword(hash_pw);
         userRepository.save(user);
         return true;

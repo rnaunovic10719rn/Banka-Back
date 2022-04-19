@@ -5,8 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
+import rs.edu.raf.banka.user_service.repository.RoleRepository;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
@@ -15,7 +17,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
