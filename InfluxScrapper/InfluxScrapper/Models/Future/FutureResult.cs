@@ -3,23 +3,28 @@ using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
+using InfluxScrapper.Models.Influx;
 
 namespace InfluxScrapper.Models.Stock;
 
 
-public class FutureResult
+public class FutureResult : InvfluxRecord<FutureResult>
 {
     [Ignore]
     [Column("symbol", IsTag = true)]
     public string? Symbol { get; set; }
     
     [Index(0)]
-    public string Time { get; set;}
+    public string Date { get; set;}
     
     [Ignore]
 
     [Column(IsTimestamp = true)] 
-    public DateTime Date => DateTime.SpecifyKind(DateTime.Parse(Time), DateTimeKind.Utc);
+    public DateTime Time
+    {
+        get => DateTime.SpecifyKind(DateTime.Parse(Date), DateTimeKind.Utc);
+        set => Date = DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString("o");
+    }
     
     [Index(1)]
     [Column("open")]
@@ -51,16 +56,16 @@ public class FutureResult
     [Ignore] 
     public long Previous => (long)VolumeDouble;
     
-    public PointData ToPointData(string measurement)
+    public static PointData ToPointData(FutureResult item, string measurement)
         => PointData.Measurement(measurement)
-            .Tag("symbol", Symbol)
-            .Field("open", Open)
-            .Field("low", Low)
-            .Field("high", High)
-            .Field("settle", Settle)
-            .Field("volume", Volume)
-            .Field("previous", Previous)
-            .Timestamp(Date, WritePrecision.Ns);
+            .Tag("symbol", item.Symbol)
+            .Field("open", item.Open)
+            .Field("low", item.Low)
+            .Field("high", item.High)
+            .Field("settle", item.Settle)
+            .Field("volume", item.Volume)
+            .Field("previous", item.Previous)
+            .Timestamp(item.Time, WritePrecision.Ns);
 
     public static FutureResult FromRecord(FluxRecord record)
     {
@@ -72,7 +77,7 @@ public class FutureResult
         future.Low = double.Parse(record.Values["low"].ToString());
         future.VolumeDouble = long.Parse(record.Values["volume"].ToString());
         future.PreviousDouble = long.Parse(record.Values["previous"].ToString());
-        future.Time = record.GetTime().ToString();
+        future.Date = record.GetTime().ToString();
         return future;
     }
 

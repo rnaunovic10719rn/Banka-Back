@@ -19,8 +19,6 @@ public class StockQuoteCacheQuery : InfluxCacheQuery<StockQuoteCacheQuery>
 
     public string ToQuery(bool singleFile = false) => InfluxDBUtilites.ConstructQuery(this, singleFile);
 
-    public string Measurement2 => "stock_quote";
-
     public IEnumerable<StockQuoteQuery> ToQuotes() => Symbols.Select(s => new StockQuoteQuery() {Symbol = s});
 
 }

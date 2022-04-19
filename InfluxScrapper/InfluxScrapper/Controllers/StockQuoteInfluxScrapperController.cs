@@ -9,11 +9,11 @@ namespace InfluxScrapper.Controllers;
 
 [ApiController]
 [Route("alphavantage/stock/quote")]
-public class StockQuoteScrapperController : ScrapperController<StockQuoteCacheQuery, StockQuoteQuery, StockQuoteCacheQuery,
+public class StockQuoteInfluxScrapperController : InfluxScrapperController<StockQuoteCacheQuery, StockQuoteQuery, StockQuoteCacheQuery,
     StockQuoteResult>
 {
-    public StockQuoteScrapperController(IHttpClientFactory httpClientFactory,
-        ILogger<StockQuoteScrapperController>
+    public StockQuoteInfluxScrapperController(IHttpClientFactory httpClientFactory,
+        ILogger<StockQuoteInfluxScrapperController>
             logger, InfluxManager influxManager) : base(httpClientFactory, logger, influxManager)
     {
     }

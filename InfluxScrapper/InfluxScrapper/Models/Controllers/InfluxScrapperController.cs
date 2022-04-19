@@ -5,19 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InfluxScrapper.Models.Controllers;
 
-public abstract class ScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>
+public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>
     where TResult : InvfluxRecord<TResult> where TReadQuery : InfluxCacheQuery<TReadQuery> 
     where TUpdateQuery : IInfluxMeasurementHolder
 {
     internal readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> _logger;
+    private readonly ILogger<InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> _logger;
     private readonly InfluxManager _influxManager;
     private static readonly TimeSpan _scrapeWaitTimeout = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan _scrapeDelayTime = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan _chacheValiditySpan = TimeSpan.FromMinutes(15);
 
-    public ScrapperController(IHttpClientFactory httpClientFactory,
-        ILogger<ScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> logger,
+    public InfluxScrapperController(IHttpClientFactory httpClientFactory,
+        ILogger<InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> logger,
         InfluxManager influxManager)
     {
         _httpClientFactory = httpClientFactory;

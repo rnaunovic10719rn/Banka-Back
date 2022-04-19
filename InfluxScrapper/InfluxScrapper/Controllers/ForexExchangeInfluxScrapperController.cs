@@ -12,12 +12,12 @@ namespace InfluxScrapper.Controllers;
 
 [ApiController]
 [Route("alphavantage/forex/exchangerate")]
-public class ForexExchangeScrapperController : ScrapperController<ForexExchangeRateCacheQuery, ForexExchangeRateQuery,
+public class ForexExchangeInfluxScrapperController : InfluxScrapperController<ForexExchangeRateCacheQuery, ForexExchangeRateQuery,
     ForexExchangeRateCacheQuery,
     ForexExchangeRateResult>
 {
-    public ForexExchangeScrapperController(IHttpClientFactory httpClientFactory,
-        ILogger<ForexExchangeScrapperController>
+    public ForexExchangeInfluxScrapperController(IHttpClientFactory httpClientFactory,
+        ILogger<ForexExchangeInfluxScrapperController>
             logger, InfluxManager influxManager) : base(httpClientFactory, logger, influxManager)
     {
     }

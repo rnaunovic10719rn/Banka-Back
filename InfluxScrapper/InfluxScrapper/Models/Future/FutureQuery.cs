@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using InfluxScrapper.Models.Influx;
 
 namespace InfluxScrapper.Models.Future;
 
-public class FutureQuery
+public class FutureQuery : IInfluxMeasurementHolder
 {
     
     
@@ -14,5 +15,6 @@ public class FutureQuery
     public string Symbol { get; set; }
 
     public string Url => $"https://data.nasdaq.com/api/v3/datasets/EUREX/FVSJ2022.csv?api_key={Constants.NasdaqApiKey}";
-    
+
+    public string Measurement => "futures";
 }
