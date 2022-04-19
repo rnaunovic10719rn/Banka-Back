@@ -20,8 +20,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private UserAccount userAccount;
+//    @ManyToOne
+//    private UserAccount userAccount;
+    private Long userId;
 
     private Long hartijaOdVrednostiId;
 

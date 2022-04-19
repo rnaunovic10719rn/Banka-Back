@@ -20,6 +20,8 @@ public class AkcijePodaciDto {
     Double change;
     Double changePercent;
     Long outstandingShares;
+    Long berzaId;
+    Long id;
 
     // Calculated
     Double priceVolume;
