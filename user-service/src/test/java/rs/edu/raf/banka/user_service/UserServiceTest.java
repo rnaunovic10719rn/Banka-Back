@@ -5,9 +5,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
+import rs.edu.raf.banka.user_service.mail.PasswordResetToken;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
+import rs.edu.raf.banka.user_service.repository.PasswordTokenRepository;
 import rs.edu.raf.banka.user_service.repository.RoleRepository;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
@@ -17,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -29,6 +35,9 @@ public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordTokenRepository passwordTokenRepository;
 
     @Test
     void testGetUser() {
@@ -96,6 +105,60 @@ public class UserServiceTest {
         given(userRepository.findByEmail("user@mock")).willReturn(Optional.of(user));
 
         assertEquals(user, userService.getUserByEmail("user@mock"));
+    }
+
+    @Test
+    void testChangePassword(){
+        User user = new User("UserX","X");
+        user.setEmail("user@mock");
+
+        userService.changePassword("mockPass123",user);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
+    }
+
+    @Test
+    void testInvalidPasswordChangePassword(){
+        User user = new User("UserX","X");
+        user.setEmail("user@mock");
+
+        userService.changePassword("mockPass",user);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        assertEquals(passwordEncoder.matches("mockPass", user.getPassword()), false);
+    }
+
+    @Test
+    void testSetNewPassword(){
+        String token = "token";
+        User user = new User("UserX","X");
+        user.setEmail("user@mock");
+
+        PasswordResetToken passwordResetToken = new PasswordResetToken();
+        passwordResetToken.setUser(user);
+
+        given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
+
+        userService.setNewPassword("mockPass123","token");
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
+    }
+
+    @Test
+    void testSetNewInvalidPassword(){
+        String token = "token";
+        User user = new User("UserX","X");
+        user.setEmail("user@mock");
+
+        PasswordResetToken passwordResetToken = new PasswordResetToken();
+        passwordResetToken.setUser(user);
+
+        given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
+
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass","token"));
+        assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());
     }
 
 

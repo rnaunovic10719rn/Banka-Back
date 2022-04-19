@@ -302,7 +302,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
 
         User user = prt.getUser();
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
         user.setPassword(hash_pw);
 
         this.userRepository.save(user);
