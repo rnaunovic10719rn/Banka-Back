@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
+import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
+import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 
 import java.time.DayOfWeek;
@@ -49,6 +51,13 @@ public class FuturesUgovoriPodaciService {
     }
 
     public FuturesPodaciDto getFuturesUgovor(String symbol) {
+        FuturesUgovori future = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
+        if(future == null){
+            future = new FuturesUgovori();
+            future.setOznakaHartije(symbol);
+            futuresUgovoriRepository.save(future);
+        }
+
         final HashMap<String, String> params = new HashMap<>();
         params.put("symbol", symbol);
 
@@ -76,7 +85,9 @@ public class FuturesUgovoriPodaciService {
                 .block(REQUEST_TIMEOUT);
 
         if(res != null && res.size() > 0) {
-            return res.get(res.size()-1);
+            FuturesPodaciDto futuresPodaciDto = res.get(res.size()-1);
+            futuresPodaciDto.setId(future.getId());
+            return futuresPodaciDto;
         }
 
         return null;

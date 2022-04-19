@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
+import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
+import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
 import rs.edu.raf.banka.berza.enums.OrderType;
@@ -97,19 +99,22 @@ public class BerzaService {
             }
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FUTURES_UGOVOR)){
-            FuturesUgovori futuresUgovori = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
+            FuturesPodaciDto futuresUgovori = futuresUgovoriPodaciService.getFuturesUgovor(symbol);
+//            FuturesUgovori futuresUgovori = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
             if(futuresUgovori != null) {
                 hartijaId = futuresUgovori.getId();
-                berzaId = futuresUgovori.getBerza().getId();
-                ask = futuresUgovori.getAsk();
-                bid = futuresUgovori.getBid();
+//                berzaId = futuresUgovori.getBerza().getId();
+                ask = futuresUgovori.getHigh();
+                bid = futuresUgovori.getHigh();
             }
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)){
-            Forex forex = forexRepository.findForexByOznakaHartije(symbol);
+            String split[] = symbol.split(" ");
+            ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[0], split[1]);
+//            Forex forex = forexRepository.findForexByOznakaHartije(symbol);
             if(forex != null) {
                 hartijaId = forex.getId();
-                berzaId = forex.getBerza().getId();
+//                berzaId = forex.getBerza().getId();
                 ask = forex.getAsk();
                 bid = forex.getBid();
             }
@@ -147,7 +152,8 @@ public class BerzaService {
                 transakcija = transactionOrder(order.getKolicina(), order, ask, bid);
             else
                 transakcija = transactionOrderWithDelay(order.getKolicina(), order, ask, bid);
-            this.addOrderToBerza(order, berzaId);
+            if(berzaId != -1)
+                this.addOrderToBerza(order, berzaId);
             return new MakeOrderResponse("OK");
         }
 
