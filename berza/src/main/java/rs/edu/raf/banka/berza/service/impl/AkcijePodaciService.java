@@ -149,7 +149,7 @@ public class AkcijePodaciService {
                 default:
                     // Ovo radimo zato sto AlphaVantage API baguje i nema uvek najsvezije podatke.
                     // Npr. desilo se da nemaju podatke za ceo jedan dan iako je taj dan berza vec zatvorena.
-                    zonedDateTime = zonedDateTime.minusDays(2);
+                    zonedDateTime = ZonedDateTime.now().minusDays(2);
             }
         } else if(req.getType().equals("intraday") && req.getInterval().equals("30min")) {
             switch (zonedDateTime.getDayOfWeek()) {
