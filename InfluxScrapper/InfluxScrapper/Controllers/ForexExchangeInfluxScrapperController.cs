@@ -26,7 +26,7 @@ public class ForexExchangeInfluxScrapperController : InfluxScrapperController<Fo
         ForexExchangeRateCacheQuery updateQuery)
         => updateQuery.ToQuotes();
 
-    internal override ForexExchangeRateCacheQuery ConvertToUpdateQueryInternal(ForexExchangeRateCacheQuery readQuery)
+    internal override ForexExchangeRateCacheQuery ConvertToUpdateQueryInternal(ForexExchangeRateCacheQuery readQuery, DateTime? lastFound)
         => readQuery;
 
     internal override async Task<IEnumerable<ForexExchangeRateResult>> ScrapeInternal(

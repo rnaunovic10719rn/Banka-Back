@@ -27,7 +27,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
 
 
     internal abstract IEnumerable<TScrapeQuery> ConvertToScrapeQueriesInternal(TUpdateQuery updateQuery);
-    internal abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery);
+    internal abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery, DateTime? lastFound);
     internal abstract Task<IEnumerable<TResult>> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token);
 
     private string ControllerName => GetType().Name;
@@ -122,13 +122,18 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         {
             LogInformation(eventId, "cache empty");
         }
+        
         LogInformation(eventId, $"TopResult: ");
-        if (cache is not null && cache.FirstOrDefault() is { } topResult
-                              && topResult.TimeWritten >= DateTime.Now.Subtract(_chacheValiditySpan) &&
-                              await ReadInternal(readQuery, false, token, eventId) is { } result)
-            return result;
-
-        var updateQuery = ConvertToUpdateQueryInternal(readQuery);
+        DateTime? lastFound = null;
+        if (cache is not null && cache.FirstOrDefault() is { } topResult)
+        {
+            if(topResult.TimeWritten >= DateTime.Now.Subtract(_chacheValiditySpan) &&
+               await ReadInternal(readQuery, false, token, eventId) is { } result)
+                return result;
+            lastFound = topResult.TimeWritten;
+        }
+                              
+        var updateQuery = ConvertToUpdateQueryInternal(readQuery, lastFound);
         await UpdateWaitAllInternal(updateQuery, token, eventId);
         return await ReadInternal(readQuery, false, token, eventId) ?? Enumerable.Empty<TResult>();
     }

@@ -22,12 +22,13 @@ public class StockInfluxScrapperController : InfluxScrapperController<StockUpdat
     internal override IEnumerable<StockScrapeQuery> ConvertToScrapeQueriesInternal(StockUpdateQuery updateQuery) 
         => updateQuery.ToScrapeQueries();
 
-    internal override StockUpdateQuery ConvertToUpdateQueryInternal(StockCacheQuery readQuery)
+    internal override StockUpdateQuery ConvertToUpdateQueryInternal(StockCacheQuery readQuery, DateTime? lastFound)
     {
         int? months = null;
-        if (readQuery?.TimeFrom is not null)
+        if (readQuery?.TimeFrom is not null || lastFound is not null)
         {
-            var period = Period.Between(readQuery.TimeFrom.Value.ToLocalDateTime(), DateTime.Now.ToLocalDateTime());
+            var start = lastFound ?? readQuery?.TimeFrom;
+            var period = Period.Between(start!.Value.ToLocalDateTime(), DateTime.Now.ToLocalDateTime());
             if (period.Years < 2)
             {
                 months = period.Years * 12 + period.Months + (period.Days != 0 ? 1 : 0);

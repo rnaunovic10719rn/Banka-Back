@@ -23,7 +23,7 @@ public class FutureInfluxScrapperController : InfluxScrapperController<FutureCac
     internal override IEnumerable<FutureQuery> ConvertToScrapeQueriesInternal(FutureCacheQuery updateQuery)
         => new []{ updateQuery };
 
-    internal override FutureCacheQuery ConvertToUpdateQueryInternal(FutureCacheQuery readQuery)
+    internal override FutureCacheQuery ConvertToUpdateQueryInternal(FutureCacheQuery readQuery, DateTime? lastFound)
         => readQuery;
 
     internal override async Task<IEnumerable<FutureResult>> ScrapeInternal(FutureQuery scrapeQuery,

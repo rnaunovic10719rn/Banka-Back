@@ -21,7 +21,7 @@ public class StockQuoteInfluxScrapperController : InfluxScrapperController<Stock
     internal override IEnumerable<StockQuoteQuery> ConvertToScrapeQueriesInternal(StockQuoteCacheQuery updateQuery) 
         => updateQuery.ToQuotes();
 
-    internal override StockQuoteCacheQuery ConvertToUpdateQueryInternal(StockQuoteCacheQuery readQuery) => readQuery;
+    internal override StockQuoteCacheQuery ConvertToUpdateQueryInternal(StockQuoteCacheQuery readQuery, DateTime? lastFound) => readQuery;
 
     internal override async Task<IEnumerable<StockQuoteResult>> ScrapeInternal(StockQuoteQuery scrapeQuery,
         CancellationToken token)
