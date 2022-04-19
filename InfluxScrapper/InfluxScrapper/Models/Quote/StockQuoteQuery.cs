@@ -9,7 +9,7 @@ public class StockQuoteQuery
     [Required]
     [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue("aapl")]
-    public string Symbol { get; set; }
+    public string Symbol { get; set; } = "";
 
     public string Measurement => "stock_quote";
     
