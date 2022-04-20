@@ -135,7 +135,7 @@ public class BerzaService {
         return new MakeOrderResponse("Order Successful");
     }
 
-    private MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
+    public MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
         boolean flag = true;
         if(berzaId != -1){
             OrderStatusResponse orderStatus = this.getOrderStatus(berzaId);
@@ -147,7 +147,8 @@ public class BerzaService {
                 transakcija = transactionOrder(order.getKolicina(), order, ask, bid);
             else
                 transakcija = transactionOrderWithDelay(order.getKolicina(), order, ask, bid);
-            this.addOrderToBerza(order, berzaId);
+            if (berzaId != -1)
+                this.addOrderToBerza(order, berzaId);
             return new MakeOrderResponse("OK");
         }
 
@@ -158,7 +159,7 @@ public class BerzaService {
      * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
      * s obzirom na to, bice obradjen nakon nastavka specifikacije
      */
-    private MakeOrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
+    public MakeOrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
         Random random = new Random();
         int kolicina = order.getKolicina();
         int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
@@ -207,7 +208,7 @@ public class BerzaService {
     /**
      * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
      */
-    private Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
+    public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
         try {
             //3s simulaciju 30 minuta
             Thread.sleep(3000);
@@ -217,7 +218,7 @@ public class BerzaService {
         return transactionOrder(transactionAmount, order, ask, bid);
     }
 
-    private boolean canExecuteTransactionBuy(Order order, Double bid){
+    public boolean canExecuteTransactionBuy(Order order, Double bid){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
                 if(order.getUkupnaCena() <= order.getLimitValue())
@@ -239,7 +240,7 @@ public class BerzaService {
         return false;
     }
 
-    private boolean canExecuteTransactionSell(Order order, Double ask){
+    public boolean canExecuteTransactionSell(Order order, Double ask){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
                 if(order.getUkupnaCena() > order.getLimitValue())
@@ -260,7 +261,7 @@ public class BerzaService {
         return false;
     }
 
-    private Double getPrice(Double ask, Double bid, OrderAction orderAction){
+    public Double getPrice(Double ask, Double bid, OrderAction orderAction){
         List<Double> cene;
         Random random = new Random();
 
@@ -281,7 +282,7 @@ public class BerzaService {
         return toReturn;
     }
 
-    private Double getCommission(Double price, OrderType orderType) {
+    public Double getCommission(Double price, OrderType orderType) {
         if(orderType.equals(OrderType.MARKET_ORDER))
             return Math.min(0.14 * price, 7);
         return Math.min(0.24 * price, 12);
@@ -312,7 +313,7 @@ public class BerzaService {
         return start.before(timeToCheck) && end.after(timeToCheck);
     }
 
-    private boolean differenceInHours(Date closingTime, Date timeToCheck){
+    public boolean differenceInHours(Date closingTime, Date timeToCheck){
         long differenceInMilliSeconds = timeToCheck.getTime() - closingTime.getTime();
         return (differenceInMilliSeconds / (60 * 60 * 1000)) % 24 <= 4;
     }
