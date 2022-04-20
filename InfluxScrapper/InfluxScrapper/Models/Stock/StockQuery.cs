@@ -8,11 +8,11 @@ public abstract class StockQuery : IInfluxMeasurementHolder
 {
     [Required]
     public StockType Type { get; set; }
-    
+
     [Required]
     [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue("aapl")]
-    public string Symbol { get; set; }
+    public string Symbol { get; set; } = "";
     
     [RegularExpression("^(1|5|15|30|60)min$")]
     [DefaultValue("60min")]

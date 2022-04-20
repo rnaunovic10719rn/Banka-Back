@@ -35,7 +35,7 @@ public class ForexExchangeInfluxScrapperController : InfluxScrapperController<Fo
     {
         var resultJson = await HttpUtilities.GetJSON<ForexExchangeRateJson>(scrapeQuery.Url, _httpClientFactory, token);
         if (resultJson is null)
-            return null;
+            throw new NullReferenceException("HTTP failed");
         var result = new ForexExchangeRateResult();
         result.Ask = resultJson.Body.Ask;
         result.Bid = resultJson.Body.Bid;

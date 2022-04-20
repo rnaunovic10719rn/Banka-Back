@@ -40,7 +40,10 @@ public class UserController {
     public ResponseEntity<User>getUser(@RequestHeader("Authorization") String token) {
         try {
             User user = userService.getUserByToken(token);
-            return ResponseEntity.ok().body(user);
+            if (user!=null)
+                return ResponseEntity.ok().body(user);
+            else
+                return ResponseEntity.notFound().build();
         } catch (AuthenticationException e) {
             return ResponseEntity.notFound().build();
         }
@@ -149,7 +152,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         if(!OTPUtilities.isValidSeecret(secret))
             return ResponseEntity.badRequest().build();
-        user.setOtpSeecret(secret);
+        userService.editOtpSeecret(user, secret);
         return ResponseEntity.ok().build();
     }
 
@@ -162,7 +165,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         if(user.isRequiresOtp())
             return ResponseEntity.badRequest().build();
-        user.setOtpSeecret(null);
+        userService.editOtpSeecret(user, null);
         return ResponseEntity.ok().build();
     }
 

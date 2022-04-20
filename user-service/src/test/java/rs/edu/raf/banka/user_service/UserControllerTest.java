@@ -129,6 +129,57 @@ public class UserControllerTest {
     }
 
     @Test
+    void testInvalidDeleteAPI() throws Exception{
+        given(userServiceImplementation.getUserById(2L)).willReturn(null);
+
+        when(userServiceImplementation.deleteUser(any())).thenReturn(true);
+
+        mockMvc.perform(delete("/api/user/delete/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+
+
+
+    @Test
+    void testGetUser() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.getUserByToken(anyString())).thenReturn(user);
+
+        mockMvc.perform(get("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidGetUser() throws Exception{
+        when(userServiceImplementation.getUserByToken(anyString())).thenReturn(null);
+
+        mockMvc.perform(get("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testInvalidAuthGetUser() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.getUserByToken(anyString())).thenReturn(user);
+
+        mockMvc.perform(get("/api/user", 2L)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+
+
+    @Test
     void testEditUserFromToken() throws Exception{
         User user = new User(dummyName, "Test");
         user.setId(2L);
@@ -141,6 +192,21 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(userMockForm)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testEditUserFromTokenInvalid() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.hasEditPermissions(any(),anyString())).thenReturn(true);
+        when(userServiceImplementation.getUserByToken(anyString())).thenReturn(user);
+
+        mockMvc.perform(patch("/api/user", 2L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userMockForm)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -192,7 +258,22 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Invalid token!"));
     }
+    
 
+    @Test
+    void testInvalidNewPassword() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(null);
+        when(userServiceImplementation.changePassword(any(),any())).thenReturn(true);
+
+        mockMvc.perform(post("/api/user/new-password/", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(changePasswordForm)))
+                .andExpect(status().is4xxClientError());
+    }
 
 
     @Test

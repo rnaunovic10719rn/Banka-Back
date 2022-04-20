@@ -18,9 +18,8 @@ public class ForexResult : InvfluxRecord<ForexResult>
     [Ignore]
     [Column("to", IsTag = true)]
     public string? SymbolTo { get; set; }
-    
-    [Index(0)]
-    public string Date { get; set;}
+
+    [Index(0)] public string Date { get; set; } = "";
     
     [Ignore]
     [Column(IsTimestamp = true)] 
@@ -65,12 +64,12 @@ public class ForexResult : InvfluxRecord<ForexResult>
         var forex = new ForexResult();
         forex.SymbolFrom = record.Values["from"].ToString();
         forex.SymbolTo = record.Values["to"].ToString();
-        forex.Close = double.Parse(record.Values["close"].ToString());
-        forex.Open = double.Parse(record.Values["open"].ToString());
-        forex.High = double.Parse(record.Values["high"].ToString());
-        forex.Low = double.Parse(record.Values["low"].ToString());
-        forex.Date = record.GetTime().ToString();;
-        forex.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
+        forex.Close = double.Parse(record.Values["close"].ToString()!);
+        forex.Open = double.Parse(record.Values["open"].ToString()!);
+        forex.High = double.Parse(record.Values["high"].ToString()!);
+        forex.Low = double.Parse(record.Values["low"].ToString()!);
+        forex.Date = record.GetTime().ToString()!;
+        forex.TimeWritten = long.Parse(record.Values["written"].ToString()!).ToDateTime();
         return forex;
     }
 

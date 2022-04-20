@@ -8,6 +8,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -218,6 +219,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         User user = userRepository.findByUsername(username).get();
         Role role = roleRepository.findByName(role_name);
         user.setRole(role);
+    }
+
+    @Override
+    public void editOtpSeecret(User user, @Nullable String optSeecret) {
+        user.setOtpSeecret(optSeecret);
+        userRepository.save(user);
     }
 
     public boolean hasEditPermission(String[] permissions,Permissions permission){

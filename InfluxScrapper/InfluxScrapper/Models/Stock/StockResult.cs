@@ -14,9 +14,8 @@ public class StockResult : InvfluxRecord<StockResult>
     [Ignore]
     [Column("ticker", IsTag = true)]
     public string? Ticker { get; set; }
-    
-    [Index(0)]
-    public string Date { get; set;}
+
+    [Index(0)] public string Date { get; set; } = "";
 
     [Ignore]
     [Column(IsTimestamp = true)]
@@ -64,13 +63,13 @@ public class StockResult : InvfluxRecord<StockResult>
     {
         var stock = new StockResult();
         stock.Ticker = record.Values["ticker"].ToString();
-        stock.Close = double.Parse(record.Values["close"].ToString());
-        stock.Open = double.Parse(record.Values["open"].ToString());
-        stock.High = double.Parse(record.Values["high"].ToString());
-        stock.Low = double.Parse(record.Values["low"].ToString());
-        stock.Volume = long.Parse(record.Values["volume"].ToString());
-        stock.Date = record.GetTime().ToString();
-        stock.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
+        stock.Close = double.Parse(record.Values["close"].ToString()!);
+        stock.Open = double.Parse(record.Values["open"].ToString()!);
+        stock.High = double.Parse(record.Values["high"].ToString()!);
+        stock.Low = double.Parse(record.Values["low"].ToString()!);
+        stock.Volume = long.Parse(record.Values["volume"].ToString()!);
+        stock.Date = record.GetTime().ToString()!;
+        stock.TimeWritten = long.Parse(record.Values["written"].ToString()!).ToDateTime();
         return stock;
     }
 

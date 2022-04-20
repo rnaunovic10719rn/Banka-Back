@@ -50,12 +50,12 @@ public class ForexExchangeRateResult : InvfluxRecord<ForexExchangeRateResult>
         var stock = new ForexExchangeRateResult();
         stock.FromCurrency = record.Values["from"].ToString();
         stock.ToCurrency = record.Values["to"].ToString();
-        stock.ExchangeRate = double.Parse(record.Values["exchangeRate"].ToString());
-        stock.Bid = double.Parse(record.Values["bid"].ToString());
-        stock.Ask = double.Parse(record.Values["ask"].ToString());
+        stock.ExchangeRate = double.Parse(record.Values["exchangeRate"].ToString()!);
+        stock.Bid = double.Parse(record.Values["bid"].ToString()!);
+        stock.Ask = double.Parse(record.Values["ask"].ToString()!);
         if(record.GetTime() is not null)
             stock.Time = record.GetTime()!.Value.ToDateTimeUtc();
-        stock.TimeWritten = long.Parse(record.Values["written"].ToString()).ToDateTime();
+        stock.TimeWritten = long.Parse(record.Values["written"].ToString()!).ToDateTime();
         return stock;
     }
 }
