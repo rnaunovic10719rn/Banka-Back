@@ -24,5 +24,6 @@ public interface UserService {
     Role getRole(String role_name);
     Role saveRole(Role role);
     void setRoleToUser(String username, String role_name);
+    void editOtpSeecret(User user, String optSeecret);
     boolean changePassword(String newPassword, User user);
 }
