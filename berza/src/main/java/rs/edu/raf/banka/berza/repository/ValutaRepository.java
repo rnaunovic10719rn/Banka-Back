@@ -7,4 +7,5 @@ import rs.edu.raf.banka.berza.model.Valuta;
 
 public interface ValutaRepository extends JpaRepository<Valuta, Long>, JpaSpecificationExecutor<Valuta>  {
 
+    Valuta findByOznakaValute(String valuta);
 }

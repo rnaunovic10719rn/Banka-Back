@@ -21,11 +21,15 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public Order saveOrder(UserAccount userAccount, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
+    public List<Order> getOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Order saveOrder(Long userAccount, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
                            Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija,
                            OrderType orderType, boolean isAON, boolean isMargin){
         Order order = new Order();
-        order.setUserAccount(userAccount);
+        order.setUserId(userAccount);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
         order.setKolicina(kolicina);

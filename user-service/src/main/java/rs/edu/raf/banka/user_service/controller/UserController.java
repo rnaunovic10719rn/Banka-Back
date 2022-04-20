@@ -40,7 +40,10 @@ public class UserController {
     public ResponseEntity<User>getUser(@RequestHeader("Authorization") String token) {
         try {
             User user = userService.getUserByToken(token);
-            return ResponseEntity.ok().body(user);
+            if (user!=null)
+                return ResponseEntity.ok().body(user);
+            else
+                return ResponseEntity.notFound().build();
         } catch (AuthenticationException e) {
             return ResponseEntity.notFound().build();
         }
@@ -149,7 +152,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         if(!OTPUtilities.isValidSeecret(secret))
             return ResponseEntity.badRequest().build();
-        user.setOtpSeecret(secret);
+        userService.editOtpSeecret(user, secret);
         return ResponseEntity.ok().build();
     }
 
@@ -162,7 +165,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         if(user.isRequiresOtp())
             return ResponseEntity.badRequest().build();
-        user.setOtpSeecret(null);
+        userService.editOtpSeecret(user, null);
         return ResponseEntity.ok().build();
     }
 
@@ -183,6 +186,7 @@ public class UserController {
     }
 
     @PostMapping("/user/reset-password")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordForm resetPasswordForm){
         if(!userService.resetPassword(resetPasswordForm.getEmail())){
             return ResponseEntity.badRequest().body("Mail failed to send");
@@ -191,6 +195,7 @@ public class UserController {
     }
 
     @PostMapping("/user/change-password")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
     public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordForm changePasswordForm){
         if(!userService.setNewPassword(changePasswordForm.getNewPassword(), token)){
             return ResponseEntity.badRequest().body("Invalid token!");
@@ -199,6 +204,7 @@ public class UserController {
     }
 
     @PostMapping("/user/new-password/{id}")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
     public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody ChangePasswordForm changePasswordForm){
         Optional<User> user = userService.getUserById(id);
         if(user.isPresent()){

@@ -1,16 +1,15 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using NodaTime;
 
-namespace InfluxScrapper.Models.Stock;
+namespace InfluxScrapper.Models.Quote;
 
 public class StockQuoteQuery
 {
     [Required]
     [RegularExpression("^[a-zA-Z]{2,6}$")]
     [DefaultValue("aapl")]
-    public string Symbol { get; set; }
+    public string Symbol { get; set; } = "";
 
     public string Measurement => "stock_quote";
     

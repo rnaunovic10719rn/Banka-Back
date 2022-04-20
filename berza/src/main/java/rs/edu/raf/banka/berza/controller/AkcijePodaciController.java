@@ -5,17 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import rs.edu.raf.banka.berza.dto.AkcijeDto;
-import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
-import rs.edu.raf.banka.berza.model.Akcije;
-import rs.edu.raf.banka.berza.requests.FilterHartijaOdVrednostiRequest;
-import rs.edu.raf.banka.berza.requests.SearchHartijaOdVrednostiRequest;
 import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/akcije/podaci")
@@ -60,7 +52,7 @@ public class AkcijePodaciController {
         return ResponseEntity.ok(akcijePodaciService.getAkcijeTimeseries(req));
     }
 
-//    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    //    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity<?> searchAkcije(@RequestBody SearchHartijaOdVrednostiRequest searchHartijaOdVrednostiRequest, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "30") Integer size){
 //        return ResponseEntity.ok(akcijeService.search(searchHartijaOdVrednostiRequest.getOznaka_hartije(), searchHartijaOdVrednostiRequest.getOpis_hartije(),
 //                page, size));

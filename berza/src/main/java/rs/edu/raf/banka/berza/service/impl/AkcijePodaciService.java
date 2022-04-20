@@ -16,7 +16,9 @@ import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
+import rs.edu.raf.banka.berza.repository.BerzaRepository;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -36,15 +38,17 @@ public class AkcijePodaciService {
     private final WebClient influxApiClient;
     private final Config alphavantageApiClient;
 
+    private BerzaRepository berzaRepository;
     private AkcijeRepository akcijeRepository;
 
     private final List<String> odabraneAkcije = Arrays.asList("AAPL", "MSFT", "GOOG", "BA", "AXP");
 
     @Autowired
-    public AkcijePodaciService(AkcijeRepository akcijeRepository,
+    public AkcijePodaciService(AkcijeRepository akcijeRepository, BerzaRepository berzaRepository,
                                WebClient influxApiClient,
                                Config alphavantageApiClient){
         this.akcijeRepository = akcijeRepository;
+        this.berzaRepository = berzaRepository;
         this.influxApiClient = influxApiClient;
         this.alphavantageApiClient = alphavantageApiClient;
     }
@@ -72,6 +76,8 @@ public class AkcijePodaciService {
                     .fetchSync();
             if(cor != null && cor.getErrorMessage() == null) {
                 CompanyOverview co = cor.getOverview();
+                Berza berza = berzaRepository.findBerzaByOznakaBerze(co.getExchange());
+                akcija.setBerza(berza);
                 akcija.setOznakaHartije(co.getSymbol());
                 akcija.setOznakaHartije("");
                 akcija.setOpis_hartije(co.getName());
@@ -107,7 +113,12 @@ public class AkcijePodaciService {
         }
 
         AkcijePodaciDto dto = dtoList.get(0);
+        if(akcija.getBerza() != null)
+            dto.setBerzaId(akcija.getBerza().getId());
+        else
+            dto.setBerzaId(-1L);
         dto.setTicker(ticker);
+        dto.setId(akcija.getId());
         dto.setOpisHartije(akcija.getOpis_hartije());
         dto.setOutstandingShares(akcija.getOutstanding_shares());
 
@@ -115,20 +126,13 @@ public class AkcijePodaciService {
     }
 
     public List<AkcijeTimeseriesDto> getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest req) {
-        influxApiClient
-                .post()
-                .uri("/alphavantage/stock/updatewait/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
-
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
         DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        // TODO: Ispraviti ovo.
+        // Ovo radimo zato sto AlphaVantage API baguje i nema uvek najsvezije podatke.
+        // Npr. desilo se da nemaju podatke za ceo jedan dan iako je taj dan berza vec zatvorena.
+        ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(2);
         String endDate = zonedDateTime.format(endFormatter);
 
         if(req.getType().equals("intraday") && req.getInterval().equals("5min")) {
@@ -142,6 +146,10 @@ public class AkcijePodaciService {
                         zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
                     }
                     break;
+                default:
+                    // Ovo radimo zato sto AlphaVantage API baguje i nema uvek najsvezije podatke.
+                    // Npr. desilo se da nemaju podatke za ceo jedan dan iako je taj dan berza vec zatvorena.
+                    zonedDateTime = ZonedDateTime.now().minusDays(2);
             }
         } else if(req.getType().equals("intraday") && req.getInterval().equals("30min")) {
             switch (zonedDateTime.getDayOfWeek()) {
@@ -186,7 +194,7 @@ public class AkcijePodaciService {
 
         return influxApiClient
                 .post()
-                .uri("/alphavantage/stock/read/")
+                .uri("/alphavantage/stock/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromObject(readReq))

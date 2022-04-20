@@ -8,6 +8,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -133,7 +134,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             String username = decodedToken.getSubject();
             var user = userRepository.findByUsername(username);
 
-            if (user == null || user.isPresent() || !(user.get().isAktivan())) {
+            if (user == null || !user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
                 throw new UsernameNotFoundException("User not found in database");
             }
@@ -220,6 +221,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setRole(role);
     }
 
+    @Override
+    public void editOtpSeecret(User user, @Nullable String optSeecret) {
+        user.setOtpSeecret(optSeecret);
+        userRepository.save(user);
+    }
+
     public boolean hasEditPermission(String[] permissions,Permissions permission){
         if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
             return true;
@@ -261,7 +268,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Matcher matcher = pattern.matcher(password);
         if(!matcher.matches()) return false;
 
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
         user.setPassword(hash_pw);
         userRepository.save(user);
         return true;
@@ -302,7 +309,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
 
         User user = prt.getUser();
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
         user.setPassword(hash_pw);
 
         this.userRepository.save(user);

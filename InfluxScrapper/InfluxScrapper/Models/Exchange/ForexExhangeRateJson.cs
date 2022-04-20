@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
 
-namespace InfluxScrapper.Models.Forex;
+namespace InfluxScrapper.Models.Exchange;
 
 public class ForexExchangeRateJson
 {
     [JsonPropertyName("Realtime Currency Exchange Rate")]
-    public ForexExchangeRateJsonInner Body {get;set;}
+    public ForexExchangeRateJsonInner Body { get; set; } = new();
 }
 
 public class ForexExchangeRateJsonInner
