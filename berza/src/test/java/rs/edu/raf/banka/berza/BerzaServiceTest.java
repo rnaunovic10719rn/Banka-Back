@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
+import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
+import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
 import rs.edu.raf.banka.berza.enums.OrderType;
@@ -21,10 +23,7 @@ import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.repository.UserAccountRepository;
 import rs.edu.raf.banka.berza.response.MakeOrderResponse;
 import rs.edu.raf.banka.berza.response.OrderStatusResponse;
-import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
-import rs.edu.raf.banka.berza.service.impl.BerzaService;
-import rs.edu.raf.banka.berza.service.impl.OrderService;
-import rs.edu.raf.banka.berza.service.impl.TransakcijaService;
+import rs.edu.raf.banka.berza.service.impl.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,6 +59,12 @@ public class BerzaServiceTest {
 
     @Mock
     ForexRepository forexRepository;
+
+    @Mock
+    FuturesUgovoriPodaciService futuresUgovoriPodaciService;
+
+    @Mock
+    ForexPodaciService forexPodaciService;
 
     @Test
     void testMakeOrderAkcijaMarketOrder(){
@@ -105,14 +110,13 @@ public class BerzaServiceTest {
         berza.setOpenTime("09:00:00");
         berza.setCloseTime("23:00:00");
 
-        FuturesUgovori futuresUgovori = new FuturesUgovori();
+        FuturesPodaciDto futuresUgovori = new FuturesPodaciDto();
         futuresUgovori.setId(1L);
-        futuresUgovori.setBerza(berza);
-        futuresUgovori.setAsk(10.0);
-        futuresUgovori.setBid(10.0);
+//        futuresUgovori.setBerza(berza);
+        futuresUgovori.setHigh(10.0);
 
-        when(futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(any())).thenReturn(futuresUgovori);
-        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
+        when(futuresUgovoriPodaciService.getFuturesUgovor(any())).thenReturn(futuresUgovori);
+//        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
         when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.FUTURES_UGOVOR,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false)).thenReturn(order);
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<Double>());
@@ -136,19 +140,19 @@ public class BerzaServiceTest {
         berza.setOpenTime("09:00:00");
         berza.setCloseTime("23:00:00");
 
-        Forex forex = new Forex();
+        ForexPodaciDto forex = new ForexPodaciDto();
         forex.setId(1L);
-        forex.setBerza(berza);
+//        forex.setBerza(berza);
         forex.setAsk(10.0);
         forex.setBid(10.0);
 
-        when(forexRepository.findForexByOznakaHartije(any())).thenReturn(forex);
-        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
+        when(forexPodaciService.getForexBySymbol(any(), any())).thenReturn(forex);
+//        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
         when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.FOREX,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false)).thenReturn(order);
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<Double>());
 
-        MakeOrderResponse makeOrderRes = berzaService.makeOrder(17L, "usd", "FOREX",
+        MakeOrderResponse makeOrderRes = berzaService.makeOrder(17L, "usd lol", "FOREX",
                 100, "buy", 1, 1, true, false);
         assertEquals(new MakeOrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
