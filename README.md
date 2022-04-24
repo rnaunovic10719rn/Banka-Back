@@ -33,6 +33,26 @@ informacija o tome pogledajte sledeću sekciju.
 
 ## Pokretanje aplikacije
 
+### Tokeni i kredencijali
+
+Da bi se ceo stack uspešno pokrenuo, potrebno je ubaciti tokene i kredencijale na određena mesta. Potrebni su vam
+sledeći tokeni:
+
+* AlphaVantage API key: može se generisati na [sledećem sajtu][alphavantage-token]
+  * Potrebno ga je ubaciti u `berza/src/main/java/rs/edu/raf/banka/berza/configuration/SpringConfig.java` umesto
+    `INSERT_API_KEY`
+  * Potrebno ga je ubaciti u `InfluxScrapper/InfluxScrapper/Models/Constants.cs` umesto `alpha-key`
+* Nasdaq API key: može se generisati registracijom na [Nasdaq][nasdaq-reg]
+  * Potrebno ga je ubaciti u `InfluxScrapper/InfluxScrapper/Models/Constants.cs` umesto `nasdaq-key`
+* Email nalog: obratiti se vašem team leadu za kredencijale
+  * Kredencijale je potrebno ubaciti u `docker-compose.yml` ili u 
+    `mail-service/src/main/resources/application.properties` ako se servis pokreće ručno 
+
+**BITNO: Pazite da ne commitujute API ključeve i kredencijale na Git-u!**
+
+[alphavantage-token]: https://www.alphavantage.co/support/#api-key
+[nasdaq-reg]: https://data.nasdaq.com/sign-up
+
 ### Docker Compose
 
 Docker Compose se može koristiti na sledeća dva načina:

@@ -2,6 +2,7 @@ package rs.edu.raf.banka.berza.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import rs.edu.raf.banka.berza.dto.BerzaCSV;
@@ -23,7 +24,8 @@ import java.util.List;
 @Component
 public class BootstrapData implements CommandLineRunner {
 
-    private final String berzaCSVPath = System.getenv("berza.berze.csv");
+    @Value("${berza.berze.csv}")
+    private String berzaCSVPath;
 
     private final ValutaRepository valutaRepository;
     private final BerzaRepository berzaRepository;
