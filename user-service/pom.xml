@@ -12,13 +12,15 @@
 
 	<groupId>rs.edu.raf.banka</groupId>
 	<artifactId>user_service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${revision}</version>
 
 	<name>user_service</name>
 	<packaging>jar</packaging>
 	<description>Korisnicki servis projekta Banka</description>
 
 	<properties>
+		<!-- build version -->
+		<revision>0.0.1-SNAPSHOT</revision>
 		<java.version>17</java.version>
 		<sonar.organization>raf-si-2021-1</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
