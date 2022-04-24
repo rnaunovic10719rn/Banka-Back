@@ -78,9 +78,14 @@ Da bi ste pokrenuli samo neophodne servise (`core` profil), koristite sledeću k
 docker compose --profile=core up --build
 ```
 
-**Napomena:** U ovom slučaju morate sve Java servise (osim Zuul-a i Eureke) pokrenuti ručno.
+**Pre pokretanja aplikacije je bitno da ubacite tokene i kredencijale kao što je opisano iznad!**
 
-**Napomena 2:** Od sad više nije potrebno da radite Maven package (`mvn package`) pre pokretanje aplikacije, Docker
+Ako koristite `all` profil, Docker Compose će pokrenuti sve za vas, tj. aplikacija je spremna za korišćenje.
+
+Ako koristite `core` profil, biće pokrenuti samo gore-pomenuti servisi. Ostale servise (user-service, mail-service i
+berza) je potrebno pokrenuti ručno i to možete učiniti preko IntelliJ-a kao što bi pokrenuli bilo koju Java aplikaciju.
+
+**Napomena:** Od sad više nije potrebno da radite Maven package (`mvn package`) pre pokretanje aplikacije, Docker
 će to uraditi za vas.
 
 ### Manuelno
