@@ -19,9 +19,9 @@ services:
       eureka.instance.preferIpAddress: "true"
     ports:
       - "8762:8762"
-    depends_on:
-      - "eureka"
     links:
+      - eureka
+    depends_on:
       - eureka
     profiles: ["all", "core"]
 
@@ -97,6 +97,10 @@ services:
       - db-user
       - artemis
       - eureka
+    depends_on:
+      - db-user
+      - artemis
+      - eureka
     profiles: ["all"]
 
   email-servis:
@@ -104,9 +108,14 @@ services:
     environment:
       spring.mail.username: "email"
       spring.mail.password: "password"
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+      spring.activemq.broker-url: tcp://artemis:61616
     ports:
       - "8081:8081"
     links:
+      - artemis
+      - eureka
+    depends_on:
       - artemis
       - eureka
     profiles: ["all"]
@@ -122,6 +131,11 @@ services:
     links:
       - db-berza
       - eureka
+      - influx-scrapper
+    depends_on:
+      - db-berza
+      - eureka
+      - influx-scrapper
     profiles: ["all"]
 
 volumes:
