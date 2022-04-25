@@ -15,6 +15,8 @@ FROM build AS publish
 RUN dotnet publish "InfluxScrapper.csproj" -c Release -o /app/publish
 
 FROM base AS final
+LABEL org.opencontainers.image.source https://github.com/RAF-SI-2021/Banka-Back
+
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "InfluxScrapper.dll"]

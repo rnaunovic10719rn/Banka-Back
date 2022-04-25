@@ -10,6 +10,7 @@ ADD . $HOME
 RUN --mount=type=cache,target=/root/.m2 mvn -Drevision=$VERSION -Dmaven.test.skip -f $HOME/pom.xml clean package
 
 FROM docker.io/openjdk:17-alpine@sha256:a996cdcc040704ec6badaf5fecf1e144c096e00231a29188596c784bcf858d05
+LABEL org.opencontainers.image.source https://github.com/RAF-SI-2021/Banka-Back
 
 ARG VERSION=0.0.1-SNAPSHOT
 ARG SERVICE_NAME="mailservice"
