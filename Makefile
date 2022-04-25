@@ -1,14 +1,15 @@
 REPO ?= ghcr.io/raf-si-2021
 TAG ?= latest
+VERSION ?= 0.0.1-SNAPSHOT
 
 .PHONY: test
 build-docker:
-	docker build -t $(REPO)/banka-eureka:$(TAG) ./eureka
-	docker build -t $(REPO)/banka-zuul:$(TAG) ./zuul
-	docker build -t $(REPO)/banka-influx-scrapper:$(TAG) ./InfluxScrapper
-	docker build -t $(REPO)/banka-user-service:$(TAG) ./user-service
-	docker build -t $(REPO)/banka-mail-service:$(TAG) ./mail-service
-	docker build -t $(REPO)/banka-berza:$(TAG) ./berza
+	docker build --build-arg=VERSION=$(VERSION) -t $(REPO)/banka-eureka:$(TAG) ./eureka
+	docker build --build-arg=VERSION=$(VERSION) -t $(REPO)/banka-zuul:$(TAG) ./zuul
+	docker build --build-arg=VERSION=$(VERSION) -t $(REPO)/banka-influx-scrapper:$(TAG) ./InfluxScrapper
+	docker build --build-arg=VERSION=$(VERSION) -t $(REPO)/banka-user-service:$(TAG) ./user-service
+	docker build --build-arg=VERSION=$(VERSION) -t $(REPO)/banka-mail-service:$(TAG) ./mail-service
+	docker build --build-arg=VERSION=$(VERSION) -t $(REPO)/banka-berza:$(TAG) ./berza
 
 .PHONY: push-docker
 push-docker: build-docker
