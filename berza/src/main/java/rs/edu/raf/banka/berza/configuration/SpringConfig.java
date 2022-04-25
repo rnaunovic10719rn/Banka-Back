@@ -4,12 +4,16 @@ package rs.edu.raf.banka.berza.configuration;
 import com.crazzyghost.alphavantage.AlphaVantage;
 import com.crazzyghost.alphavantage.Config;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class SpringConfig {
+
+    @Value("${berza.influxscrapper.endpoint}")
+    private String influxScrapperEndpoint;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -18,7 +22,7 @@ public class SpringConfig {
 
     @Bean
     public WebClient influxApiClient() {
-        return WebClient.create("http://influx-scrapper/");
+        return WebClient.create(influxScrapperEndpoint);
     }
 
     @Bean

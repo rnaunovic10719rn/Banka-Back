@@ -3,6 +3,7 @@ version: '3.3'
 services:
 
   eureka:
+    image: ghcr.io/raf-si-2021/banka-eureka:latest
     build: ./eureka
     environment:
       server-port: "8761"
@@ -10,18 +11,21 @@ services:
     tty: false
     ports:
       - "8761:8761"
+    profiles: ["all", "core"]
       
   zuul:
+    image: ghcr.io/raf-si-2021/banka-zuul:latest
     build: ./zuul
     environment:
       eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
       eureka.instance.preferIpAddress: "true"
     ports:
       - "8762:8762"
-    depends_on:
-      - "eureka"
     links:
       - eureka
+    depends_on:
+      - eureka
+    profiles: ["all", "core"]
 
   artemis:
     image: vromero/activemq-artemis:latest-alpine
@@ -31,18 +35,8 @@ services:
       ARTEMIS_PASSWORD: banka1234
     ports:
       - "61616:61616/tcp"
-      
-  email-servis:
-    build: ./mail-service
-    environment:
-      spring.mail.username: "email"
-      spring.mail.password: "password"
-    ports:
-      - "8081:8081"
-    links:
-      - artemis
-      - eureka
- 
+    profiles: ["all", "core"]
+
   db-user:
     image: postgres
     ports:
@@ -53,6 +47,7 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - db-user:/var/lib/postgresql/data
+    profiles: ["all", "core"]
 
   db-berza:
     image: postgres
@@ -64,6 +59,7 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - db-berza:/var/lib/postgresql/data
+    profiles: ["all", "core"]
 
   db-influx:
     image: influxdb:2.1.1
@@ -79,8 +75,10 @@ services:
     volumes:
       - influx-data:/var/lib/influxdb2
       - influx-config:/etc/influxdb2
+    profiles: ["all", "core", "influxdb"]
 
   influx-scrapper:
+    image: ghcr.io/raf-si-2021/banka-influx-scrapper:latest
     build: ./InfluxScrapper
     ports:
       - "8000:80"
@@ -88,33 +86,64 @@ services:
       - db-influx
     depends_on:
       - db-influx
+    profiles: ["all", "core"]
 
   korisnicki-servis:
+    image: ghcr.io/raf-si-2021/banka-user-service:latest
     build: ./user-service
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-user:5432/postgres
-      spring.application.name: user-service
       eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
-      eureka.instance.preferIpAddress: "true"
+      spring.activemq.broker-url: tcp://artemis:61616
     ports:
       - "8080:8080"
     links:
       - db-user
       - artemis
       - eureka
+    depends_on:
+      - db-user
+      - artemis
+      - eureka
+    profiles: ["all"]
+
+  email-servis:
+    image: ghcr.io/raf-si-2021/banka-mail-service:latest
+    build: ./mail-service
+    environment:
+      spring.mail.username: "email"
+      spring.mail.password: "password"
+      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
+      spring.activemq.broker-url: tcp://artemis:61616
+    ports:
+      - "8081:8081"
+    links:
+      - artemis
+      - eureka
+    depends_on:
+      - artemis
+      - eureka
+    profiles: ["all"]
 
   berza:
+    image: ghcr.io/raf-si-2021/banka-berza:latest
     build: ./berza
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-berza:5432/postgres
-      spring.application.name: berza
       eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
-      eureka.instance.preferIpAddress: "true"
+      berza.influxscrapper.endpoint: http://influx-scrapper/
+      berza.berze.csv: berze.csv
     ports:
       - "8082:8082"
     links:
       - db-berza
       - eureka
+      - influx-scrapper
+    depends_on:
+      - db-berza
+      - eureka
+      - influx-scrapper
+    profiles: ["all"]
 
 volumes:
   db-user:
