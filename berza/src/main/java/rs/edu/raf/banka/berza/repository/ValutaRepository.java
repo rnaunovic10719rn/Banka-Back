@@ -5,7 +5,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import rs.edu.raf.banka.berza.model.Forex;
 import rs.edu.raf.banka.berza.model.Valuta;
 
+import java.util.Optional;
+
 public interface ValutaRepository extends JpaRepository<Valuta, Long>, JpaSpecificationExecutor<Valuta>  {
 
     Valuta findByOznakaValute(String valuta);
+    Optional<Valuta> getValutaByNazivValute(String nazivValute);
+
 }

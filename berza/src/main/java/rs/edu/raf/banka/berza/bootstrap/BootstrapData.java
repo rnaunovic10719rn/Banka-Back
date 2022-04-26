@@ -17,9 +17,7 @@ import java.io.FileReader;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class BootstrapData implements CommandLineRunner {
@@ -96,10 +94,12 @@ public class BootstrapData implements CommandLineRunner {
             berza.setMicCode(bc.getExchangeMicCode());
             berza.setOpenTime(bc.getOpenTime());
             berza.setCloseTime(bc.getCloseTime());
-            //Samo dodat string valuta mora da se napravi nova, tj. da se stavi neka metoda u repozitorijum
-            //po kojoj cemo da setujemo valutu npr. valutaRepo.findByCountry(bc.getCountry()) ALI treba prvo podesiti
-            //da nazivi iz drzava iz valute.csv odgovaraju onima iz berze.csv ..
-            berza.setValutaString(bc.getCurrency());
+            Optional<Valuta> valutaBerze = valutaRepository.getValutaByNazivValute(bc.getCurrency());
+            if(valutaBerze.isEmpty()) {
+                System.err.println("Preskacem berzu " + bc.getExchangeAcronym() + " zato sto valuta " + bc.getCurrency() + " ne postoji!");
+                continue;
+            }
+            berza.setValuta(valutaBerze.get());
 
             berze.add(berza);
         }

@@ -22,7 +22,6 @@ public class Berza {
     private String naziv;
     private String drzava;
     private String micCode;
-    private String valutaString;
     private String openTime;
     private String closeTime;
 
