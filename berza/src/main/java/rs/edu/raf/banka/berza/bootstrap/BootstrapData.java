@@ -113,7 +113,7 @@ public class BootstrapData implements CommandLineRunner {
         //Dodavanje informacija o inflacijama
         List<IstorijaInflacije> inflacije = new ArrayList<>();
 
-        List<InflacijaCSV> inflacijeCSV = new CsvToBeanBuilder(new FileReader(inflacijeCSVPath));
+        List<InflacijaCSV> inflacijeCSV = new CsvToBeanBuilder(new FileReader(inflacijeCSVPath))
                 .withType(InflacijaCSV.class)
                 .withSkipLines(1)
                 .build()
