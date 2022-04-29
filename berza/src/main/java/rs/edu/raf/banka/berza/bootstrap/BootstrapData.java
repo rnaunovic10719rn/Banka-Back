@@ -35,9 +35,10 @@ public class BootstrapData implements CommandLineRunner {
     private final InflacijaRepository inflacijaRepository;
 
     @Autowired
-    public BootstrapData(ValutaRepository valutaRepository, BerzaRepository berzaRepo) {
+    public BootstrapData(ValutaRepository valutaRepository, BerzaRepository berzaRepo, InflacijaRepository inflacijaRepository) {
         this.valutaRepository = valutaRepository;
         this.berzaRepository = berzaRepo;
+        this.inflacijaRepository = inflacijaRepository;
     }
 
     @Override
