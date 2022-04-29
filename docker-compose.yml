@@ -2,31 +2,6 @@ version: '3.3'
  
 services:
 
-  eureka:
-    image: ghcr.io/raf-si-2021/banka-eureka:latest
-    build: ./eureka
-    environment:
-      server-port: "8761"
-      eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
-    tty: false
-    ports:
-      - "8761:8761"
-    profiles: ["all", "core"]
-      
-  zuul:
-    image: ghcr.io/raf-si-2021/banka-zuul:latest
-    build: ./zuul
-    environment:
-      eureka.client.serviceUrl.defaultZone: "http://eureka:8761/eureka/"
-      eureka.instance.preferIpAddress: "true"
-    ports:
-      - "8762:8762"
-    links:
-      - eureka
-    depends_on:
-      - eureka
-    profiles: ["all", "core"]
-
   artemis:
     image: vromero/activemq-artemis:latest-alpine
     container_name: activemq
@@ -93,18 +68,15 @@ services:
     build: ./user-service
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-user:5432/postgres
-      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
       spring.activemq.broker-url: tcp://artemis:61616
     ports:
       - "8080:8080"
     links:
       - db-user
       - artemis
-      - eureka
     depends_on:
       - db-user
       - artemis
-      - eureka
     profiles: ["all"]
 
   email-servis:
@@ -113,16 +85,13 @@ services:
     environment:
       spring.mail.username: "email"
       spring.mail.password: "password"
-      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
       spring.activemq.broker-url: tcp://artemis:61616
     ports:
       - "8081:8081"
     links:
       - artemis
-      - eureka
     depends_on:
       - artemis
-      - eureka
     profiles: ["all"]
 
   berza:
@@ -130,18 +99,15 @@ services:
     build: ./berza
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-berza:5432/postgres
-      eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
       berza.influxscrapper.endpoint: http://influx-scrapper/
       berza.berze.csv: berze.csv
     ports:
       - "8082:8082"
     links:
       - db-berza
-      - eureka
       - influx-scrapper
     depends_on:
       - db-berza
-      - eureka
       - influx-scrapper
     profiles: ["all"]
 

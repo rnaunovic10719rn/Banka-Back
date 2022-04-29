@@ -58,12 +58,12 @@ sledeći tokeni:
 Docker Compose se može koristiti na sledeća dva načina:
 
 * Da se pokrene ceo stack (tj. ceo backend i svi potrebni servisi)
-* Da se pokrenu samo potrebni servisi (baze podataka, InfluxDB, Eureka i Zuul), a da se backend pokrene ručno
+* Da se pokrenu samo potrebni servisi (baze podataka, InfluxDB), a da se backend pokrene ručno
 
 Ovo je omogućeno korišćenjem Docker Compose profila, a postoje sledeći profili:
 
 * `all`: pokreće sve
-* `core`: pokreće PostgreSQL, InfluxDB, Artemis ActiveMQ, Zuul, Eureku, InfluxDBScrapper servis
+* `core`: pokreće PostgreSQL, InfluxDB, Artemis ActiveMQ, InfluxDBScrapper servis
 * `influxdb`: pokreće InfluxDB
 
 Da bi ste pokrenuli ceo stack, koristite sledeću komandu:
