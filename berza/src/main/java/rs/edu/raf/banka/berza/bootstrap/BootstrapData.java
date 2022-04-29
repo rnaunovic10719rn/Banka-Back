@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import rs.edu.raf.banka.berza.dto.BerzaCSV;
+import rs.edu.raf.banka.berza.dto.InflacijaCSV;
 import rs.edu.raf.banka.berza.dto.CurrencyCSV;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.IstorijaInflacije;
