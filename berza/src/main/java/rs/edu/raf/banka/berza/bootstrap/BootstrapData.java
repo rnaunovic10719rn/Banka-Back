@@ -8,9 +8,11 @@ import org.springframework.stereotype.Component;
 import rs.edu.raf.banka.berza.dto.BerzaCSV;
 import rs.edu.raf.banka.berza.dto.CurrencyCSV;
 import rs.edu.raf.banka.berza.model.Berza;
+import rs.edu.raf.banka.berza.model.IstorijaInflacije;
 import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.repository.ValutaRepository;
+import rs.edu.raf.banka.berza.repository.InflacijaRepository;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -24,9 +26,12 @@ public class BootstrapData implements CommandLineRunner {
 
     @Value("${berza.berze.csv}")
     private String berzaCSVPath;
+    @Value("${berza.inflacije.csv}")
+    private String inflacijeCSVPath;
 
     private final ValutaRepository valutaRepository;
     private final BerzaRepository berzaRepository;
+    private final InflacijaRepository inflacijaRepository;
 
     @Autowired
     public BootstrapData(ValutaRepository valutaRepository, BerzaRepository berzaRepo) {
@@ -104,5 +109,29 @@ public class BootstrapData implements CommandLineRunner {
             berze.add(berza);
         }
         berzaRepository.saveAll(berze);
+
+        //Dodavanje informacija o inflacijama
+        List<IstorijaInflacije> inflacije = new ArrayList<>();
+
+        List<InflacijaCSV> inflacijeCSV = new CsvToBeanBuilder(new FileReader(inflacijeCSVPath));
+                .withType(InflacijaCSV.class)
+                .withSkipLines(1)
+                .build()
+                .parse();
+
+        for(InflacijaCSV ic : inflacijeCSV) {
+            IstorijaInflacije istorijaInflacije = new IstorijaInflacije();
+            Optional<Valuta> valutaInflacije = valutaRepository.getValutaByNazivValute(ic.getCurrency());
+            if(valutaInflacije.isEmpty()) {
+                System.err.println("Preskacem inflaciju zato sto valuta " + ic.getCurrency() + " ne postoji!");
+                continue;
+            }
+            istorijaInflacije.setValuta(valutaInflacije.get());
+            istorijaInflacije.setYear(ic.getYear());
+            istorijaInflacije.setInflationRate(Double.parseDouble(ic.getInflationRate().substring(0,3)));
+
+            inflacije.add(istorijaInflacije);
+        }
+        inflacijaRepository.saveAll(inflacije);
     }
 }
