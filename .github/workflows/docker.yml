@@ -42,16 +42,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - id: docker_meta
-        uses: docker/metadata-action@v3.6.0
-        with:
-          images: |
-            ghcr.io/raf-si-2021/banka-influx-scrapper
-            ghcr.io/raf-si-2021/banka-berza
-            ghcr.io/raf-si-2021/banka-user-service
-            ghcr.io/raf-si-2021/banka-mail-service
-          tags: type=sha,format=long
-
       - name: Build and Push influx-scrapper image
         uses: docker/build-push-action@v2
         with:
@@ -87,5 +77,9 @@ jobs:
       - name: Sign the images with GitHub OIDC Token **not production ready**
         run: cosign sign ${TAGS}
         env:
-          TAGS: ${{ steps.docker_meta.outputs.tags }}
+          TAGS: |
+            ghcr.io/raf-si-2021/banka-influx-scrapper:latest
+            ghcr.io/raf-si-2021/banka-berza:latest
+            ghcr.io/raf-si-2021/banka-user-service:latest
+            ghcr.io/raf-si-2021/banka-mail-service:latest
           COSIGN_EXPERIMENTAL: 1
