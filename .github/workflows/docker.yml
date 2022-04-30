@@ -83,3 +83,9 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ghcr.io/raf-si-2021/banka-mail-service:latest
+
+      - name: Sign the images with GitHub OIDC Token **not production ready**
+        run: cosign sign ${TAGS}
+        env:
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
+          COSIGN_EXPERIMENTAL: 1
