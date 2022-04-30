@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - 'master'
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 # Ogranicava da samo jedan job moze da bude pokrenut u isto vreme
 concurrency: ci-${{ github.ref }}
