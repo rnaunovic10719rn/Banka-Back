@@ -332,7 +332,7 @@ public class UserControllerTest {
         userMockForm.setPrezime("Test");
         userMockForm.setEmail("mock@test");
         userMockForm.setJmbg("123");
-        userMockForm.setBr_telefon("123");
+        userMockForm.setBrTelefon("123");
         userMockForm.setPozicija("ROLE_ADMIN");
 
         return userMockForm;
