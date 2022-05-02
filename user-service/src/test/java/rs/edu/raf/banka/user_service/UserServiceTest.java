@@ -135,7 +135,7 @@ public class UserServiceTest {
 
         given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
 
-        userService.setNewPassword("mockPass123","token");
+        userService.setNewPassword("mockPass123","Bearer token");
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
@@ -152,7 +152,7 @@ public class UserServiceTest {
 
         given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
 
-        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass","token"));
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass","Bearer token"));
         assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());
     }
 
