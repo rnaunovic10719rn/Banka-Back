@@ -130,7 +130,7 @@ public class BootstrapData implements CommandLineRunner {
             }
             istorijaInflacije.setValuta(valutaInflacije.get());
             istorijaInflacije.setYear(ic.getYear());
-            istorijaInflacije.setInflationRate(Double.parseDouble(ic.getInflationRate().substring(0,3)));
+            istorijaInflacije.setInflationRate(Double.parseDouble(ic.getInflationRate()));
 
             inflacije.add(istorijaInflacije);
         }
