@@ -44,9 +44,9 @@ public class BerzaController {
                 orderRequest.getLimitValue(), orderRequest.getStopValue(), orderRequest.isAllOrNoneFlag(), orderRequest.isMarginFlag()));
     }
 
-    @GetMapping(value = "/order-status/{id_berza}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getOrderStatus(@PathVariable Long id_berza){
-        return ResponseEntity.ok(berzaService.getOrderStatus(id_berza));
+    @GetMapping(value = "/order-status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getOrderStatus(@PathVariable Long id){
+        return ResponseEntity.ok(berzaService.getOrderStatus(id));
     }
 
 }
