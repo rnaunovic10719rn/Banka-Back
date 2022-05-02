@@ -105,7 +105,7 @@ public class BootstrapData implements CommandLineRunner {
             berza.setCloseTime(bc.getCloseTime());
             Optional<Valuta> valutaBerze = valutaRepository.getValutaByNazivValute(bc.getCurrency());
             if(valutaBerze.isEmpty()) {
-                System.err.println("Preskacem berzu " + bc.getExchangeAcronym() + " zato sto valuta " + bc.getCurrency() + " ne postoji!");
+                log.error("Preskacem berzu " + bc.getExchangeAcronym() + " zato sto valuta " + bc.getCurrency() + " ne postoji!");
                 continue;
             }
             berza.setValuta(valutaBerze.get());
@@ -127,7 +127,7 @@ public class BootstrapData implements CommandLineRunner {
             IstorijaInflacije istorijaInflacije = new IstorijaInflacije();
             Optional<Valuta> valutaInflacije = valutaRepository.getValutaByNazivValute(ic.getCurrency());
             if(valutaInflacije.isEmpty()) {
-                //Ne bi trebalo da se desi
+                log.error("Preskocena inflacija jer nema ove valute: "+ic.getCurrency());
                 continue;
             }
             istorijaInflacije.setValuta(valutaInflacije.get());
