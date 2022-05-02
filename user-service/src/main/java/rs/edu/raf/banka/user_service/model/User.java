@@ -20,7 +20,7 @@ public class User {
     private String prezime;
     private String email;
     private String jmbg;
-    private String br_telefon;
+    private String brTelefon;
     private String password;
     @Nullable
     private String otpSeecret;
@@ -34,13 +34,13 @@ public class User {
         return otpSeecret != null;
     }
 
-    public User(String username, String ime, String prezime, String email, String jmbg, String br_telefon, String password, String otpSeecret, boolean aktivan, boolean requiresOtp, Role role) {
+    public User(String username, String ime, String prezime, String email, String jmbg, String brTelefon, String password, String otpSeecret, boolean aktivan, boolean requiresOtp, Role role) {
         this.username = username;
         this.ime = ime;
         this.prezime = prezime;
         this.email = email;
         this.jmbg = jmbg;
-        this.br_telefon = br_telefon;
+        this.brTelefon = brTelefon;
         this.password = password;
         this.otpSeecret = otpSeecret;
         this.aktivan = aktivan;
