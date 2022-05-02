@@ -5,7 +5,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -30,7 +29,6 @@ import javax.jms.Queue;
 import org.springframework.messaging.MessagingException;
 
 import javax.transaction.Transactional;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,8 +92,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public Role getRole(String role_name) {
-        return roleRepository.findByName(role_name);
+    public Role getRole(String roleName) {
+        return roleRepository.findByName(roleName);
     }
 
     @Override
@@ -119,11 +117,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
         User user = new User(username, createUserForm.getIme(),
                             createUserForm.getPrezime(), createUserForm.getEmail(),
-                            createUserForm.getJmbg(), createUserForm.getBr_telefon(),
+                            createUserForm.getJmbg(), createUserForm.getBrTelefon(),
                             password, null, true, false, this.getRole(createUserForm.getPozicija()));
         log.info("Saving new user {} to the database", user.getUsername());
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-        user.setPassword(hash_pw);
+        String hashPW = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hashPW);
         return userRepository.save(user);
     }
 
@@ -149,8 +147,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public void createUserAdmin(User user){
         log.info("Saving admin to the database");
-        String hash_pw = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-        user.setPassword(hash_pw);
+        String hashPW = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hashPW);
         user.setAktivan(true);
         userRepository.save(user);
     }
@@ -202,7 +200,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setPrezime(newUser.getPrezime());
         user.setEmail(newUser.getEmail());
         user.setJmbg(newUser.getJmbg());
-        user.setBr_telefon(newUser.getBr_telefon());
+        user.setBrTelefon(newUser.getBrTelefon());
         user.setRole(getRole(newUser.getPozicija()));
         userRepository.save(user);
     }
@@ -214,10 +212,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public void setRoleToUser(String username, String role_name) {
-        log.info("Adding role {} to user {} to the database", role_name, username);
+    public void setRoleToUser(String username, String roleName) {
+        log.info("Adding role {} to user {} to the database", roleName, username);
         User user = userRepository.findByUsername(username).get();
-        Role role = roleRepository.findByName(role_name);
+        Role role = roleRepository.findByName(roleName);
         user.setRole(role);
     }
 
@@ -268,8 +266,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Matcher matcher = pattern.matcher(password);
         if(!matcher.matches()) return false;
 
-        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
-        user.setPassword(hash_pw);
+        String hashPW = BCrypt.hashpw(password, BCrypt.gensalt());
+        user.setPassword(hashPW);
         userRepository.save(user);
         return true;
     }
@@ -309,8 +307,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         if(!matcher.matches()) throw new BadCredentialsException("Password: must have 8 characters,one uppercase and one digit minimum");
 
         User user = prt.getUser();
-        String hash_pw = BCrypt.hashpw(password, BCrypt.gensalt());
-        user.setPassword(hash_pw);
+        String hashPW = BCrypt.hashpw(password, BCrypt.gensalt());
+        user.setPassword(hashPW);
 
         this.userRepository.save(user);
         return true;

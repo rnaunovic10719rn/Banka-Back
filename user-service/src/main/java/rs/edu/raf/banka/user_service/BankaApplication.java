@@ -33,19 +33,19 @@ public class BankaApplication {
 		if (!userService.getUserById(1).isPresent()) {
 			return args -> {
 				//Pravim permisije za role
-				Collection<String> admin_permissions = new ArrayList<>();
-				admin_permissions.add(String.valueOf(Permissions.CREATE_USER));
-				admin_permissions.add(String.valueOf(Permissions.DELETE_USER));
-				admin_permissions.add(String.valueOf(Permissions.LIST_USERS));
-				admin_permissions.add(String.valueOf(Permissions.EDIT_USER));
-				admin_permissions.add(String.valueOf(Permissions.MY_EDIT));
+				Collection<String> adminPermissions = new ArrayList<>();
+				adminPermissions.add(String.valueOf(Permissions.CREATE_USER));
+				adminPermissions.add(String.valueOf(Permissions.DELETE_USER));
+				adminPermissions.add(String.valueOf(Permissions.LIST_USERS));
+				adminPermissions.add(String.valueOf(Permissions.EDIT_USER));
+				adminPermissions.add(String.valueOf(Permissions.MY_EDIT));
 
-				Collection<String> neka_pozicija_permissions = new ArrayList<>();
-				neka_pozicija_permissions.add(String.valueOf(Permissions.MANAGE_STUFF));
+				Collection<String> dummyPermissions = new ArrayList<>();
+				dummyPermissions.add(String.valueOf(Permissions.MANAGE_STUFF));
 
 				//Pravimo Role
-				Role glAdminRole = new Role(null, "ROLE_GL_ADMIN", admin_permissions);
-				Role adminRole = new Role(null, "ROLE_ADMIN", admin_permissions);
+				Role glAdminRole = new Role(null, "ROLE_GL_ADMIN", adminPermissions);
+				Role adminRole = new Role(null, "ROLE_ADMIN", adminPermissions);
 
 				//Stavljamo Role u bazu
 				userService.saveRole(glAdminRole);
