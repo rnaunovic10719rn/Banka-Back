@@ -3,6 +3,7 @@ package rs.edu.raf.banka.berza.bootstrap;
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import rs.edu.raf.banka.berza.dto.BerzaCSV;
@@ -23,6 +24,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
 @Component
+@Slf4j
 public class BootstrapData implements CommandLineRunner {
 
     @Value("${berza.berze.csv}")
@@ -59,7 +61,7 @@ public class BootstrapData implements CommandLineRunner {
 
         String fileName = "currency.csv";
 
-        List<CurrencyCSV> currencies = new CsvToBeanBuilder(new FileReader(fileName))
+        List<CurrencyCSV> currencies = new CsvToBeanBuilder<CurrencyCSV>(new FileReader(fileName))
                 .withType(CurrencyCSV.class)
                 .withSkipLines(1)
                 .build()
@@ -86,7 +88,7 @@ public class BootstrapData implements CommandLineRunner {
         //Dodavanje informacija o berzi
         List<Berza> berze = new ArrayList<>();
 
-        List<BerzaCSV> berzeCSV = new CsvToBeanBuilder(new FileReader(berzaCSVPath))
+        List<BerzaCSV> berzeCSV = new CsvToBeanBuilder<BerzaCSV>(new FileReader(berzaCSVPath))
                 .withType(BerzaCSV.class)
                 .withSkipLines(1)
                 .build()
@@ -115,7 +117,7 @@ public class BootstrapData implements CommandLineRunner {
         //Dodavanje informacija o inflacijama
         List<IstorijaInflacije> inflacije = new ArrayList<>();
 
-        List<InflacijaCSV> inflacijeCSV = new CsvToBeanBuilder(new FileReader(inflacijeCSVPath))
+        List<InflacijaCSV> inflacijeCSV = new CsvToBeanBuilder<InflacijaCSV>(new FileReader(inflacijeCSVPath))
                 .withType(InflacijaCSV.class)
                 .withSkipLines(1)
                 .build()
@@ -125,7 +127,7 @@ public class BootstrapData implements CommandLineRunner {
             IstorijaInflacije istorijaInflacije = new IstorijaInflacije();
             Optional<Valuta> valutaInflacije = valutaRepository.getValutaByNazivValute(ic.getCurrency());
             if(valutaInflacije.isEmpty()) {
-                System.err.println("Preskacem inflaciju zato sto valuta " + ic.getCurrency() + " ne postoji!");
+                //Ne bi trebalo da se desi
                 continue;
             }
             istorijaInflacije.setValuta(valutaInflacije.get());
