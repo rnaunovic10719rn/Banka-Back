@@ -53,7 +53,7 @@ public class UserControllerTest {
         User user = new User(dummyName, "Test");
         users.add(user);
 
-        String jsonResult = "[{\"id\":0,\"username\":\"Mock\",\"ime\":null,\"prezime\":null,\"email\":null,\"jmbg\":null,\"br_telefon\":null,\"password\":\"Test\",\"otpSeecret\":null,\"aktivan\":false,\"role\":null,\"requiresOtp\":false}]";
+        String jsonResult = "[{\"id\":0,\"username\":\"Mock\",\"ime\":null,\"prezime\":null,\"email\":null,\"jmbg\":null,\"brTelefon\":null,\"password\":\"Test\",\"otpSeecret\":null,\"aktivan\":false,\"role\":null,\"requiresOtp\":false}]";
 
         when(userServiceImplementation.getUsers()).thenReturn(users);
 
@@ -70,7 +70,7 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserAPI() throws Exception {
-        String jsonResult = "{\"id\":0,\"username\":\"Mock\",\"ime\":null,\"prezime\":null,\"email\":null,\"jmbg\":null,\"br_telefon\":null,\"password\":\"Test\",\"otpSeecret\":null,\"aktivan\":false,\"role\":null,\"requiresOtp\":false}";
+        String jsonResult = "{\"id\":0,\"username\":\"Mock\",\"ime\":null,\"prezime\":null,\"email\":null,\"jmbg\":null,\"brTelefon\":null,\"password\":\"Test\",\"otpSeecret\":null,\"aktivan\":false,\"role\":null,\"requiresOtp\":false}";
 
         when(userServiceImplementation.createUser(userMockForm)).thenReturn(new User(dummyName, "Test"));
 
