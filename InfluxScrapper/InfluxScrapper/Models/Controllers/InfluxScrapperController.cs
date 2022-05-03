@@ -26,9 +26,9 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     }
 
 
-    internal abstract IEnumerable<TScrapeQuery> ConvertToScrapeQueriesInternal(TUpdateQuery updateQuery);
-    internal abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery, DateTime? lastFound);
-    internal abstract Task<IEnumerable<TResult>> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token);
+    public abstract IEnumerable<TScrapeQuery> ConvertToScrapeQueriesInternal(TUpdateQuery updateQuery);
+    public abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery, DateTime? lastFound);
+    public abstract Task<IEnumerable<TResult>> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token);
 
     private string ControllerName => GetType().Name;
 
