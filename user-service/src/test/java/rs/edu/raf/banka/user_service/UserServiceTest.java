@@ -12,9 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.mail.PasswordResetToken;
+import rs.edu.raf.banka.user_service.model.Permissions;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
 import rs.edu.raf.banka.user_service.repository.PasswordTokenRepository;
@@ -45,7 +47,7 @@ public class UserServiceTest {
 
     @Test
     void testGetUser() {
-        User user = new User("UserX","X");
+        User user = new User("UserX", "X");
         given(userRepository.findByUsername("UserX")).willReturn(Optional.of(user));
 
         assertEquals(user, userService.getUser("UserX"));
@@ -76,7 +78,7 @@ public class UserServiceTest {
 
     @Test
     void testDeleteUser() {
-        User user = new User("UserX","X");
+        User user = new User("UserX", "X");
 
         List<String> mockPermissions = new ArrayList<>();
         mockPermissions.add("mock_permission");
@@ -90,7 +92,7 @@ public class UserServiceTest {
 
     @Test
     void testDeleteAdminFail() {
-        User user = new User("UserX","X");
+        User user = new User("UserX", "X");
 
         List<String> mockPermissions = new ArrayList<>();
         mockPermissions.add("mock_permission");
@@ -104,7 +106,7 @@ public class UserServiceTest {
 
     @Test
     void testGetUserByEmail() {
-        User user = new User("UserX","X");
+        User user = new User("UserX", "X");
         user.setEmail("user@mock");
         given(userRepository.findByEmail("user@mock")).willReturn(Optional.of(user));
 
@@ -112,31 +114,31 @@ public class UserServiceTest {
     }
 
     @Test
-    void testChangePassword(){
-        User user = new User("UserX","X");
+    void testChangePassword() {
+        User user = new User("UserX", "X");
         user.setEmail("user@mock");
 
-        userService.changePassword("mockPass123",user);
+        userService.changePassword("mockPass123", user);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
     }
 
     @Test
-    void testInvalidPasswordChangePassword(){
-        User user = new User("UserX","X");
+    void testInvalidPasswordChangePassword() {
+        User user = new User("UserX", "X");
         user.setEmail("user@mock");
 
-        userService.changePassword("mockPass",user);
+        userService.changePassword("mockPass", user);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         assertEquals(passwordEncoder.matches("mockPass", user.getPassword()), false);
     }
 
     @Test
-    void testSetNewPassword(){
+    void testSetNewPassword() {
         String token = "token";
-        User user = new User("UserX","X");
+        User user = new User("UserX", "X");
         user.setEmail("user@mock");
 
         PasswordResetToken passwordResetToken = new PasswordResetToken();
@@ -144,16 +146,16 @@ public class UserServiceTest {
 
         given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
 
-        userService.setNewPassword("mockPass123","token");
+        userService.setNewPassword("mockPass123", "token");
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
     }
 
     @Test
-    void testSetNewInvalidPassword(){
+    void testSetNewInvalidPassword() {
         String token = "token";
-        User user = new User("UserX","X");
+        User user = new User("UserX", "X");
         user.setEmail("user@mock");
 
         PasswordResetToken passwordResetToken = new PasswordResetToken();
@@ -161,35 +163,114 @@ public class UserServiceTest {
 
         given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
 
-        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass","token"));
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass", "token"));
         assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());
     }
 
     @Test
-    void testHasEditPermisions(){
-        String token =  JWT.create()
+    void testHasEditPermisions() {
+        String token = JWT.create()
                 .withSubject("userX")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
         User user = new User("userX", "Test");
         user.setId(2L);
-        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+        user.setRole(new Role(null, "ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
 
-        assertEquals(userService.hasEditPermissions(user,token), true);
+        assertEquals(userService.hasEditPermissions(user, token), true);
     }
 
     @Test
-    void testHasNoEditPermisions(){
-        String token =  JWT.create()
+    void testHasNoEditPermisions() {
+        String token = JWT.create()
                 .withSubject("userX")
                 .withIssuer("mock")
-                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS",  "DELETE_USER"}))
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
         User user = new User("userX", "Test");
         user.setId(2L);
 
-        assertEquals(userService.hasEditPermissions(user,token), false);
+        assertEquals(userService.hasEditPermissions(user, token), false);
+    }
+
+    @Test
+    void testHasEditPermissionsFunc() {
+        assertEquals(userService.hasEditPermission(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}, Permissions.MY_EDIT), true);
+    }
+
+    @Test
+    void testHasNoEditPermissionsFunc() {
+        assertEquals(userService.hasEditPermission(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "DELETE_USER"}, Permissions.MY_EDIT), false);
+    }
+
+    @Test
+    void testGetUserId() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+
+        String token = JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+
+        when(userRepository.findByUsername("userX")).thenReturn(Optional.of(user));
+
+        assertEquals(userService.getUserId(token), user.getId());
+    }
+
+    @Test
+    void testGetUserByToken() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+        user.setAktivan(true);
+
+        String token = JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+
+        when(userRepository.findByUsername("userX")).thenReturn(Optional.of(user));
+
+        assertEquals(userService.getUserByToken(token), user);
+    }
+
+    @Test
+    void testIvalidGetUserByToken() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+        user.setAktivan(true);
+
+        String token = JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+
+        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
+        assertEquals("User not found in database", exception.getMessage());
+    }
+
+    @Test
+    void testIvalidTokenGetUserByToken() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+        user.setAktivan(true);
+
+        String token = JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret2".getBytes()));
+
+        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
+        assertEquals("Token is invalid", exception.getMessage());
     }
 
 
@@ -199,7 +280,5 @@ public class UserServiceTest {
 
         assertEquals(null, userService.getUserByEmail("user@mock"));
     }
-
-
 
 }
