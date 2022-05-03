@@ -1,5 +1,11 @@
 package rs.edu.raf.banka.user_service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import org.assertj.core.util.Arrays;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -7,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.mail.PasswordResetToken;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
@@ -20,7 +27,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -156,6 +165,33 @@ public class UserServiceTest {
         assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());
     }
 
+    @Test
+    void testHasEditPermisions(){
+        String token =  JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+        User user = new User("userX", "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        assertEquals(userService.hasEditPermissions(user,token), true);
+    }
+
+    @Test
+    void testHasNoEditPermisions(){
+        String token =  JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS",  "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+        User user = new User("userX", "Test");
+        user.setId(2L);
+
+        assertEquals(userService.hasEditPermissions(user,token), false);
+    }
+
 
     @Test
     void testGetUserByEmailInvalid() {
@@ -163,5 +199,7 @@ public class UserServiceTest {
 
         assertEquals(null, userService.getUserByEmail("user@mock"));
     }
+
+
 
 }
