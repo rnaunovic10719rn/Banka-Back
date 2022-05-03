@@ -37,6 +37,11 @@ public class MockController : InfluxScrapperController<MockUpdateQuery, MockScra
             await Task.Delay(10000, token);
         if (scrapeQuery.ID == 4)
             throw new Exception("Error");
+        if (scrapeQuery.ID >= 5)
+        {
+            scrapeQuery.ID -= 5;
+            throw new Exception("Error");
+        }
         
         var lenght = _random.Next(100, 1000);
         var results = new MockResult[lenght];

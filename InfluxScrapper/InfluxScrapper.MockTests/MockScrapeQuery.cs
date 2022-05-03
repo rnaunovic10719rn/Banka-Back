@@ -6,5 +6,5 @@ public class MockScrapeQuery
     {
         ID = id;
     }
-    public int ID { get; }
+    public int ID { get; set; }
 }

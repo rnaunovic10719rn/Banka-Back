@@ -25,7 +25,11 @@ public class UpdateWaitMockTests
         var logger = factory!.CreateLogger<MockController>();
         var httpFactory = serviceProvider.GetService<IHttpClientFactory>();
 
-        return (new MockController(httpFactory!, logger, influxManager!), influxManager);
+        var controller = new MockController(httpFactory!, logger, influxManager!);
+        controller.ScrapeWaitTimeout  = TimeSpan.FromSeconds(5);
+        controller.ScrapeDelayTime = TimeSpan.FromSeconds(1);
+        controller.ChacheValiditySpan = TimeSpan.FromSeconds(15);
+        return (controller, influxManager);
     }
 
         
@@ -34,7 +38,7 @@ public class UpdateWaitMockTests
     {
         var (controller, influx) = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        await controller.UpdateWait(new MockUpdateQuery(1, 0), tokenSource.Token);
+        await controller.UpdateWait(new MockUpdateQuery(2, 0), tokenSource.Token);
         Assert.Empty(influx.Items);
     }
     
@@ -43,7 +47,7 @@ public class UpdateWaitMockTests
     {
         var (controller, influx) = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        await controller.UpdateWait(new MockUpdateQuery(1, 1), tokenSource.Token);
+        await controller.UpdateWait(new MockUpdateQuery(2, 1), tokenSource.Token);
         Assert.NotEmpty(influx.Items);
     }
     
@@ -51,8 +55,8 @@ public class UpdateWaitMockTests
     public async Task TestUpdateWaitThrottle()
     {
         var (controller, influx) = GenerateController();
-        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        await controller.UpdateWait(new MockUpdateQuery(1, 2), tokenSource.Token);
+        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await controller.UpdateWait(new MockUpdateQuery(2, 2), tokenSource.Token);
         Assert.NotEmpty(influx.Items);
     }
 
@@ -61,7 +65,7 @@ public class UpdateWaitMockTests
     {
         var (controller, influx) = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        await controller.UpdateWait(new MockUpdateQuery(1, 3), tokenSource.Token);
+        await controller.UpdateWait(new MockUpdateQuery(2, 3), tokenSource.Token);
         Assert.Empty(influx.Items);
     }
 
@@ -70,8 +74,26 @@ public class UpdateWaitMockTests
     {
         var (controller, influx) = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        await controller.UpdateWait(new MockUpdateQuery(1, 4), tokenSource.Token);
+        await controller.UpdateWait(new MockUpdateQuery(2, 4), tokenSource.Token);
         Assert.Empty(influx.Items);
     }
     
+    [Fact]
+    public async Task TestUpdateWaitOneError()
+    {
+        var (controller, influx) = GenerateController();
+        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await controller.UpdateWait(new MockUpdateQuery(2, 6), tokenSource.Token);
+        Assert.NotEmpty(influx.Items);
+    }
+    
+    [Fact]
+    public async Task TestUpdateWaitOnceSelfTimeout()
+    {
+        var (controller, influx) = GenerateController();
+        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await controller.UpdateWait(new MockUpdateQuery(2, 6 * 15 + 1), tokenSource.Token);
+        Assert.Empty(influx.Items);
+    }
+
 }

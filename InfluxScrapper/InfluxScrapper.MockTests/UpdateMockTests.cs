@@ -25,7 +25,11 @@ public class UpdateMockTests
         var logger = factory!.CreateLogger<MockController>();
         var httpFactory = serviceProvider.GetService<IHttpClientFactory>();
 
-        return (new MockController(httpFactory!, logger, influxManager!), influxManager);
+        var controller = new MockController(httpFactory!, logger, influxManager!);
+        controller.ScrapeWaitTimeout  = TimeSpan.FromSeconds(5);
+        controller.ScrapeDelayTime = TimeSpan.FromSeconds(1);
+        controller.ChacheValiditySpan = TimeSpan.FromSeconds(15);
+        return (controller, influxManager);
     }
 
         
@@ -33,9 +37,9 @@ public class UpdateMockTests
     public async Task TestUpdateEmpty()
     {
         var (controller, influx) = GenerateController();
-        controller.Update(new MockUpdateQuery(1, 0));
+        controller.Update(new MockUpdateQuery(2, 0));
         Assert.Empty(influx.Items);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(5));
         Assert.Empty(influx.Items);
     }
     
@@ -43,9 +47,9 @@ public class UpdateMockTests
     public async Task TestUpdate()
     {
         var (controller, influx) = GenerateController();
-        controller.Update(new MockUpdateQuery(1, 1));
+        controller.Update(new MockUpdateQuery(2, 1));
         Assert.Empty(influx.Items);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(5));
         Assert.NotEmpty(influx.Items);
     }
     
@@ -53,9 +57,9 @@ public class UpdateMockTests
     public async Task TestUpdateThrottle()
     {
         var (controller, influx) = GenerateController();
-        controller.Update(new MockUpdateQuery(1, 2));
+        controller.Update(new MockUpdateQuery(2, 2));
         Assert.Empty(influx.Items);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(5));
         Assert.NotEmpty(influx.Items);
     }
 
@@ -63,9 +67,9 @@ public class UpdateMockTests
     public async Task TestUpdateTimeout()
     {
         var (controller, influx) = GenerateController();
-        controller.Update(new MockUpdateQuery(1, 3));
+        controller.Update(new MockUpdateQuery(2, 3));
         Assert.Empty(influx.Items);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(5));
         Assert.Empty(influx.Items);
     }
 
@@ -73,10 +77,29 @@ public class UpdateMockTests
     public async Task TestUpdateError()
     {
         var (controller, influx) = GenerateController();
-        controller.Update(new MockUpdateQuery(1, 4));
+        controller.Update(new MockUpdateQuery(2, 4));
         Assert.Empty(influx.Items);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        await Task.Delay(TimeSpan.FromSeconds(5));
         Assert.Empty(influx.Items);
     }
-    
+        
+    [Fact]
+    public async Task TestUpdateErrorOnce()
+    {
+        var (controller, influx) = GenerateController();
+        controller.Update(new MockUpdateQuery(2, 6));
+        Assert.Empty(influx.Items);
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        Assert.NotEmpty(influx.Items);
+    }
+            
+    [Fact]
+    public async Task TestUpdateErrorMultiple()
+    {
+        var (controller, influx) = GenerateController();
+        controller.Update(new MockUpdateQuery(2, 5 * 5 + 1));
+        Assert.Empty(influx.Items);
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        Assert.Empty(influx.Items);
+    }
 }

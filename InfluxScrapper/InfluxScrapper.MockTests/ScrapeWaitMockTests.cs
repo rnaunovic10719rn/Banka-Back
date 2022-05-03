@@ -14,7 +14,7 @@ using Xunit;
 
 namespace InfluxScrapper.MockTests;
 
-public class ScrapeMockTests
+public class ScrapeWaitMockTests
 {
     private static MockController GenerateController()
     {
@@ -38,20 +38,20 @@ public class ScrapeMockTests
     }
 
     [Fact]
-    public async Task TestScrapeEmpty()
+    public async Task TestScrapeWaitEmpty()
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var results = await controller.Scrape(new MockScrapeQuery(0), tokenSource.Token);
+        var results = await controller.ScrapeWait(new MockScrapeQuery(0), tokenSource.Token);
         Assert.Empty(results);
     }
     
     [Fact]
-    public async Task TestScrape()
+    public async Task TestScrapeWait()
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var results = await controller.Scrape(new MockScrapeQuery(1), tokenSource.Token);
+        var results = await controller.ScrapeWait(new MockScrapeQuery(1), tokenSource.Token);
         Assert.NotEmpty(results);
         Assert.All(results, result =>
         {
@@ -62,40 +62,52 @@ public class ScrapeMockTests
     }
     
     [Fact]
-    public async Task TestScrapeThrottle()
+    public async Task TestScrapeWaitThrottle()
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var results = await controller.Scrape(new MockScrapeQuery(2), tokenSource.Token);
+        var results = await controller.ScrapeWait(new MockScrapeQuery(2), tokenSource.Token);
         Assert.NotEmpty(results);
     }
     
     [Fact]
-    public async Task TestScrapeTimeout()
+    public async Task TestScrapeWaitTimeout()
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var results = await controller.Scrape(new MockScrapeQuery(3), tokenSource.Token);
+        var results = await controller.ScrapeWait(new MockScrapeQuery(3), tokenSource.Token);
         Assert.Empty(results);
     }
     
     [Fact]
-    public async Task TestScrapeError()
+    public async Task TestScrapeWaitError()
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        var results = await controller.Scrape(new MockScrapeQuery(4), tokenSource.Token);
+        var results = await controller.ScrapeWait(new MockScrapeQuery(4), tokenSource.Token);
         Assert.Empty(results);
     }
-    
+        
     [Fact]
-    public async Task TestScrapeErrorOnce()
+    public async Task TestScrapeWaitErrorOnce()
     {
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var results = (await controller.Scrape(new MockScrapeQuery(6), tokenSource.Token)).ToArray();
-        Assert.Empty(results);
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        var results = (await controller.ScrapeWait(new MockScrapeQuery(6), tokenSource.Token)).ToArray();
+        Assert.NotEmpty(results);
+        Assert.All(results, result =>
+        {
+            Assert.NotNull(result);
+            Assert.InRange(result.Time, DateTime.Now.Subtract(TimeSpan.FromDays(366)), DateTime.Now);
+            Assert.Equal(DateTimeKind.Utc, result.Time.Kind);
+        });
+    }
+    
+    [Fact]
+    public async Task TestScrapeWaitSelfTimeout()
+    {
+        var controller = GenerateController();
+        var results = await controller.ScrapeWait(new MockScrapeQuery(5 * 15 + 1), CancellationToken.None);
         Assert.Empty(results);
     }
 }
