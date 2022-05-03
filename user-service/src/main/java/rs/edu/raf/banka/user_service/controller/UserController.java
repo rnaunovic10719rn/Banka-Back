@@ -152,7 +152,6 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         if(!OTPUtilities.isValidSeecret(secret))
             return ResponseEntity.badRequest().build();
-        System.out.println(secret);
         userService.editOtpSeecret(user, secret);
         return ResponseEntity.ok().build();
     }
