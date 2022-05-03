@@ -9,8 +9,8 @@ namespace InfluxScrapper.MockTests;
 
 public class MockResult : InvfluxRecord<MockResult>
 {
-    public DateTime Time { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-    public DateTime TimeWritten { get; set; }
+    public DateTime Time { get; set; } 
+    public DateTime TimeWritten { get; set; } = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
     public int Value { get; set; }
     public string Tag { get; set; } = "test";
     

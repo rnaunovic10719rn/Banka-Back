@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Controllers;
+using InfluxScrapper.Models.Influx;
 using Microsoft.Extensions.Logging;
 
 namespace InfluxScrapper.MockTests;
@@ -14,7 +15,7 @@ public class MockController : InfluxScrapperController<MockUpdateQuery, MockScra
 {
     private static Random _random = new();
     
-    public MockController(IHttpClientFactory httpClientFactory, ILogger<InfluxScrapperController<MockUpdateQuery, MockScrapeQuery, MockReadQuery, MockResult>> logger, InfluxManager influxManager) : base(httpClientFactory, logger, influxManager)
+    public MockController(IHttpClientFactory httpClientFactory, ILogger<InfluxScrapperController<MockUpdateQuery, MockScrapeQuery, MockReadQuery, MockResult>> logger, IInfluxManager influxManager) : base(httpClientFactory, logger, influxManager)
     {
     }
     public override IEnumerable<MockScrapeQuery> ConvertToScrapeQueriesInternal(MockUpdateQuery updateQuery) 
@@ -43,7 +44,10 @@ public class MockController : InfluxScrapperController<MockUpdateQuery, MockScra
         {
             var result = new MockResult();
             result.Value = _random.Next();
-            result.Time = DateTime.Now.Subtract(TimeSpan.FromDays(365)) + TimeSpan.FromDays(_random.Next(1, 364));
+            result.Time = DateTime.SpecifyKind(
+                DateTime.Now.Subtract(TimeSpan.FromDays(365)) + TimeSpan.FromDays(_random.Next(1, 364))
+                , DateTimeKind.Utc);
+            results[i] = result;
         }
         return results;
     }

@@ -11,14 +11,14 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
 {
     internal readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> _logger;
-    private readonly InfluxManager _influxManager;
+    private readonly IInfluxManager _influxManager;
     private static readonly TimeSpan _scrapeWaitTimeout = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan _scrapeDelayTime = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan _chacheValiditySpan = TimeSpan.FromMinutes(15);
 
     public InfluxScrapperController(IHttpClientFactory httpClientFactory,
         ILogger<InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> logger,
-        InfluxManager influxManager)
+        IInfluxManager influxManager)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;

@@ -13,12 +13,11 @@ using Xunit;
 
 namespace InfluxScrapper.MockTests;
 
-public class StockUnitTests
+public class StockMockTests
 {
     private static MockController GenerateController()
     {
-        var influxManager = new InfluxManager(Constants.InfluxDBUrl, Constants.InfluxToken, Constants.InfluxOrg,
-            Constants.InfluxBucket);
+        var influxManager = new MockInfluxManager();
         
         var serviceProvider = new ServiceCollection()
             .AddLogging()
@@ -49,6 +48,12 @@ public class StockUnitTests
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
         var results = await controller.Scrape(new MockScrapeQuery(1), tokenSource.Token);
         Assert.NotEmpty(results);
+        Assert.All(results, result =>
+        {
+            Assert.NotNull(result);
+            Assert.InRange(result.Time, DateTime.Now.Subtract(TimeSpan.FromDays(366)), DateTime.Now);
+            Assert.Equal(DateTimeKind.Utc, result.Time.Kind);
+        });
     }
     
     [Fact]
