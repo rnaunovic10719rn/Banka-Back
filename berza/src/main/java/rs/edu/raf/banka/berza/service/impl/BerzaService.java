@@ -69,6 +69,7 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
+    @Async
     public MakeOrderResponse makeOrder(Long userId, String symbol, String hartijaTipString, Integer kolicina, String action,
                                        Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
 //        UserAccount userAccount = userAccountRepository.getById(userId);
@@ -140,6 +141,7 @@ public class BerzaService {
         return new MakeOrderResponse("Order Successful");
     }
 
+    @Async
     public MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
         boolean flag = true;
         if(berzaId != -1){
@@ -164,6 +166,7 @@ public class BerzaService {
      * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
      * s obzirom na to, bice obradjen nakon nastavka specifikacije
      */
+    @Async
     public MakeOrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
         Random random = new Random();
         int kolicina = order.getKolicina();
@@ -213,6 +216,7 @@ public class BerzaService {
     /**
      * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
      */
+    @Async
     public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
         try {
             //3s simulaciju 30 minuta
