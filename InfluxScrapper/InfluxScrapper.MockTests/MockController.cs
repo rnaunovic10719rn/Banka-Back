@@ -19,14 +19,24 @@ public class MockController : InfluxScrapperController<MockUpdateQuery, MockScra
     }
     public override IEnumerable<MockScrapeQuery> ConvertToScrapeQueriesInternal(MockUpdateQuery updateQuery) 
         => Enumerable.Range(0,updateQuery.Length)
-            .Select(i => new MockScrapeQuery(i));
+            .Select(i => new MockScrapeQuery(updateQuery.Id));
 
     public override MockUpdateQuery ConvertToUpdateQueryInternal(MockReadQuery readQuery, DateTime? lastFound) =>
-        new(readQuery.Lenght);
+        new(readQuery.Lenght, readQuery.Id);
 
     public override async Task<IEnumerable<MockResult>> ScrapeInternal(MockScrapeQuery scrapeQuery,
         CancellationToken token)
     {
+        if (scrapeQuery.ID == 0)
+            return Enumerable.Empty<MockResult>();
+        // if (scrapeQuery.ID == 1) do nothing
+        if (scrapeQuery.ID == 2)
+            await Task.Delay(1000, token);
+        if (scrapeQuery.ID == 3)
+            await Task.Delay(10000, token);
+        if (scrapeQuery.ID == 4)
+            throw new Exception("Error");
+        
         var lenght = _random.Next(100, 1000);
         var results = new MockResult[lenght];
         for (int i = 0; i < lenght; i++)
