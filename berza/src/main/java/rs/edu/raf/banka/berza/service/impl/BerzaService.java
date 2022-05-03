@@ -135,7 +135,7 @@ public class BerzaService {
         Double provizija = getCommission(ukupnaCena, orderType);
 
         Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
-                provizija, orderType, isAON, isMargin);
+                provizija, orderType, isAON, isMargin, symbol);
         executeTransaction(berzaId, order, ask, bid);
 
         return new MakeOrderResponse("Order Successful");

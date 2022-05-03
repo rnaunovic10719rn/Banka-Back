@@ -26,6 +26,8 @@ public class Order {
 
     private Long hartijaOdVrednostiId;
 
+    private String oznakaHartije;
+
     @Enumerated(value = EnumType.STRING)
     private HartijaOdVrednostiType hartijaOdVrednosti;
 
