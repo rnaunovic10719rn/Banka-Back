@@ -90,33 +90,4 @@ public class UpdateWaitOnceMockTests
         await Task.Delay(TimeSpan.FromSeconds(5));
         Assert.Empty(influx.Items);
     }
-        
-    /*[Fact]
-    public async Task TestUpdateWaitOnceCache()
-    {
-        var (controller, influx) = GenerateController();
-        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var updateQuery = new MockUpdateQuery(2, 1);
-        await controller.UpdateWait(updateQuery, tokenSource.Token);
-        var cacheItems = influx.Items.ToArray();
-        await Task.Delay(TimeSpan.FromSeconds(2),tokenSource.Token);
-        await controller.UpdateWaitOnce(updateQuery, tokenSource.Token);;
-        Assert.NotEmpty(influx.Items);
-        Assert.Equal(cacheItems.Length, influx.Items.Count);
-        Assert.True(cacheItems.SequenceEqual(influx.Items));
-    }
-    
-    [Fact]
-    public async Task TestUpdateWaitOnceCacheExpired()
-    {
-        var (controller, influx) = GenerateController();
-        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-        var updateQuery = new MockUpdateQuery(2, 1);
-        await controller.UpdateWait(updateQuery, tokenSource.Token);
-        var cacheItems = influx.Items.ToArray();
-        await Task.Delay(TimeSpan.FromSeconds(15),tokenSource.Token);
-        await controller.UpdateWaitOnce(updateQuery, tokenSource.Token);;
-        Assert.NotEmpty(influx.Items);
-        Assert.False(cacheItems.SequenceEqual(influx.Items));
-    }*/
 }
