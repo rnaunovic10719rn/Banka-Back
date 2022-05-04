@@ -274,7 +274,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     public void sendMail(String email, String token) throws MessagingException {
         String to = email;
-        String url = " http://localhost:3000/changepassword/" + token;
+        String url = "http://localhost:3000/changepassword/" + token;
+        String link ="<a href='" + url + "'>" + url + "</a>";
         String subject = "Password reset";
         String content = "<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -282,7 +283,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
                 "\n" +
                 "<h1>Link ka resetovanju passworda</h1>\n" +
                 "\n" +
-                "<p>"+ url +"</p>\n" +
+                "<p>"+ link +"</p>\n" +
                 "\n" +
                 "</body>\n" +
                 "</html>";
