@@ -14,12 +14,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.mail.PasswordResetToken;
 import rs.edu.raf.banka.user_service.model.Permissions;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
 import rs.edu.raf.banka.user_service.repository.PasswordTokenRepository;
+import rs.edu.raf.banka.user_service.repository.RoleRepository;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +39,9 @@ public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
 
     @Mock
     private PasswordTokenRepository passwordTokenRepository;
@@ -178,7 +179,7 @@ public class UserServiceTest {
         user.setId(2L);
         user.setRole(new Role(null, "ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
 
-        assertEquals(userService.hasEditPermissions(user, token), true);
+        assertEquals(true,userService.hasEditPermissions(user, token));
     }
 
     @Test
@@ -191,17 +192,17 @@ public class UserServiceTest {
         User user = new User("userX", "Test");
         user.setId(2L);
 
-        assertEquals(userService.hasEditPermissions(user, token), false);
+        assertEquals(false,userService.hasEditPermissions(user, token));
     }
 
     @Test
     void testHasEditPermissionsFunc() {
-        assertEquals(userService.hasEditPermission(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}, Permissions.MY_EDIT), true);
+        assertEquals(true,userService.hasEditPermission(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}, Permissions.MY_EDIT));
     }
 
     @Test
     void testHasNoEditPermissionsFunc() {
-        assertEquals(userService.hasEditPermission(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "DELETE_USER"}, Permissions.MY_EDIT), false);
+        assertEquals(false,userService.hasEditPermission(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "DELETE_USER"}, Permissions.MY_EDIT));
     }
 
     @Test
@@ -218,7 +219,7 @@ public class UserServiceTest {
 
         when(userRepository.findByUsername("userX")).thenReturn(Optional.of(user));
 
-        assertEquals(userService.getUserId(token), user.getId());
+        assertEquals(user.getId(),userService.getUserId(token));
     }
 
     @Test
@@ -236,7 +237,7 @@ public class UserServiceTest {
 
         when(userRepository.findByUsername("userX")).thenReturn(Optional.of(user));
 
-        assertEquals(userService.getUserByToken(token), user);
+        assertEquals(user,userService.getUserByToken(token));
     }
 
     @Test
@@ -273,6 +274,32 @@ public class UserServiceTest {
         assertEquals("Token is invalid", exception.getMessage());
     }
 
+    @Test
+    void testSetRoleToUser() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+        user.setAktivan(true);
+        Role r = new Role();
+        r.setName("admin");
+
+        when(userRepository.findByUsername("userX")).thenReturn(Optional.of(user));
+        when(roleRepository.findByName("admin")).thenReturn(r);
+        userService.setRoleToUser("userX","admin");
+
+        assertEquals(user.getRole(), r);
+    }
+
+    @Test
+    void testEditOtpSecret() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+        user.setAktivan(true);
+
+        userService.editOtpSeecret(user,"secret");
+        assertEquals("secret",user.getOtpSeecret());
+    }
 
     @Test
     void testGetUserByEmailInvalid() {
