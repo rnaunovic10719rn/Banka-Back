@@ -26,8 +26,11 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     }
 
 
+    [ApiExplorerSettings(IgnoreApi = true)]
     public abstract IEnumerable<TScrapeQuery> ConvertToScrapeQueriesInternal(TUpdateQuery updateQuery);
+    [ApiExplorerSettings(IgnoreApi = true)]
     public abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery, DateTime? lastFound);
+    [ApiExplorerSettings(IgnoreApi = true)]
     public abstract Task<IEnumerable<TResult>> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token);
 
     private string ControllerName => GetType().Name;
