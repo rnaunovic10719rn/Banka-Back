@@ -20,10 +20,10 @@ public class BerzaCSV {
     private String exchangeMicCode;
 
     @CsvBindByPosition(position = 3)
-    private String Country;
+    private String country;
 
     @CsvBindByPosition(position = 4)
-    private String Currency;
+    private String currency;
 
     @CsvBindByPosition(position = 5)
     private String timeZone;

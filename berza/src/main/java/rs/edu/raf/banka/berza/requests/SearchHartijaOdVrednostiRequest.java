@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class SearchHartijaOdVrednostiRequest {
 
-    private String oznaka_hartije;
-    private String opis_hartije;
+    private String oznakaHartije;
+    private String opisHartije;
 }

@@ -24,7 +24,6 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
@@ -80,17 +79,17 @@ public class AkcijePodaciService {
                 akcija.setBerza(berza);
                 akcija.setOznakaHartije(co.getSymbol());
                 akcija.setOznakaHartije("");
-                akcija.setOpis_hartije(co.getName());
-                akcija.setLast_updated(new Date());
-                akcija.setOutstanding_shares(co.getSharesOutstanding());
+                akcija.setOpisHartije(co.getName());
+                akcija.setLastUpdated(new Date());
+                akcija.setOutstandingShares(co.getSharesOutstanding());
             } else {
                 // Nećemo da pucamo u slučaju da se desila API greška.
                 // API je rate limitovan, pa bi to dosta kočilo.
                 // U produkciji svakako treba izbaciti grešku.
                 akcija.setOznakaHartije(ticker);
-                akcija.setOpis_hartije(ticker);
-                akcija.setLast_updated(new Date());
-                akcija.setOutstanding_shares(0L);
+                akcija.setOpisHartije(ticker);
+                akcija.setLastUpdated(new Date());
+                akcija.setOutstandingShares(0L);
             }
             akcijeRepository.save(akcija);
         }
@@ -119,8 +118,8 @@ public class AkcijePodaciService {
             dto.setBerzaId(-1L);
         dto.setTicker(ticker);
         dto.setId(akcija.getId());
-        dto.setOpisHartije(akcija.getOpis_hartije());
-        dto.setOutstandingShares(akcija.getOutstanding_shares());
+        dto.setOpisHartije(akcija.getOpisHartije());
+        dto.setOutstandingShares(akcija.getOutstandingShares());
 
         return dto;
     }
@@ -206,11 +205,11 @@ public class AkcijePodaciService {
     public Page<Akcije> search(String oznakaHartije, String opisHartije, Integer page, Integer size){
         Akcije akcije = new Akcije();
         akcije.setOznakaHartije(oznakaHartije);
-        akcije.setOpis_hartije(opisHartije);
+        akcije.setOpisHartije(opisHartije);
 
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("oznaka_hartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("opis_hartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+                .withMatcher("oznakaHartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("opisHartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
         Example<Akcije> example = Example.of(akcije, exampleMatcher);
 
         return akcijeRepository.findAll(example, PageRequest.of(page, size));

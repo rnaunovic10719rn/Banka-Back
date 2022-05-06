@@ -12,6 +12,6 @@ public class CreateUserForm {
     private String prezime;
     private String email;
     private String jmbg;
-    private String br_telefon;
+    private String brTelefon;
     private String pozicija;
 }

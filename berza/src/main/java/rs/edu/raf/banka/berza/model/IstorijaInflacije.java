@@ -3,7 +3,6 @@ package rs.edu.raf.banka.berza.model;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Data
@@ -13,10 +12,13 @@ public class IstorijaInflacije {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private Date datum;
+    @ManyToOne
+    private Valuta valuta;
 
     @Column
-    private Double procenatInflacije;
+    private String year;
+
+    @Column
+    private Double inflationRate;
 
 }

@@ -11,14 +11,14 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
 {
     internal readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> _logger;
-    private readonly InfluxManager _influxManager;
-    private static readonly TimeSpan _scrapeWaitTimeout = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan _scrapeDelayTime = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan _chacheValiditySpan = TimeSpan.FromMinutes(15);
+    private readonly IInfluxManager _influxManager;
+    public TimeSpan ScrapeWaitTimeout { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan ScrapeDelayTime { get; set; } = TimeSpan.FromMinutes(1);
+    public TimeSpan ChacheValiditySpan { get; set; } = TimeSpan.FromMinutes(15);
 
     public InfluxScrapperController(IHttpClientFactory httpClientFactory,
         ILogger<InfluxScrapperController<TUpdateQuery, TScrapeQuery, TReadQuery, TResult>> logger,
-        InfluxManager influxManager)
+        IInfluxManager influxManager)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -26,9 +26,12 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     }
 
 
-    internal abstract IEnumerable<TScrapeQuery> ConvertToScrapeQueriesInternal(TUpdateQuery updateQuery);
-    internal abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery, DateTime? lastFound);
-    internal abstract Task<IEnumerable<TResult>> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token);
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public abstract IEnumerable<TScrapeQuery> ConvertToScrapeQueriesInternal(TUpdateQuery updateQuery);
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public abstract TUpdateQuery ConvertToUpdateQueryInternal(TReadQuery readQuery, DateTime? lastFound);
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public abstract Task<IEnumerable<TResult>> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token);
 
     private string ControllerName => GetType().Name;
 
@@ -56,7 +59,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     {
         const int eventId = 2;
         var scrapeQueries = ConvertToScrapeQueriesInternal(updateQuery);
-        var cancellationTokenSource = new CancellationTokenSource(_scrapeDelayTime);
+        var cancellationTokenSource = new CancellationTokenSource(ScrapeWaitTimeout);
         var token = cancellationTokenSource.Token;
         foreach (var scrapeQuery in scrapeQueries)
             Task.Run(async () => await UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, token, eventId), token);
@@ -97,7 +100,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         if (cache is not null && cache.FirstOrDefault() is { } top)
         {
             LogInformation(eventId,
-                $"Top Result: {top}, time: {top.TimeWritten}, minTime {DateTime.Now.Subtract(_chacheValiditySpan)}, is cached: {top.TimeWritten >= DateTime.Now.Subtract(_chacheValiditySpan)}");
+                $"Top Result: {top}, time: {top.TimeWritten}, minTime {DateTime.Now.Subtract(ChacheValiditySpan)}, is cached: {top.TimeWritten >= DateTime.Now.Subtract(ChacheValiditySpan)}");
         }
         else
         {
@@ -108,7 +111,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         DateTime? lastFound = null;
         if (cache is not null && cache.FirstOrDefault() is { } topResult)
         {
-            if(topResult.TimeWritten >= DateTime.Now.Subtract(_chacheValiditySpan) &&
+            if(topResult.TimeWritten >= DateTime.Now.Subtract(ChacheValiditySpan) &&
                await ReadInternal(readQuery, false, token, eventId) is { } result)
                 return result;
             lastFound = topResult.TimeWritten;
@@ -146,7 +149,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     private async Task<IEnumerable<TResult>?> ScrapeWaitInternal(TScrapeQuery scrapeQuery, CancellationToken token,
         int eventId)
     {
-        var endTime = DateTime.Now + _scrapeWaitTimeout;
+        var endTime = DateTime.Now + ScrapeWaitTimeout;
         var retries = 0;
 
         LogInformation(eventId, "Scrape wait started");
@@ -169,7 +172,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
 
             try
             {
-                await Task.Delay(_scrapeDelayTime, token);
+                await Task.Delay(ScrapeDelayTime, token);
             }
             catch (OperationCanceledException ex)
             {
@@ -225,7 +228,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         if (results.All(r => r))
             return;
 
-        var cancellationTokenSource = new CancellationTokenSource(_scrapeDelayTime);
+        var cancellationTokenSource = new CancellationTokenSource(ScrapeDelayTime);
         var scheduleToken = cancellationTokenSource.Token;
         for (var i = 0; i < scrapeQueries.Length; i++)
         {

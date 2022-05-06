@@ -19,10 +19,10 @@ public class StockInfluxScrapperController : InfluxScrapperController<StockUpdat
     {
     }
 
-    internal override IEnumerable<StockScrapeQuery> ConvertToScrapeQueriesInternal(StockUpdateQuery updateQuery) 
+    public override IEnumerable<StockScrapeQuery> ConvertToScrapeQueriesInternal(StockUpdateQuery updateQuery) 
         => updateQuery.ToScrapeQueries();
 
-    internal override StockUpdateQuery ConvertToUpdateQueryInternal(StockCacheQuery readQuery, DateTime? lastFound)
+    public override StockUpdateQuery ConvertToUpdateQueryInternal(StockCacheQuery readQuery, DateTime? lastFound)
     {
         int? months = null;
         if (readQuery?.TimeFrom is not null || lastFound is not null)
@@ -38,7 +38,7 @@ public class StockInfluxScrapperController : InfluxScrapperController<StockUpdat
         return new StockUpdateQuery(readQuery!, months);
     }
 
-    internal override async Task<IEnumerable<StockResult>> ScrapeInternal(StockScrapeQuery scrapeQuery,
+    public override async Task<IEnumerable<StockResult>> ScrapeInternal(StockScrapeQuery scrapeQuery,
         CancellationToken token)
     {
         var results = await HttpUtilities.GetCSV<StockResult>(scrapeQuery.Url, _httpClientFactory, token);

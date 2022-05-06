@@ -16,6 +16,7 @@ ARG VERSION=0.0.1-SNAPSHOT
 ARG SERVICE_NAME="berza"
 
 COPY berze.csv .
+COPY inflacije.csv .
 COPY --from=builder /usr/app/target/$SERVICE_NAME-$VERSION.jar /app.jar
 
 EXPOSE 8082

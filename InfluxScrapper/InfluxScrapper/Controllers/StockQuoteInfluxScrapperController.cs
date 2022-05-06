@@ -18,12 +18,12 @@ public class StockQuoteInfluxScrapperController : InfluxScrapperController<Stock
     {
     }
 
-    internal override IEnumerable<StockQuoteQuery> ConvertToScrapeQueriesInternal(StockQuoteCacheQuery updateQuery) 
+    public override IEnumerable<StockQuoteQuery> ConvertToScrapeQueriesInternal(StockQuoteCacheQuery updateQuery) 
         => updateQuery.ToQuotes();
 
-    internal override StockQuoteCacheQuery ConvertToUpdateQueryInternal(StockQuoteCacheQuery readQuery, DateTime? lastFound) => readQuery;
+    public override StockQuoteCacheQuery ConvertToUpdateQueryInternal(StockQuoteCacheQuery readQuery, DateTime? lastFound) => readQuery;
 
-    internal override async Task<IEnumerable<StockQuoteResult>> ScrapeInternal(StockQuoteQuery scrapeQuery,
+    public override async Task<IEnumerable<StockQuoteResult>> ScrapeInternal(StockQuoteQuery scrapeQuery,
         CancellationToken token)
     {
         var results = await HttpUtilities.GetCSV<StockQuoteResult>(scrapeQuery.Url, this._httpClientFactory, token);
