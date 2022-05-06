@@ -6,11 +6,13 @@ on:
     paths:
       - 'pom.xml'
       - 'berza/**'
+      - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'pom.xml'
       - 'berza/**'
+      - '.github/workflows/**'
 jobs:
   build:
     name: Build Berza service

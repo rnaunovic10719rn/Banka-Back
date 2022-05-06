@@ -6,11 +6,13 @@ on:
     paths:
       - 'pom.xml'
       - 'InfluxScrapper/**'
+      - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'pom.xml'
       - 'InfluxScrapper/**'
+      - '.github/workflows/**'
 jobs:
   build:
     name: Build
