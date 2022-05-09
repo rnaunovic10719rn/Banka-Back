@@ -38,7 +38,7 @@ public class InfluxScrapperService {
                 .uri("/alphavantage/stock/quote/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
+                .body(BodyInserters.fromValue(req))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
                 .block(REQUEST_TIMEOUT);
@@ -50,7 +50,7 @@ public class InfluxScrapperService {
                 .uri("/alphavantage/stock/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
+                .body(BodyInserters.fromValue(req))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<AkcijeTimeseriesDto>>() {})
                 .block(REQUEST_TIMEOUT);
@@ -71,7 +71,7 @@ public class InfluxScrapperService {
                 .uri("alphavantage/forex/exchangerate/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
+                .body(BodyInserters.fromValue(req))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<ForexPodaciDto>>() {})
                 .block(REQUEST_TIMEOUT);
@@ -83,7 +83,7 @@ public class InfluxScrapperService {
                 .uri("/alphavantage/forex/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
+                .body(BodyInserters.fromValue(req))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<ForexTimeseriesDto>>() {})
                 .block(REQUEST_TIMEOUT);
@@ -101,7 +101,7 @@ public class InfluxScrapperService {
                 .uri("/nasdaq/future/updateread")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(params))
+                .body(BodyInserters.fromValue(params))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<FuturesPodaciDto>>() {})
                 .block(REQUEST_TIMEOUT);
@@ -113,7 +113,7 @@ public class InfluxScrapperService {
                 .uri("/nasdaq/future/updateread/")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
+                .body(BodyInserters.fromValue(req))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<FuturesTimeseriesDto>>() {})
                 .block(REQUEST_TIMEOUT);

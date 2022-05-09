@@ -11,10 +11,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DateUtilsTest {
+class DateUtilsTest {
 
     @Test
-    public void TestIsDateInDecayDays() {
+    void TestIsDateInDecayDays() {
         List<TestCaseIsDateInDecayDays> tcs = new ArrayList<>();
         tcs.add(new TestCaseIsDateInDecayDays(new Date(), 1, false));
         tcs.add(new TestCaseIsDateInDecayDays(Date.from(ZonedDateTime.now().minusDays(2).toInstant()), 1, true));

@@ -6,16 +6,12 @@ import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
 import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverviewResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class AlphaVantageService {
 
-    private final Config alphavantageApiClient;
-
     @Autowired
-    public AlphaVantageService(Config alphavantageApiClient){
-        this.alphavantageApiClient = alphavantageApiClient;
+    public AlphaVantageService(){
     }
 
     public CompanyOverview getCompanyOverview(String ticker) {

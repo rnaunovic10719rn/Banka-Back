@@ -12,4 +12,8 @@ public class DateUtils {
         return date.toInstant().isBefore(daysAgo.toInstant());
     }
 
+    private DateUtils() {
+
+    }
+
 }
