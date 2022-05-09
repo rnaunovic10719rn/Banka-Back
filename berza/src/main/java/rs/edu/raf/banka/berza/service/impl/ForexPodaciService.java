@@ -15,6 +15,7 @@ import rs.edu.raf.banka.berza.model.Forex;
 import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.ForexRepository;
 import rs.edu.raf.banka.berza.repository.ValutaRepository;
+import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -28,23 +29,21 @@ import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 @Service
 public class ForexPodaciService {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
-
     private ForexRepository forexRepository;
     private ValutaRepository valutaRepository;
 
-    private final WebClient influxApiClient;
+    private final InfluxScrapperService influxScrapperService;
     private final Config alphavantageApiClient;
 
     private final List<String> odabaraniParovi = Arrays.asList("EUR/USD", "EUR/RSD", "USD/RSD");
 
     @Autowired
     public ForexPodaciService(ForexRepository forexRepository, ValutaRepository valutaRepository,
-                              WebClient influxApiClient,
+                              InfluxScrapperService influxScrapperService,
                               Config alphavantageApiClient){
         this.forexRepository = forexRepository;
         this.valutaRepository = valutaRepository;
-        this.influxApiClient = influxApiClient;
+        this.influxScrapperService = influxScrapperService;
         this.alphavantageApiClient = alphavantageApiClient;
     }
 
@@ -73,29 +72,12 @@ public class ForexPodaciService {
             forexRepository.save(forex);
         }
 
-        List<ForexExchangeRequest> reqs = new ArrayList<>();
-        ForexExchangeRequest fer = new ForexExchangeRequest();
-        fer.setSymbolFrom(symbolFrom);
-        fer.setSymbolTo(symbolTo);
-        reqs.add(fer);
-
-        HashMap<String, List<ForexExchangeRequest>> req = new HashMap<>();
-        req.put("currencies", reqs);
-
-        List<ForexPodaciDto> dtoList = influxApiClient
-                .post()
-                .uri("alphavantage/forex/exchangerate/updateread/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(req))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<ForexPodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
+        List<ForexPodaciDto> dtoList = influxScrapperService.getForexQuote(symbolFrom, symbolTo);
         if(dtoList == null || dtoList.size() == 0) {
             return null;
         }
 
-        ForexPodaciDto forexPodaciDto = dtoList.get(0);
+        ForexPodaciDto forexPodaciDto = dtoList.get(dtoList.size()-1);
         forexPodaciDto.setId(forex.getId());
         return dtoList.get(0);
     }
@@ -161,15 +143,7 @@ public class ForexPodaciService {
         readReq.setTimeFrom(startDate);
         readReq.setTimeTo(endDate);
 
-        return influxApiClient
-                .post()
-                .uri("/alphavantage/forex/updateread/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(readReq))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<ForexTimeseriesDto>>() {})
-                .block(REQUEST_TIMEOUT);
+        return influxScrapperService.getForexTimeseries(readReq);
     }
 
     public List<Forex> getAllForex(){

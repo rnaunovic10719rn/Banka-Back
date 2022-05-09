@@ -11,8 +11,10 @@ import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
+import rs.edu.raf.banka.berza.dto.request.FuturesTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
+import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -26,18 +28,16 @@ import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 @Service
 public class FuturesUgovoriPodaciService {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
-
-    private final WebClient influxApiClient;
+    private final InfluxScrapperService influxScrapperService;
 
     private FuturesUgovoriRepository futuresUgovoriRepository;
 
     private List<String> odabraniFuturesUgovori = Arrays.asList("CONFH2022", "FBTPH2022", "FBTPM2022", "FBTSH2022", "FBUTQ2022");
 
     @Autowired
-    public FuturesUgovoriPodaciService(FuturesUgovoriRepository futuresUgovoriRepository, WebClient influxApiClient){
+    public FuturesUgovoriPodaciService(FuturesUgovoriRepository futuresUgovoriRepository, InfluxScrapperService influxScrapperService){
         this.futuresUgovoriRepository = futuresUgovoriRepository;
-        this.influxApiClient = influxApiClient;
+        this.influxScrapperService = influxScrapperService;
     }
 
     public List<FuturesPodaciDto> getOdabraniFuturesUgovori() {
@@ -58,21 +58,7 @@ public class FuturesUgovoriPodaciService {
             futuresUgovoriRepository.save(future);
         }
 
-        final HashMap<String, String> params = new HashMap<>();
-        params.put("symbol", symbol);
-        params.put("timeFrom", "2022-04-05T13:34:51.966Z");
-        params.put("timeTo", "2022-04-10T13:34:51.966Z");
-
-        List<FuturesPodaciDto> res = influxApiClient
-                .post()
-                .uri("/nasdaq/future/updateread")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(params))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<FuturesPodaciDto>>() {})
-                .block(REQUEST_TIMEOUT);
-
+        List<FuturesPodaciDto> res = influxScrapperService.getFuturesQoute(symbol);
         if(res != null && res.size() > 0) {
             FuturesPodaciDto futuresPodaciDto = res.get(res.size()-1);
             futuresPodaciDto.setId(future.getId());
@@ -135,20 +121,12 @@ public class FuturesUgovoriPodaciService {
 
         String startDate = zonedDateTime.format(startFormatter);
 
-        AkcijeTimeseriesReadRequest readReq = new AkcijeTimeseriesReadRequest();
+        FuturesTimeseriesReadRequest readReq = new FuturesTimeseriesReadRequest();
         readReq.setSymbol(symbol);
         readReq.setTimeFrom(startDate);
         readReq.setTimeTo(endDate);
 
-        return influxApiClient
-                .post()
-                .uri("/nasdaq/future/updateread/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(readReq))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<FuturesTimeseriesDto>>() {})
-                .block(REQUEST_TIMEOUT);
+        return influxScrapperService.getFuturesTimeseries(readReq);
     }
 
 }
