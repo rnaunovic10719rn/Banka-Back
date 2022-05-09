@@ -136,7 +136,7 @@ public class UserServiceTest {
         assertEquals(passwordEncoder.matches("mockPass", user.getPassword()), false);
     }
 
-    @Test
+   /*@Test
     void testSetNewPassword() {
         String token = "token";
         User user = new User("UserX", "X");
@@ -168,7 +168,7 @@ public class UserServiceTest {
         Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass", "token"));
 
         assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());
-    }
+    }*/
 
     @Test
     void testHasEditPermisions() {
