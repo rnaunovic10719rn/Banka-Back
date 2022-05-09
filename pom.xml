@@ -34,8 +34,6 @@
         <module>user-service</module>
         <module>mail-service</module>
         <module>berza</module>
-        <module>eureka</module>
-        <module>zuul</module>
     </modules>
 
     <properties>

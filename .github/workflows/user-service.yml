@@ -6,11 +6,13 @@ on:
     paths:
       - 'pom.xml'
       - 'user-service/**'
+      - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'pom.xml'
       - 'user-service/**'
+      - '.github/workflows/**'
 jobs:
   build:
     name: Build User service

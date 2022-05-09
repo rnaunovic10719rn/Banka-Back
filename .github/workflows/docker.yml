@@ -1,0 +1,85 @@
+name: Docker build and push
+
+on:
+  push:
+    branches:
+      - 'master'
+
+# Ogranicava da samo jedan job moze da bude pokrenut u isto vreme
+concurrency: ci-${{ github.ref }}
+
+jobs:
+  docker-build-push:
+    name: Build and push Banka-Back images
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # needed for signing the images with GitHub OIDC Token **not production ready**
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      # Used to sign images
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+
+      # Used to build multi-arch images
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # Login to GHCR
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push influx-scrapper image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./InfluxScrapper
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/raf-si-2021/banka-influx-scrapper:latest
+      
+      - name: Build and Push berza image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./berza
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/raf-si-2021/banka-berza:latest
+
+      - name: Build and Push user-service image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./user-service
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/raf-si-2021/banka-user-service:latest
+      
+      - name: Build and Push mail-service image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./mail-service
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/raf-si-2021/banka-mail-service:latest
+
+      - name: Sign the images with GitHub OIDC Token **not production ready**
+        run: cosign sign ${TAGS}
+        env:
+          TAGS: |
+            ghcr.io/raf-si-2021/banka-influx-scrapper:latest
+            ghcr.io/raf-si-2021/banka-berza:latest
+            ghcr.io/raf-si-2021/banka-user-service:latest
+            ghcr.io/raf-si-2021/banka-mail-service:latest
+          COSIGN_EXPERIMENTAL: 1

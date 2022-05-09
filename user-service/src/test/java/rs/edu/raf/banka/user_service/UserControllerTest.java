@@ -8,6 +8,7 @@ import org.apache.http.HttpHeaders;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,12 +16,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import rs.edu.raf.banka.user_service.controller.UserController;
-import rs.edu.raf.banka.user_service.controller.response_forms.ChangePasswordForm;
-import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
-import rs.edu.raf.banka.user_service.controller.response_forms.NewPasswordForm;
-import rs.edu.raf.banka.user_service.controller.response_forms.ResetPasswordForm;
+import rs.edu.raf.banka.user_service.controller.response_forms.*;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
+import rs.edu.raf.banka.user_service.security.OTPUtilities;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
 import java.util.ArrayList;
@@ -42,11 +41,16 @@ public class UserControllerTest {
     @MockBean
     UserServiceImplementation userServiceImplementation;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     String validJWToken = initValidJWT();
     String invalidJWToken = initInvalidJWT();
     CreateUserForm userMockForm = initUserMockForm();
     ResetPasswordForm resetPasswordForm = initResetPasswordForm();
     ChangePasswordForm changePasswordForm = initChangePasswordForm();
+    OtpToSecretForm otpToSecretForm = initOtpToSecretForm();
+    OtpQRForm otpQRForm = initOtpQRFormForm();
     ChangePasswordForm badChangePasswordForm = initBadChangePasswordForm();
     NewPasswordForm newPasswordForm = initNewPasswordForm();
     String dummyName = "Mock";
@@ -279,6 +283,200 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
+    @Test
+    void testOtpGenerateSecret() throws Exception{
+        mockMvc.perform(get("/api/otp/generateSecret")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testOtpGenerateQrImage() throws Exception{
+        mockMvc.perform(post("/api/otp/generateQrImage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(otpQRForm)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidOtpGenerateQrImage() throws Exception{
+        mockMvc.perform(post("/api/otp/generateQrImage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                       )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testOtpGenerateQrUri() throws Exception{
+        mockMvc.perform(post("/api/otp/generateQrUri")
+                        .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(otpQRForm)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidOtpGenerateQrUri() throws Exception{
+        mockMvc.perform(post("/api/otp/generateQrUri")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testValidate() throws Exception{
+        mockMvc.perform(post("/api/otp/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(otpToSecretForm)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidValidate() throws Exception{
+        mockMvc.perform(post("/api/otp/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void tesInvalidtSetOtp() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(Optional.of(user));
+        when(userServiceImplementation.hasEditPermissions(user,"Bearer " + validJWToken)).thenReturn(true);
+        //doNothing().when(userServiceImplementation.editOtpSeecret(user, any()));
+
+        mockMvc.perform(post("/api/otp/set/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString("secret"))
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void tesClearOtp() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+        user.setRequiresOtp(false);
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(Optional.of(user));
+        when(userServiceImplementation.hasEditPermissions(user,"Bearer " + validJWToken)).thenReturn(true);
+
+        //doNothing().when(userServiceImplementation.editOtpSeecret(user, any()));
+
+        mockMvc.perform(post("/api/otp/clear/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void tesInvalidClearOtp() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+        user.setRequiresOtp(true);
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(Optional.of(user));
+        when(userServiceImplementation.hasEditPermissions(user,"Bearer " + validJWToken)).thenReturn(true);
+
+        //doNothing().when(userServiceImplementation.editOtpSeecret(user, any()));
+
+        mockMvc.perform(post("/api/otp/clear/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testOtpRequires() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        user.setOtpSeecret("secret");
+        when(userServiceImplementation.getUser("mockUsername")).thenReturn(user);
+
+        mockMvc.perform(post("/api//otp/requires/{username}","mockUsername")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testOtpRequiresTrue() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        user.setRequiresOtp(true);
+        when(userServiceImplementation.getUser("mockUsername")).thenReturn(user);
+
+        mockMvc.perform(post("/api/otp/requires/{username}","mockUsername")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(content().string("true"));
+    }
+
+    @Test
+    void testOtpRequiresFalse() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        user.setRequiresOtp(false);
+        when(userServiceImplementation.getUser("mockUsername")).thenReturn(user);
+
+        mockMvc.perform(post("/api/otp/requires/{username}","mockUsername")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(content().string("false"));
+    }
+
+    @Test
+    void testOtpHas() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        user.setOtpSeecret("secret");
+        when(userServiceImplementation.getUser("mockUsername")).thenReturn(user);
+
+        mockMvc.perform(post("/api/otp/has/{username}","mockUsername")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testOtpHasTrue() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        user.setOtpSeecret("secret");
+        when(userServiceImplementation.getUser("mockUsername")).thenReturn(user);
+
+        mockMvc.perform(post("/api/otp/has/{username}","mockUsername")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(content().string("true"));
+    }
+
+    @Test
+    void testOtpHasFalse() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        user.setOtpSeecret(null);
+        when(userServiceImplementation.getUser("mockUsername")).thenReturn(user);
+
+        mockMvc.perform(post("/api/otp/has/{username}","mockUsername")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andExpect(content().string("false"));
+    }
+
 
     @Test
     void testInvalidDelete() throws Exception{
@@ -355,6 +553,20 @@ public class UserControllerTest {
         return  changePasswordForm;
     }
 
+    private OtpQRForm initOtpQRFormForm() {
+        OtpQRForm otpQRForm = new OtpQRForm();
+        otpQRForm.setLabel("mockLabel");
+        otpQRForm.setSecret("mockSecret");
+        return  otpQRForm;
+    }
+
+    private OtpToSecretForm initOtpToSecretForm() {
+        OtpToSecretForm otpToSecretForm = new OtpToSecretForm();
+        otpToSecretForm.setOtp("mockOtp");
+        otpToSecretForm.setSecret("mockSecret");
+        return  otpToSecretForm;
+    }
+  
     private NewPasswordForm initNewPasswordForm(){
         NewPasswordForm newUserPasswordForm = new NewPasswordForm();
         newUserPasswordForm.setNewPassword("mockPass");
@@ -367,4 +579,5 @@ public class UserControllerTest {
         changePasswordForm.setEmailToken("mocken");
         return  changePasswordForm;
     }
+  
 }

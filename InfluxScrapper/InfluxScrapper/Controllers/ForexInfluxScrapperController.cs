@@ -20,13 +20,13 @@ public class ForexInfluxScrapperController : InfluxScrapperController<ForexQuery
     {
     }
 
-    internal override IEnumerable<ForexQuery> ConvertToScrapeQueriesInternal(ForexQuery updateQuery)
+    public override IEnumerable<ForexQuery> ConvertToScrapeQueriesInternal(ForexQuery updateQuery)
         => new []{ updateQuery };
 
-    internal override ForexQuery ConvertToUpdateQueryInternal(ForexCacheQuery readQuery, DateTime? lastFound)
+    public override ForexQuery ConvertToUpdateQueryInternal(ForexCacheQuery readQuery, DateTime? lastFound)
         => readQuery;
 
-    internal override async Task<IEnumerable<ForexResult>> ScrapeInternal(ForexQuery scrapeQuery,
+    public override async Task<IEnumerable<ForexResult>> ScrapeInternal(ForexQuery scrapeQuery,
         CancellationToken token)
     {
         var results = await HttpUtilities.GetCSV<ForexResult>(scrapeQuery.Url, _httpClientFactory, token);
