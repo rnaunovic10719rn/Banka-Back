@@ -79,7 +79,7 @@ public class ForexPodaciService {
 
         ForexPodaciDto forexPodaciDto = dtoList.get(dtoList.size()-1);
         forexPodaciDto.setId(forex.getId());
-        return dtoList.get(0);
+        return forexPodaciDto;
     }
 
     public List<ForexTimeseriesDto> getForexTimeseries(ForexTimeseriesUpdateRequest req) {
