@@ -69,10 +69,10 @@ public class AkcijeServiceTest {
     @Test
     void testGetById(){
         Akcije akcije = new Akcije();
-        akcije.setOpis_hartije("MojOpis");
+        akcije.setOpisHartije("MojOpis");
         Long id = 1L;
         when(akcijeRepository.findAkcijeById(id)).thenReturn(akcije);
-        assertEquals("MojOpis", akcijePodaciService.getByID(id).getOpis_hartije());
+        assertEquals("MojOpis", akcijePodaciService.getByID(id).getOpisHartije());
     }
 
     @Test
@@ -90,12 +90,12 @@ public class AkcijeServiceTest {
         Integer size = 1;
 
         Akcije akcija = new Akcije();
-        akcija.setOpis_hartije("opisHartije");
+        akcija.setOpisHartije("opisHartije");
 
         when(akcijeRepository.filterAkcije(berzaPrefix, priceLowBound, priceUpperBound, askLowBound, askUpperBound,
                 bidLowBound, bidUpperBound, volumeLowBound, volumeUpperBound)).thenReturn(List.of(akcija));
         assertEquals("opisHartije", akcijePodaciService.filter(berzaPrefix, priceLowBound, priceUpperBound, askLowBound, askUpperBound,
-                bidLowBound, bidUpperBound, volumeLowBound, volumeUpperBound, page, size).getContent().get(0).getOpis_hartije());
+                bidLowBound, bidUpperBound, volumeLowBound, volumeUpperBound, page, size).getContent().get(0).getOpisHartije());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class AkcijeServiceTest {
         int page = 1;
         int size = 1;
         Akcije akcija = new Akcije();
-        akcija.setOpis_hartije(opisHartije);
+        akcija.setOpisHartije(opisHartije);
         akcija.setOznakaHartije(oznakaHartije);
         Page<Akcije> strana = new PageImpl<>(List.of(akcija));
 
@@ -115,7 +115,7 @@ public class AkcijeServiceTest {
         Example<Akcije> example = Example.of(akcija, exampleMatcher);
 
         when(akcijeRepository.findAll(example, PageRequest.of(page, size))).thenReturn(strana);
-        assertEquals(akcija.getOpis_hartije(), akcijePodaciService.search(oznakaHartije,opisHartije,page,size).getContent().get(0).getOpis_hartije());
+        assertEquals(akcija.getOpisHartije(), akcijePodaciService.search(oznakaHartije,opisHartije,page,size).getContent().get(0).getOpisHartije());
     }
 
 }
