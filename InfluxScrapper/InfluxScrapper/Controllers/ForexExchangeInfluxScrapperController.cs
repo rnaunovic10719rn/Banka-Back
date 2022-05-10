@@ -22,14 +22,14 @@ public class ForexExchangeInfluxScrapperController : InfluxScrapperController<Fo
     {
     }
 
-    internal override IEnumerable<ForexExchangeRateQuery> ConvertToScrapeQueriesInternal(
+    public override IEnumerable<ForexExchangeRateQuery> ConvertToScrapeQueriesInternal(
         ForexExchangeRateCacheQuery updateQuery)
         => updateQuery.ToQuotes();
 
-    internal override ForexExchangeRateCacheQuery ConvertToUpdateQueryInternal(ForexExchangeRateCacheQuery readQuery, DateTime? lastFound)
+    public override ForexExchangeRateCacheQuery ConvertToUpdateQueryInternal(ForexExchangeRateCacheQuery readQuery, DateTime? lastFound)
         => readQuery;
 
-    internal override async Task<IEnumerable<ForexExchangeRateResult>> ScrapeInternal(
+    public override async Task<IEnumerable<ForexExchangeRateResult>> ScrapeInternal(
         ForexExchangeRateQuery scrapeQuery,
         CancellationToken token)
     {

@@ -69,7 +69,8 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
-    public MakeOrderResponse makeOrder(Long userId, String symbol, String hartijaTipString, Integer kolicina, String action,
+    @Async
+    public MakeOrderResponse makeOrder(Long userId, String oznakaHartije, String hartijaTipString, Integer kolicina, String action,
                                        Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
 //        UserAccount userAccount = userAccountRepository.getById(userId);
         HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(hartijaTipString.toUpperCase());
@@ -88,7 +89,7 @@ public class BerzaService {
         Long hartijaId = -1L;
         Long berzaId = -1L;
         if(hartijaTip.equals(HartijaOdVrednostiType.AKCIJA)){
-            AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(symbol);
+            AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(oznakaHartije);
   //          Akcije akcije = akcijeRepository.findAkcijeByOznakaHartije(symbol);
             if(akcije != null) {
                 hartijaId = akcije.getId();
@@ -99,7 +100,7 @@ public class BerzaService {
             }
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FUTURES_UGOVOR)){
-            FuturesPodaciDto futuresUgovori = futuresUgovoriPodaciService.getFuturesUgovor(symbol);
+            FuturesPodaciDto futuresUgovori = futuresUgovoriPodaciService.getFuturesUgovor(oznakaHartije);
 //            FuturesUgovori futuresUgovori = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
             if(futuresUgovori != null) {
                 hartijaId = futuresUgovori.getId();
@@ -109,7 +110,7 @@ public class BerzaService {
             }
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)){
-            String split[] = symbol.split(" ");
+            String split[] = oznakaHartije.split(" ");
             ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[0], split[1]);
 //            Forex forex = forexRepository.findForexByOznakaHartije(symbol);
             if(forex != null) {
@@ -134,12 +135,13 @@ public class BerzaService {
         Double provizija = getCommission(ukupnaCena, orderType);
 
         Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
-                provizija, orderType, isAON, isMargin);
+                provizija, orderType, isAON, isMargin, oznakaHartije);
         executeTransaction(berzaId, order, ask, bid);
 
         return new MakeOrderResponse("Order Successful");
     }
 
+    @Async
     public MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
         boolean flag = true;
         if(berzaId != -1){
@@ -164,6 +166,7 @@ public class BerzaService {
      * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
      * s obzirom na to, bice obradjen nakon nastavka specifikacije
      */
+    @Async
     public MakeOrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
         Random random = new Random();
         int kolicina = order.getKolicina();
@@ -213,6 +216,7 @@ public class BerzaService {
     /**
      * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
      */
+    @Async
     public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
         try {
             //3s simulaciju 30 minuta

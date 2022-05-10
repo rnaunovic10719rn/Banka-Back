@@ -101,6 +101,7 @@ services:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-berza:5432/postgres
       berza.influxscrapper.endpoint: http://influx-scrapper/
       berza.berze.csv: berze.csv
+      berza.inflacije.csv: inflacije.csv
     ports:
       - "8082:8082"
     links:

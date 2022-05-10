@@ -9,5 +9,5 @@ import lombok.Setter;
 @Setter
 public class RoleToUserForm {
     private String username;
-    private String role_name;
+    private String roleName;
 }
