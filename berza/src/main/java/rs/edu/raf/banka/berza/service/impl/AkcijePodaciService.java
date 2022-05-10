@@ -19,6 +19,9 @@ import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.service.remote.AlphaVantageService;
+import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
+import rs.edu.raf.banka.berza.utils.DateUtils;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -32,10 +35,8 @@ import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 @Service
 public class AkcijePodaciService {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
-
-    private final WebClient influxApiClient;
-    private final Config alphavantageApiClient;
+    private final InfluxScrapperService influxScrapperService;
+    private final AlphaVantageService alphaVantageService;
 
     private BerzaRepository berzaRepository;
     private AkcijeRepository akcijeRepository;
@@ -44,12 +45,12 @@ public class AkcijePodaciService {
 
     @Autowired
     public AkcijePodaciService(AkcijeRepository akcijeRepository, BerzaRepository berzaRepository,
-                               WebClient influxApiClient,
-                               Config alphavantageApiClient){
+                               InfluxScrapperService influxScrapperService,
+                               AlphaVantageService alphaVantageService){
         this.akcijeRepository = akcijeRepository;
         this.berzaRepository = berzaRepository;
-        this.influxApiClient = influxApiClient;
-        this.alphavantageApiClient = alphavantageApiClient;
+        this.influxScrapperService = influxScrapperService;
+        this.alphaVantageService = alphaVantageService;
     }
 
     public List<AkcijePodaciDto> getOdabraneAkcije() {
@@ -64,54 +65,32 @@ public class AkcijePodaciService {
 
     public AkcijePodaciDto getAkcijaByTicker(String ticker) {
         Akcije akcija = akcijeRepository.findAkcijeByOznakaHartije(ticker);
-        // TODO: Dodati neki data decline, kada će informacije da se refreshuju, npr. posle dva dana.
-        if (akcija == null) {
-            akcija = new Akcije();
-            CompanyOverviewResponse cor = AlphaVantage
-                    .api()
-                    .fundamentalData()
-                    .companyOverview()
-                    .forSymbol(ticker)
-                    .fetchSync();
-            if(cor != null && cor.getErrorMessage() == null) {
-                CompanyOverview co = cor.getOverview();
-                Berza berza = berzaRepository.findBerzaByOznakaBerze(co.getExchange());
-                akcija.setBerza(berza);
-                akcija.setOznakaHartije(co.getSymbol());
-                akcija.setOznakaHartije("");
-                akcija.setOpisHartije(co.getName());
-                akcija.setLastUpdated(new Date());
-                akcija.setOutstandingShares(co.getSharesOutstanding());
-            } else {
-                // Nećemo da pucamo u slučaju da se desila API greška.
-                // API je rate limitovan, pa bi to dosta kočilo.
-                // U produkciji svakako treba izbaciti grešku.
-                akcija.setOznakaHartije(ticker);
-                akcija.setOpisHartije(ticker);
-                akcija.setLastUpdated(new Date());
-                akcija.setOutstandingShares(0L);
+        if(akcija == null || DateUtils.isDateInDecayDays(akcija.getLastUpdated(), 1)) {
+            CompanyOverview co = alphaVantageService.getCompanyOverview(ticker);
+            if(co == null) {
+                return null;
             }
+            if(akcija == null) {
+                akcija = new Akcije();
+            }
+
+            Berza berza = berzaRepository.findBerzaByOznakaBerze(co.getExchange());
+            akcija.setBerza(berza);
+            akcija.setOznakaHartije(co.getSymbol());
+            akcija.setOpisHartije(co.getName());
+            akcija.setLastUpdated(new Date());
+            akcija.setOutstandingShares(co.getSharesOutstanding());
+
             akcijeRepository.save(akcija);
         }
 
         List<String> symbols = Arrays.asList(ticker);
-        HashMap<String, List<String>> req = new HashMap<>();
-        req.put("symbols", symbols);
-
-        List<AkcijePodaciDto> dtoList = influxApiClient
-            .post()
-            .uri("/alphavantage/stock/quote/updateread/")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromObject(req))
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<AkcijePodaciDto>>() {})
-            .block(REQUEST_TIMEOUT);
+        List<AkcijePodaciDto> dtoList = influxScrapperService.getStocksQuote(symbols);
         if(dtoList == null || dtoList.size() == 0) {
             return null;
         }
 
-        AkcijePodaciDto dto = dtoList.get(0);
+        AkcijePodaciDto dto = dtoList.get(dtoList.size()-1);
         if(akcija.getBerza() != null)
             dto.setBerzaId(akcija.getBerza().getId());
         else
@@ -191,15 +170,7 @@ public class AkcijePodaciService {
         readReq.setTimeFrom(startDate);
         readReq.setTimeTo(endDate);
 
-        return influxApiClient
-                .post()
-                .uri("/alphavantage/stock/updateread/")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromObject(readReq))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<AkcijeTimeseriesDto>>() {})
-                .block(REQUEST_TIMEOUT);
+        return influxScrapperService.getStocksTimeseries(readReq);
     }
 
     public Page<Akcije> search(String oznakaHartije, String opisHartije, Integer page, Integer size){
