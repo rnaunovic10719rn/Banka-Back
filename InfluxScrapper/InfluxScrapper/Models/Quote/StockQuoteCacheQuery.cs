@@ -17,7 +17,7 @@ public class StockQuoteCacheQuery : InfluxCacheQuery<StockQuoteCacheQuery>
     public DateTime? TimeTo { get; init; } = null;
     public string Measurement  => "stock_quote";
 
-    public string ToQuery(bool singleFile = false) => InfluxDBUtilites.ConstructQuery(this, singleFile);
+    public string ToQuery(bool singleFile = false) => InfluxDBUtilites.ConstructQuery(this, true);
 
     public IEnumerable<StockQuoteQuery> ToQuotes() => Symbols.Select(s => new StockQuoteQuery() {Symbol = s});
 
