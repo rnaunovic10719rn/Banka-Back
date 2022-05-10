@@ -1,5 +1,6 @@
 package rs.edu.raf.banka.user_service;
 
+import ch.qos.logback.core.joran.action.NewRuleAction;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,8 @@ public class UserControllerTest {
     ChangePasswordForm changePasswordForm = initChangePasswordForm();
     OtpToSecretForm otpToSecretForm = initOtpToSecretForm();
     OtpQRForm otpQRForm = initOtpQRFormForm();
+    ChangePasswordForm badChangePasswordForm = initBadChangePasswordForm();
+    NewPasswordForm newPasswordForm = initNewPasswordForm();
     String dummyName = "Mock";
 
     @Test
@@ -247,7 +250,7 @@ public class UserControllerTest {
 
         when(userServiceImplementation.setNewPassword(anyString(),anyString())).thenReturn(true);
 
-        mockMvc.perform(post("/api/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+        mockMvc.perform(post("/api/user/change-password", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(changePasswordForm)))
                 .andExpect(status().isOk())
@@ -259,7 +262,7 @@ public class UserControllerTest {
     void testInvalidChangePassword() throws Exception{
         mockMvc.perform(post("/api/user/change-password", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(changePasswordForm)))
+                        .content(asJsonString(badChangePasswordForm)))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Invalid token!"));
     }
@@ -276,7 +279,7 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/api/user/new-password/", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(changePasswordForm)))
+                        .content(asJsonString(newPasswordForm)))
                 .andExpect(status().is4xxClientError());
     }
 
@@ -545,7 +548,8 @@ public class UserControllerTest {
 
     private ChangePasswordForm initChangePasswordForm() {
         ChangePasswordForm changePasswordForm = new ChangePasswordForm();
-        changePasswordForm.setNewPassword("mockPass");
+        changePasswordForm.setNewPassword("mockPass123");
+        changePasswordForm.setEmailToken("Bearer mocken");
         return  changePasswordForm;
     }
 
@@ -562,5 +566,18 @@ public class UserControllerTest {
         otpToSecretForm.setSecret("mockSecret");
         return  otpToSecretForm;
     }
+  
+    private NewPasswordForm initNewPasswordForm(){
+        NewPasswordForm newUserPasswordForm = new NewPasswordForm();
+        newUserPasswordForm.setNewPassword("mockPass");
+        return newUserPasswordForm;
+    }
 
+    private ChangePasswordForm initBadChangePasswordForm() {
+        ChangePasswordForm changePasswordForm = new ChangePasswordForm();
+        changePasswordForm.setNewPassword("mockPass");
+        changePasswordForm.setEmailToken("mocken");
+        return  changePasswordForm;
+    }
+  
 }

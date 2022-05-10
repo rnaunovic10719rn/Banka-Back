@@ -196,8 +196,8 @@ public class UserController {
 
     @PostMapping("/user/change-password")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordForm changePasswordForm){
-        if(!userService.setNewPassword(changePasswordForm.getNewPassword(), token)){
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordForm changePasswordForm){
+        if(!userService.setNewPassword(changePasswordForm.getNewPassword(), changePasswordForm.getEmailToken())){
             return ResponseEntity.badRequest().body("Invalid token!");
         }
         return ResponseEntity.ok().body("New password!");
@@ -205,10 +205,10 @@ public class UserController {
 
     @PostMapping("/user/new-password/{id}")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-    public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody ChangePasswordForm changePasswordForm){
+    public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody NewPasswordForm newPasswordForm){
         Optional<User> user = userService.getUserById(id);
         if(user.isPresent()){
-            if(!userService.changePassword(changePasswordForm.getNewPassword(), user.get())){
+            if(!userService.changePassword(newPasswordForm.getNewPassword(), user.get())){
                 return ResponseEntity.badRequest().body("Check your pass again");
             }
             return ResponseEntity.ok().body("Password changed for user " + user.get().getUsername());

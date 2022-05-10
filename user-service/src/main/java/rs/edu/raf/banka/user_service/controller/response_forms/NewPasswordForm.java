@@ -7,7 +7,6 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class ChangePasswordForm {
+public class NewPasswordForm {
     String newPassword;
-    String emailToken;
 }
