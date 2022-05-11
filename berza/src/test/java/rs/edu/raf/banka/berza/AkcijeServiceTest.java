@@ -1,35 +1,23 @@
 package rs.edu.raf.banka.berza;
 
-import com.crazzyghost.alphavantage.AlphaVantage;
-import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
-import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverviewResponse;
 import org.junit.jupiter.api.Test;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
-import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
-import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
 import rs.edu.raf.banka.berza.service.remote.AlphaVantageService;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 
-import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -51,9 +39,6 @@ public class AkcijeServiceTest {
 
     @Mock
     AkcijeRepository akcijeRepository;
-
-    @Mock
-    BerzaRepository berzaRepository;
 
     @Mock
     InfluxScrapperService influxScrapperService;
@@ -97,9 +82,6 @@ public class AkcijeServiceTest {
         akcija.setOpisHartije(ticker);
         akcija.setOutstandingShares(10L);
         akcija.setLastUpdated(new Date());
-        AkcijePodaciDto dto = new AkcijePodaciDto();
-        List<AkcijePodaciDto> dtoList = new ArrayList<>();
-        dtoList.add(dto);
         when(akcijeRepository.findAkcijeByOznakaHartije(ticker)).thenReturn(akcija);
         when(influxScrapperService.getStocksQuote(any())).thenReturn(null);
         assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
@@ -131,7 +113,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -141,7 +123,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -151,7 +133,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 15:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -161,7 +143,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -171,7 +153,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -181,7 +163,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -191,7 +173,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 15:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -201,7 +183,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -211,7 +193,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -221,7 +203,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("6m");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -231,7 +213,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("1y");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -241,7 +223,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("2y");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
     @Test
@@ -251,7 +233,7 @@ public class AkcijeServiceTest {
         readReq.setType("intraday");
         readReq.setRequestType("ytd");
         when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+        assertTrue(akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
     }
 
 
