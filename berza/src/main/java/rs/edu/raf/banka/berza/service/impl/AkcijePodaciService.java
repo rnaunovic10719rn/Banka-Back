@@ -103,6 +103,10 @@ public class AkcijePodaciService {
         return dto;
     }
 
+    public ZonedDateTime getZonedDateTime() {
+        return ZonedDateTime.now().plusDays(2);
+    }
+
     public List<AkcijeTimeseriesDto> getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest req) {
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
         DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -110,7 +114,9 @@ public class AkcijePodaciService {
         // TODO: Ispraviti ovo.
         // Ovo radimo zato sto AlphaVantage API baguje i nema uvek najsvezije podatke.
         // Npr. desilo se da nemaju podatke za ceo jedan dan iako je taj dan berza vec zatvorena.
-        ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(2);
+
+        // TODO: Izdvojiti dobijanje trenutnog vremena u posebnu metodu da bi moglo da se testira
+        ZonedDateTime zonedDateTime = getZonedDateTime();
         String endDate = zonedDateTime.format(endFormatter);
 
         if(req.getType().equals("intraday") && req.getInterval().equals("5min")) {

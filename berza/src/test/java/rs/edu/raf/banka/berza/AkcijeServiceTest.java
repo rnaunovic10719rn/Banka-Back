@@ -1,6 +1,7 @@
 package rs.edu.raf.banka.berza;
 
 import com.crazzyghost.alphavantage.AlphaVantage;
+import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
 import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverviewResponse;
 import org.junit.jupiter.api.Test;
 
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.*;
@@ -15,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
@@ -23,9 +26,15 @@ import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
+import rs.edu.raf.banka.berza.service.remote.AlphaVantageService;
+import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 
 import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +45,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class AkcijeServiceTest {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
+    @Spy
     @InjectMocks
     AkcijePodaciService akcijePodaciService;
 
@@ -47,24 +56,204 @@ public class AkcijeServiceTest {
     BerzaRepository berzaRepository;
 
     @Mock
-    WebClient influxApiClient;
+    InfluxScrapperService influxScrapperService;
 
-//    @Test
-//    void testGetOdabraneAkcije() {
-//        Berza berza = new Berza();
-//        when(berzaRepository.findBerzaByOznakaBerze(any())).thenReturn(berza);
-//        //when(AlphaVantage.api()).thenReturn(cor);
-//        assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
-//    }
+    @Mock
+    AlphaVantageService alphaVantageService;
 
-//    @Test
-//    void testGetAkcijeTimeseries() {
-//        AkcijeTimeseriesDto dto = new AkcijeTimeseriesDto();
-//        AkcijeTimeseriesReadRequest readReq = new AkcijeTimeseriesReadRequest();
-//        WebClient.RequestBodyUriSpec body = null;
-//        when(influxApiClient.post().uri("/alphavantage/stock/updateread/")).thenReturn(body).thenReturn(null);
-//        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest.getForType("1d","symbol")));
-//    }
+    @Test
+    void testGetOdabraneAkcijeNull() {
+        when(alphaVantageService.getCompanyOverview("AAPL")).thenReturn(null);
+        assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
+    }
+
+    @Test
+    void testGetOdabraneAkcijeAAPL() {
+        Berza berza = new Berza();
+        berza.setId(1L);
+        String ticker = "AAPL" ;
+        Akcije akcija = new Akcije();
+        akcija.setBerza(berza);
+        akcija.setId(1L);
+        akcija.setOpisHartije(ticker);
+        akcija.setOutstandingShares(10L);
+        akcija.setLastUpdated(new Date());
+        AkcijePodaciDto dto = new AkcijePodaciDto();
+        List<AkcijePodaciDto> dtoList = new ArrayList<>();
+        dtoList.add(dto);
+        when(akcijeRepository.findAkcijeByOznakaHartije(ticker)).thenReturn(akcija);
+        when(influxScrapperService.getStocksQuote(any())).thenReturn(dtoList);
+        assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
+    }
+
+    @Test
+    void testGetOdabraneAkcijeAAPLDTOnull() {
+        Berza berza = new Berza();
+        berza.setId(1L);
+        String ticker = "AAPL" ;
+        Akcije akcija = new Akcije();
+        akcija.setBerza(berza);
+        akcija.setId(1L);
+        akcija.setOpisHartije(ticker);
+        akcija.setOutstandingShares(10L);
+        akcija.setLastUpdated(new Date());
+        AkcijePodaciDto dto = new AkcijePodaciDto();
+        List<AkcijePodaciDto> dtoList = new ArrayList<>();
+        dtoList.add(dto);
+        when(akcijeRepository.findAkcijeByOznakaHartije(ticker)).thenReturn(akcija);
+        when(influxScrapperService.getStocksQuote(any())).thenReturn(null);
+        assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
+    }
+
+    @Test
+    void testGetOdabraneAkcijeAAPLBerzaNull() {
+        Berza berza = new Berza();
+        berza.setId(1L);
+        String ticker = "AAPL" ;
+        Akcije akcija = new Akcije();
+        akcija.setBerza(null);
+        akcija.setId(1L);
+        akcija.setOpisHartije(ticker);
+        akcija.setOutstandingShares(10L);
+        akcija.setLastUpdated(new Date());
+        AkcijePodaciDto dto = new AkcijePodaciDto();
+        List<AkcijePodaciDto> dtoList = new ArrayList<>();
+        dtoList.add(dto);
+        when(akcijeRepository.findAkcijeByOznakaHartije(ticker)).thenReturn(akcija);
+        when(influxScrapperService.getStocksQuote(any())).thenReturn(dtoList);
+        assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDay5minSATURDAY() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("5min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa5minSUNDAY() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("5min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa5minMONDAY() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("5min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 15:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa5minDefault() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("5min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDay30minSATURDAY() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("30min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa30minSUNDAY() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("30min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa30minMONDAY() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("30min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 15:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa30minDefault() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("30min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa60minDefault1m() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("60min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa60minDefault6m() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("60min");
+        readReq.setType("intraday");
+        readReq.setRequestType("6m");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa60minDefault1y() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("60min");
+        readReq.setType("intraday");
+        readReq.setRequestType("1y");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa60minDefault2y() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("60min");
+        readReq.setType("intraday");
+        readReq.setRequestType("2y");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
+    @Test
+    void testGetAkcijeTimeseriesIntraDa60minDefaultytd() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("60min");
+        readReq.setType("intraday");
+        readReq.setRequestType("ytd");
+        when(akcijePodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        assertEquals(true, akcijePodaciService.getAkcijeTimeseries(readReq) instanceof List<AkcijeTimeseriesDto>);
+    }
+
 
     @Test
     void testGetById(){
