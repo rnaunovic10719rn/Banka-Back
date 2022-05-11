@@ -110,8 +110,8 @@ public class AkcijeServiceTest {
         Page<Akcije> strana = new PageImpl<>(List.of(akcija));
 
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("oznaka_hartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("opis_hartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+                .withMatcher("oznakaHartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("opisHartije", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
         Example<Akcije> example = Example.of(akcija, exampleMatcher);
 
         when(akcijeRepository.findAll(example, PageRequest.of(page, size))).thenReturn(strana);

@@ -27,8 +27,8 @@ public class ForexPodaciServiceTest {
     @Test
     void testGetAllForex() {
         Forex forex = new Forex();
-        forex.setOpis_hartije("opisHartije");
+        forex.setOpisHartije("opisHartije");
         when(forexRepository.findAll()).thenReturn(List.of(forex));
-        assertEquals("opisHartije", forexPodaciService.getAllForex().get(0).getOpis_hartije());
+        assertEquals("opisHartije", forexPodaciService.getAllForex().get(0).getOpisHartije());
     }
 }

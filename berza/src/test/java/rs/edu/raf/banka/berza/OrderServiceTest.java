@@ -46,6 +46,7 @@ public class OrderServiceTest {
         OrderType orderType = OrderType.LIMIT_ORDER;
         boolean isAON = true;
         boolean isMargin = true;
+        String oznakaHartije = "usd";
 
         Order order = new Order();
         order.setUserId(userAccount);
@@ -58,11 +59,12 @@ public class OrderServiceTest {
         order.setOrderType(orderType);
         order.setAON(isAON);
         order.setMargin(isMargin);
+        order.setOznakaHartije(oznakaHartije);
 
         when(orderRepository.save(order)).thenReturn(order);
 
         assertEquals(OrderAction.SELL, orderService.saveOrder(userAccount, hartijaOdVrednostiId,
                 hartijaOdVrednostiType,kolicina, orderAction,ukupnaCena,provizija,
-                orderType, isAON, isMargin).getOrderAction());
+                orderType, isAON, isMargin, oznakaHartije).getOrderAction());
     }
 }
