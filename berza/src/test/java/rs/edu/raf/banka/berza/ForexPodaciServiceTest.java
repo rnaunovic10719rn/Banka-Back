@@ -6,7 +6,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
-import rs.edu.raf.banka.berza.dto.ForexTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.ForexTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Forex;
 import rs.edu.raf.banka.berza.model.Valuta;
@@ -75,123 +74,123 @@ public class ForexPodaciServiceTest {
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay5minSATURDAY() {
+    void testGetForexTimeseriesIntraDay5minSATURDAY() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("5min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay5minSUNDAY() {
+    void testGetForexTimeseriesIntraDay5minSUNDAY() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("5min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay5minMONDAY() {
+    void testGetForexTimeseriesIntraDay5minMONDAY() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("5min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 15:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDa30minSATURDAY() {
+    void testGetForexTimeseriesIntraDa30minSATURDAY() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay30minSUNDAY() {
+    void testGetForexTimeseriesIntraDay30minSUNDAY() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay30minMONDAY() {
+    void testGetForexTimeseriesIntraDay30minMONDAY() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay30minDefault() {
+    void testGetForexTimeseriesIntraDay30minDefault() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay60minDefault1m() {
+    void testGetForexTimeseriesIntraDay60minDefault1m() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay60minDefault6m() {
+    void testGetForexTimeseriesIntraDay60minDefault6m() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("6m");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay60minDefault1y() {
+    void testGetForexTimeseriesIntraDay60minDefault1y() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("1y");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay60minDefault2y() {
+    void testGetForexTimeseriesIntraDay60minDefault2y() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("2y");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
     @Test
-    void testGetAkcijeTimeseriesIntraDay60minDefaultytd() {
+    void testGetForexTimeseriesIntraDay60minDefaultytd() {
         ForexTimeseriesUpdateRequest readReq = new ForexTimeseriesUpdateRequest();
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("ytd");
         when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
-        assertTrue(forexPodaciService.getForexTimeseries(readReq) instanceof List<ForexTimeseriesDto>);
+        assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
 }
