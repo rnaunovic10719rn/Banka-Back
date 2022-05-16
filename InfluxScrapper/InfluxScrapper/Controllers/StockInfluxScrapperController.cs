@@ -43,7 +43,7 @@ public class StockInfluxScrapperController : InfluxScrapperController<StockUpdat
     {
         var results = await HttpUtilities.GetCSV<StockResult>(scrapeQuery.Url, _httpClientFactory, token);
         if (results == null)
-            throw new Exception("HTTP failed");
+            throw new NullReferenceException("HTTP failed");
         results.ForEach(r => r.Ticker = scrapeQuery.Symbol);
         return results;
     }

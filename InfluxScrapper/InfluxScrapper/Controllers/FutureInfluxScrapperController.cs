@@ -31,7 +31,7 @@ public class FutureInfluxScrapperController : InfluxScrapperController<FutureCac
     {
         var results = await HttpUtilities.GetCSV<FutureResult>(scrapeQuery.Url, _httpClientFactory, token);
         if (results == null)
-            throw new Exception("HTTP failed");
+            throw new NullReferenceException("HTTP failed");
         results.ForEach(r =>
         {
             r.Symbol = scrapeQuery.Symbol;

@@ -30,7 +30,7 @@ public class ForexQuery  : IInfluxMeasurementHolder
         ForexType.Daily => "FX_DAILY",
         ForexType.Weekly => "FX_WEEKLY",
         ForexType.Monthly => "FX_MONTHLY",
-        _ => throw new ArgumentOutOfRangeException(nameof(Type))
+        _ => throw new IndexOutOfRangeException(nameof(Type))
     };
     
     public string Url

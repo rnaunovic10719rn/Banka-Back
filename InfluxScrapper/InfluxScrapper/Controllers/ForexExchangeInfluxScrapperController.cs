@@ -1,3 +1,4 @@
+using InfluxDB.Client.Core.Exceptions;
 using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Controllers;
 using InfluxScrapper.Models.Exchange;
@@ -35,7 +36,7 @@ public class ForexExchangeInfluxScrapperController : InfluxScrapperController<Fo
     {
         var resultJson = await HttpUtilities.GetJSON<ForexExchangeRateJson>(scrapeQuery.Url, _httpClientFactory, token);
         if (resultJson is null)
-            throw new Exception("HTTP failed");
+            throw new NullReferenceException("HTTP failed");
         var result = new ForexExchangeRateResult();
         result.Ask = resultJson.Body.Ask;
         result.Bid = resultJson.Body.Bid;

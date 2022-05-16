@@ -31,7 +31,7 @@ public class ForexInfluxScrapperController : InfluxScrapperController<ForexQuery
     {
         var results = await HttpUtilities.GetCSV<ForexResult>(scrapeQuery.Url, _httpClientFactory, token);
         if (results == null)
-            throw new Exception("HTTP failed");
+            throw new NullReferenceException("HTTP failed");
         results.ForEach(r =>
         {
             r.SymbolFrom = scrapeQuery.SymbolFrom;
