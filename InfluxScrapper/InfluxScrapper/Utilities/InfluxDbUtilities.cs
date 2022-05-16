@@ -1,17 +1,13 @@
-using System.Drawing;
 using System.Text;
-using InfluxDB.Client;
-using InfluxDB.Client.Core.Flux.Domain;
-using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Exchange;
 using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Future;
 using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;
 
-namespace InfluxScrapper.Utilites;
+namespace InfluxScrapper.Utilities;
 
-public static class InfluxDBUtilites
+public static class InfluxDbUtilities
 {
     public static string ConstructQuery(StockCacheQuery query, bool onlyLastResult = false)
     {
@@ -94,20 +90,6 @@ public static class InfluxDBUtilites
     private static void AppendFilter(StringBuilder builder, string key, string value) 
         => builder.AppendLine($"|> filter(fn: (r) =>  r[\"{key}\"] == \"{value}\")");
 
-    private static void AppendAndFilter(StringBuilder builder, params (string Key, string Value)[] checks)
-    {
-        builder.Append($"|> filter(fn: (r) => ");
-        var first = true;
-        foreach (var (key, value) in checks)
-        {
-            builder.Append(first ? " " : " and ");
-            builder.Append($" r[\"{key}\"] == \"{value}\" ");
-            first = false;
-        }
-
-        builder.AppendLine(")");
-    }
-    
     private static void AppendOrFilter(StringBuilder builder, params (string Key, string Value)[] checks)
     {
         builder.Append($"|> filter(fn: (r) => ");
@@ -150,24 +132,4 @@ public static class InfluxDBUtilites
     private static void AppendQueryLastResult(StringBuilder builder) => builder.AppendLine("|> last()");
     
     private static void AppendQueryEnd(StringBuilder builder) => builder.AppendLine("|> schema.fieldsAsCols()");
-
-
-    public static async Task<IEnumerable<T>> ParseQuery<T>(string query, Func<FluxRecord, T> func,
-        CancellationToken token)
-    {
-        using var client = InfluxDBClientFactory.Create(Constants.InfluxDBUrl, Constants.InfluxToken);
-        var queryApi = client.GetQueryApi();
-        var tables = await queryApi.QueryAsync(query, Constants.InfluxOrg, token);
-        return tables.SelectMany(table => table.Records.Select(func));
-
-    }
-    
-    public static async Task UploadData<T>(IEnumerable<T> items, Func<T, PointData> func,
-        CancellationToken token)
-    {
-        using var client = InfluxDBClientFactory.Create(Constants.InfluxDBUrl, Constants.InfluxToken);
-        var writeApi = client.GetWriteApiAsync();
-        var points = items.Select(func).ToArray();
-        await writeApi.WritePointsAsync(points, Constants.InfluxBucket, Constants.InfluxOrg, token);
-    }
 }

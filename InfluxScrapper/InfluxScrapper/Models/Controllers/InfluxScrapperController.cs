@@ -45,13 +45,13 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     [Description("Gets data directly from scrapping website")]
     [HttpPost("scrape")]
     public async Task<IEnumerable<TResult>> Scrape([FromBody] TScrapeQuery scrapeQuery, CancellationToken token) =>
-        await ScrapeInternal(scrapeQuery, token, 0) ?? Enumerable.Empty<TResult>();
+        await ScrapeInternal(scrapeQuery, 0, token) ?? Enumerable.Empty<TResult>();
 
 
     [Description("Gets data directly from scrapping website and repeats untill sucssess or timeout")]
     [HttpPost("scrapewait")]
     public async Task<IEnumerable<TResult>> ScrapeWait([FromBody] TScrapeQuery scrapeQuery, CancellationToken token)
-        => await ScrapeWaitInternal(scrapeQuery, token, 1) ?? Enumerable.Empty<TResult>();
+        => await ScrapeWaitInternal(scrapeQuery, 1, token) ?? Enumerable.Empty<TResult>();
 
     [Description("Updates database cache without wait")]
     [HttpPost("update")]
@@ -62,13 +62,13 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         var cancellationTokenSource = new CancellationTokenSource(ScrapeWaitTimeout);
         var token = cancellationTokenSource.Token;
         foreach (var scrapeQuery in scrapeQueries)
-            Task.Run(async () => await UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, token, eventId), token);
+            Task.Run(async () => await UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, eventId, token), token);
     }
 
     [Description("Updates database cache and waits for completion")]
     [HttpPost("updatewait")]
     public async Task UpdateWait([FromBody] TUpdateQuery updateQuery, CancellationToken token) => 
-        await UpdateWaitAllInternal(updateQuery, token, 3);
+        await UpdateWaitAllInternal(updateQuery, 3, token);
 
    
 
@@ -77,7 +77,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     public async Task UpdateWaitOnce([FromBody] TUpdateQuery updateQuery, CancellationToken token)
     {
         const int eventId = 4;
-        await UpdateWaitOnceInternal(updateQuery, token, eventId);
+        await UpdateWaitOnceInternal(updateQuery, eventId, token);
     }
 
     
@@ -85,7 +85,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     [HttpPost("read")]
     public async Task<IEnumerable<TResult>> ReadCache([FromBody] TReadQuery readQuery,
         CancellationToken token) =>
-        await ReadInternal(readQuery, false, token, 5) ?? Enumerable.Empty<TResult>();
+        await ReadInternal(readQuery, false, 5, token) ?? Enumerable.Empty<TResult>();
 
 
 
@@ -96,7 +96,7 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         CancellationToken token)
     {
         const int eventId = 6;
-        var cache = (await ReadInternal(readQuery, true, token, eventId))?.ToArray();
+        var cache = (await ReadInternal(readQuery, true, eventId, token))?.ToArray();
         if (cache is not null && cache.FirstOrDefault() is { } top)
         {
             LogInformation(eventId,
@@ -112,20 +112,20 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         if (cache is not null && cache.FirstOrDefault() is { } topResult)
         {
             if(topResult.TimeWritten >= DateTime.Now.Subtract(ChacheValiditySpan) &&
-               await ReadInternal(readQuery, false, token, eventId) is { } result)
+               await ReadInternal(readQuery, false, eventId, token) is { } result)
                 return result;
             lastFound = topResult.TimeWritten;
         }
                               
         var updateQuery = ConvertToUpdateQueryInternal(readQuery, lastFound);
-        await UpdateWaitOnceInternal(updateQuery, token, eventId);
-        var results = await ReadInternal(readQuery, false, token, eventId) ?? Enumerable.Empty<TResult>();
+        await UpdateWaitOnceInternal(updateQuery, eventId, token);
+        var results = await ReadInternal(readQuery, false, eventId, token) ?? Enumerable.Empty<TResult>();
         return results;
     }
 
 
-    private async Task<IEnumerable<TResult>?> ScrapeInternal(TScrapeQuery scrapeQuery, CancellationToken token,
-        int eventId)
+    private async Task<IEnumerable<TResult>?> ScrapeInternal(TScrapeQuery scrapeQuery,
+        int eventId, CancellationToken token)
     {
         LogInformation(eventId, "Scrape started");
 
@@ -146,8 +146,8 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
     }
 
 
-    private async Task<IEnumerable<TResult>?> ScrapeWaitInternal(TScrapeQuery scrapeQuery, CancellationToken token,
-        int eventId)
+    private async Task<IEnumerable<TResult>?> ScrapeWaitInternal(TScrapeQuery scrapeQuery,
+        int eventId, CancellationToken token)
     {
         var endTime = DateTime.Now + ScrapeWaitTimeout;
         var retries = 0;
@@ -185,8 +185,8 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         return null;
     }
 
-    private async Task<bool> UpdateInternal(TScrapeQuery scrapeQuery, string measurement, CancellationToken token,
-        int eventId)
+    private async Task<bool> UpdateInternal(TScrapeQuery scrapeQuery, string measurement,
+        int eventId, CancellationToken token)
     {
         LogInformation(eventId, "Update started");
 
@@ -215,13 +215,13 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         return false;
     }
     
-    private async Task UpdateWaitOnceInternal(TUpdateQuery updateQuery, CancellationToken token, int eventId)
+    private async Task UpdateWaitOnceInternal(TUpdateQuery updateQuery, int eventId, CancellationToken token)
     {
         var scrapeQueries = ConvertToScrapeQueriesInternal(updateQuery).ToArray();
 
         var tasks = new Task<bool>[scrapeQueries.Length];
         for (var i = 0; i < scrapeQueries.Length; i++)
-            tasks[i] = UpdateInternal(scrapeQueries[i], updateQuery.Measurement, token, eventId);
+            tasks[i] = UpdateInternal(scrapeQueries[i], updateQuery.Measurement, eventId, token);
 
         var results = await Task.WhenAll(tasks);
 
@@ -235,19 +235,19 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
             if (results[i]) //Skip successful updates 
                 continue;
             var scrapeQuery = scrapeQueries[i];
-            _ = Task.Run(async () => await UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, scheduleToken, eventId),
+            _ = Task.Run(async () => await UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, eventId, scheduleToken),
                 scheduleToken);
         }
     }
 
 
-    private async Task<bool> UpdateWaitInternal(TScrapeQuery scrapeQuery, string measurement, CancellationToken token,
-        int eventId)
+    private async Task<bool> UpdateWaitInternal(TScrapeQuery scrapeQuery, string measurement,
+        int eventId, CancellationToken token)
     {
         LogInformation(eventId, "Update started");
         try
         {
-            var results = (await ScrapeWaitInternal(scrapeQuery, token, eventId))?.ToArray();
+            var results = (await ScrapeWaitInternal(scrapeQuery, eventId, token))?.ToArray();
             if (results is null)
             {
                 LogInformation(eventId, "Failed to get scrape data for update");
@@ -276,11 +276,11 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
         return false;
     }
 
-    private async Task UpdateWaitAllInternal(TUpdateQuery updateQuery, CancellationToken token, int eventId)
+    private async Task UpdateWaitAllInternal(TUpdateQuery updateQuery, int eventId, CancellationToken token)
     {
         var scrapeQueries = ConvertToScrapeQueriesInternal(updateQuery);
         var updateWaitTasks = scrapeQueries.Select(scrapeQuery =>
-            UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, token, eventId));
+            UpdateWaitInternal(scrapeQuery, updateQuery.Measurement, eventId, token));
         var results = await Task.WhenAll(updateWaitTasks);
         if (results.All(r => !r))
             LogInformation(eventId, "Update wait failed");
@@ -290,8 +290,8 @@ public abstract class InfluxScrapperController<TUpdateQuery, TScrapeQuery, TRead
             LogInformation(eventId, "Update wait succeeded");
     }
     
-    private async Task<IEnumerable<TResult>?> ReadInternal(TReadQuery scrapeQuery, bool singleResult, CancellationToken token,
-        int eventId)
+    private async Task<IEnumerable<TResult>?> ReadInternal(TReadQuery scrapeQuery, bool singleResult,
+        int eventId, CancellationToken token)
     {
         LogInformation(eventId, "Read started");
 

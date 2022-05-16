@@ -2,7 +2,7 @@ using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Controllers;
 using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Stock;
-using InfluxScrapper.Utilites;
+using InfluxScrapper.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 using NodaTime.Extensions;
@@ -31,7 +31,7 @@ public class ForexInfluxScrapperController : InfluxScrapperController<ForexQuery
     {
         var results = await HttpUtilities.GetCSV<ForexResult>(scrapeQuery.Url, _httpClientFactory, token);
         if (results == null)
-            throw new NullReferenceException("HTTP failed");
+            throw new Exception("HTTP failed");
         results.ForEach(r =>
         {
             r.SymbolFrom = scrapeQuery.SymbolFrom;

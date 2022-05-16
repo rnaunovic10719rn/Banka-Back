@@ -3,7 +3,7 @@ using InfluxScrapper.Models.Controllers;
 using InfluxScrapper.Models.Exchange;
 using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Stock;
-using InfluxScrapper.Utilites;
+using InfluxScrapper.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 using NodaTime.Extensions;
@@ -35,7 +35,7 @@ public class ForexExchangeInfluxScrapperController : InfluxScrapperController<Fo
     {
         var resultJson = await HttpUtilities.GetJSON<ForexExchangeRateJson>(scrapeQuery.Url, _httpClientFactory, token);
         if (resultJson is null)
-            throw new NullReferenceException("HTTP failed");
+            throw new Exception("HTTP failed");
         var result = new ForexExchangeRateResult();
         result.Ask = resultJson.Body.Ask;
         result.Bid = resultJson.Body.Bid;

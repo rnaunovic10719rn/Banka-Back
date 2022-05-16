@@ -2,7 +2,7 @@ using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Controllers;
 using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;
-using InfluxScrapper.Utilites;
+using InfluxScrapper.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InfluxScrapper.Controllers;
@@ -28,7 +28,7 @@ public class StockQuoteInfluxScrapperController : InfluxScrapperController<Stock
     {
         var results = await HttpUtilities.GetCSV<StockQuoteResult>(scrapeQuery.Url, this._httpClientFactory, token);
         if (results == null)
-            throw new NullReferenceException("HTTP failed");
+            throw new Exception("HTTP failed");
         results.ForEach(r => r.Ticker = scrapeQuery.Symbol);
         return results;
     }

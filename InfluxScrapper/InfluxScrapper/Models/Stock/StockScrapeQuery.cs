@@ -35,7 +35,7 @@ public class StockScrapeQuery : StockQuery
         StockType.Daily => "TIME_SERIES_DAILY",
         StockType.Weekly => "TIME_SERIES_WEEKLY",
         StockType.Monthly => "TIME_SERIES_MONTHLY",
-        _ => throw new ArgumentOutOfRangeException()
+        _ => throw new ArgumentOutOfRangeException(nameof(Type))
     };
     
     public string Url

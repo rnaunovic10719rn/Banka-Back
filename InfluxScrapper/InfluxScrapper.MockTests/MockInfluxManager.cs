@@ -12,20 +12,20 @@ public class MockInfluxManager : IInfluxManager
     public List<PointData> Items { get; } = new();
     public Dictionary<PointData, object> Table = new();
 
-    public async Task<IEnumerable<T>> Query<T>(string query, CancellationToken token) where T : InvfluxRecord<T>
+    public Task<IEnumerable<T>> Query<T>(string query, CancellationToken token) where T : InvfluxRecord<T>
     {
         if (query == true.ToString())
         {
             if(Items.LastOrDefault() is {} last)
-                return new T[] {(T)Table[last]};
-            return Enumerable.Empty<T>();
+                return Task.FromResult<IEnumerable<T>>(new T[] {(T)Table[last]});
+            return Task.FromResult(Enumerable.Empty<T>());
         }
 
         var results = Table.Values.Select(v => (T) v).ToArray();
-        return results;
+        return Task.FromResult<IEnumerable<T>>(results);
     }
 
-    public async Task Upload<T>(IEnumerable<T> records, string measurement, CancellationToken token) where T : InvfluxRecord<T>
+    public Task Upload<T>(IEnumerable<T> records, string measurement, CancellationToken token) where T : InvfluxRecord<T>
     {
         var recordsArr = records.ToArray();
         var points = new PointData[recordsArr.Length];
@@ -36,5 +36,6 @@ public class MockInfluxManager : IInfluxManager
             points[i] = point;
         }
         Items.AddRange(points);
+        return Task.CompletedTask;
     }
 }
