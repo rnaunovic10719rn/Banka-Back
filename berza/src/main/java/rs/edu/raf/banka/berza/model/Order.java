@@ -5,9 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
+import rs.edu.raf.banka.berza.enums.OrderStatus;
 import rs.edu.raf.banka.berza.enums.OrderType;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -44,4 +46,10 @@ public class Order {
     private OrderType orderType;
     private boolean AON;
     private boolean margin;
+
+    @Enumerated(value = EnumType.STRING)
+    private OrderStatus orderStatus;
+    private boolean done;
+    private Long orderManagerId;
+    private Date lastModified;
 }
