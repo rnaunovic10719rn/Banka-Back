@@ -138,17 +138,12 @@ public class UserControllerTest {
 
     @Test
     void testInvalidDeleteAPI() throws Exception{
-        given(userServiceImplementation.getUserById(2L)).willReturn(null);
-
-        when(userServiceImplementation.deleteUser(any())).thenReturn(true);
+        given(userServiceImplementation.getUserById(2L)).willReturn(Optional.ofNullable(null));
 
         mockMvc.perform(delete("/api/user/delete/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
-
-
-
 
     @Test
     void testGetUser() throws Exception{
@@ -185,7 +180,70 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void testGetUserId() throws Exception{
+        long id = 2L;
+        String token = "dummyToken";
 
+        when(userServiceImplementation.getUserId(token)).thenReturn(id);
+
+        mockMvc.perform(post("/api/user/getId/{token}", token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidGetUserId() throws Exception{
+        String invalidToken = "dummyToken";
+
+        when(userServiceImplementation.getUserId(invalidToken)).thenReturn(null);
+
+        mockMvc.perform(post("/api/user/getId/{token}", invalidToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testChangePasswordInternal() throws Exception{
+        long id = 2L;
+        User user = new User(dummyName, "Test");
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.of(user));
+
+        when(userServiceImplementation.changePassword("mockPass", user)).thenReturn(true);
+
+        mockMvc.perform(post("/api/user/new-password/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(newPasswordForm)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testChangeBadPasswordInternal() throws Exception{
+        long id = 2L;
+        User user = new User(dummyName, "Test");
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.of(user));
+
+        when(userServiceImplementation.changePassword("mockPass", user)).thenReturn(false);
+
+        mockMvc.perform(post("/api/user/new-password/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(newPasswordForm)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testInvalidChangeBadPasswordInternal() throws Exception{
+        long id = 2L;
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.ofNullable(null));
+        
+        mockMvc.perform(post("/api/user/new-password/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(newPasswordForm)))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     void testEditUserFromToken() throws Exception{
@@ -502,7 +560,6 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Can't delete admin"));
     }
-
 
     public static String asJsonString(final Object obj) {
         try {
