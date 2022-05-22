@@ -138,9 +138,7 @@ public class UserControllerTest {
 
     @Test
     void testInvalidDeleteAPI() throws Exception{
-        given(userServiceImplementation.getUserById(2L)).willReturn(null);
-
-        when(userServiceImplementation.deleteUser(any())).thenReturn(true);
+        given(userServiceImplementation.getUserById(2L)).willReturn(Optional.ofNullable(null));
 
         mockMvc.perform(delete("/api/user/delete/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
