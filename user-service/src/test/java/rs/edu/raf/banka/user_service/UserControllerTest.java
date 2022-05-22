@@ -181,6 +181,13 @@ public class UserControllerTest {
     }
 
     @Test
+    void testProba() throws Exception{
+        mockMvc.perform(get("/api/user", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
     void testEditUserFromToken() throws Exception{
         User user = new User(dummyName, "Test");
         user.setId(2L);
