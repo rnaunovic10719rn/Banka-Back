@@ -147,9 +147,6 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-
-
-
     @Test
     void testGetUser() throws Exception{
         User user = new User(dummyName, "Test");
@@ -184,8 +181,6 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
-
-
 
     @Test
     void testEditUserFromToken() throws Exception{
@@ -502,7 +497,6 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Can't delete admin"));
     }
-
 
     public static String asJsonString(final Object obj) {
         try {
