@@ -21,11 +21,12 @@ public class RacunService {
 
     public Racun createRacun(Long userID){
         Racun racun = new Racun();
-        racun.setId(userID);
+        racun.setUserID(userID);
         racun.setBrojRacuna(UUID.randomUUID().toString());
         racun.setTipRacuna(RacunType.KES);
         return racunRepository.save(racun);
     }
+
 
 
 }

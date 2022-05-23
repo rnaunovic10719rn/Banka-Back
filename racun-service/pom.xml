@@ -18,7 +18,7 @@
     </repositories>
 
     <groupId>rs.edu.raf.banka</groupId>
-    <artifactId>berza</artifactId>
+    <artifactId>racun</artifactId>
     <version>${revision}</version>
 
     <name>racun</name>

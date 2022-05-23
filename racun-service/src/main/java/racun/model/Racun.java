@@ -20,6 +20,7 @@ public class Racun {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userID;
     private String brojRacuna;
     private RacunType tipRacuna;
 
