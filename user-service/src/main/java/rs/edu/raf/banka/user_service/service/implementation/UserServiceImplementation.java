@@ -148,12 +148,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
             if (!user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
-                throw new UsernameNotFoundException(errMessage);
+                throw new BadCredentialsException(errMessage);
             }else{
                 return user.get();
             }
         } catch (JWTVerificationException e) {
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new BadCredentialsException("Token is invalid");
         }
     }
 
