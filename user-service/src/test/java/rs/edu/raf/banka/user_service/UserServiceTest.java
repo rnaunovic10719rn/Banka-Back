@@ -31,7 +31,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
 
     @InjectMocks
     private UserServiceImplementation userService;
@@ -131,7 +131,7 @@ public class UserServiceTest {
         userService.changePassword("mockPass123", user);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
+        assertEquals(true, passwordEncoder.matches("mockPass123", user.getPassword()));
     }
 
     @Test
@@ -142,7 +142,7 @@ public class UserServiceTest {
         userService.changePassword("mockPass", user);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        assertEquals(passwordEncoder.matches("mockPass", user.getPassword()), false);
+        assertEquals(false, passwordEncoder.matches("mockPass", user.getPassword()));
     }
 
    /*@Test
@@ -343,16 +343,6 @@ public class UserServiceTest {
         when(userRepository.save(any())).thenReturn(user);
 
         assertEquals(user, userService.createUser(createUserForm));
-    }
-
-    @Test
-    void testCreateUserAdmin() {
-        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
-        user.setId(2L);
-
-        userService = Mockito.spy(new UserServiceImplementation(userRepository, roleRepository, passwordTokenRepository));
-
-        lenient().doNothing().when(userService).createUserAdmin(user);
     }
 
     private CreateUserForm initUserMockForm() {

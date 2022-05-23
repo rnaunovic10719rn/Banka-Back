@@ -43,9 +43,9 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     String username = decodedJWT.getSubject().split(",")[0];
                     String[] permissions = decodedJWT.getClaim("permissions").asArray(String.class);
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                    stream(permissions).forEach(permission -> {
-                        authorities.add(new SimpleGrantedAuthority(permission));
-                    });
+                    stream(permissions).forEach(permission ->
+                        authorities.add(new SimpleGrantedAuthority(permission))
+                    );
                     //Evo ti user sa ovim kredencijalima vidi sta cemo sa njim
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);

@@ -34,7 +34,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String username, password, otp;
+        String username;
+        String password;
+        String otp;
         try {
             Map<String, String> requestMap = new ObjectMapper().readValue(request.getInputStream(), Map.class);
             username = requestMap.get("username");
@@ -43,14 +45,10 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         } catch (IOException e) {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
-       /* String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String otp = request.getParameter("otp");*/
         log.info("Log in: {} ", username);
 
         OtpAuthenticationToken authenticationToken = new OtpAuthenticationToken(username, password, otp);
-        var result = authenticationManager.authenticate(authenticationToken);
-        return result;
+        return authenticationManager.authenticate(authenticationToken);
     }
 
     @Override
@@ -58,13 +56,13 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         User user = (User)authentication.getPrincipal();
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
 
-        String access_token = JWT.create()
+        String accessToken = JWT.create()
                 .withSubject(user.getUsername())
                 .withIssuer(request.getRequestURL().toString())
-                .withClaim("permissions", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                .withClaim("permissions", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
                 .sign(algorithm);
 
         response.setContentType(APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(response.getOutputStream(), access_token);
+        new ObjectMapper().writeValue(response.getOutputStream(), accessToken);
     }
 }

@@ -86,10 +86,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         log.info("Showing user {}", username);
         if(userRepository.findByUsername(username).isPresent()){
             Optional<User> user = userRepository.findByUsername(username);
-            return userRepository.findByUsername(username).get();
-        }else{
-            return null;
+            if(user.isPresent()){
+                return user.get();
+            }
         }
+        return null;
     }
 
     @Override
@@ -180,18 +181,14 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
         if(user.getUsername().equals("admin"))
         {
-            if(usernameFromJWT.equalsIgnoreCase(user.getUsername()))
-                return true;
-            return false;
+            return usernameFromJWT.equalsIgnoreCase(user.getUsername());
         }
 
         String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
 
         if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT))
             return true;
-        if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER))
-            return true;
-        return false;
+        return hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER);
     }
 
     @Override
@@ -241,10 +238,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     public boolean hasEditPermission(String[] permissions,Permissions permission){
-        if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
-            return true;
-        }
-        return false;
+        return Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)));
     }
 
     public void createPasswordResetTokenForUser(User user, String token) {
@@ -254,10 +248,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public User getUserByEmail(String email){
-        if(userRepository.findByEmail(email).isEmpty()){
-            return null;
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isPresent()){
+            return user.get();
         }
-        return userRepository.findByEmail(email).get();
+        return null;
     }
 
     @Override

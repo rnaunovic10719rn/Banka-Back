@@ -10,13 +10,13 @@ import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplement
 
 public class OtpAuthenticationManager implements AuthenticationManager {
 
-    private AuthenticationManager _baseAuthenticationManager;
-    private UserServiceImplementation _userServiceImplementation;
+    private AuthenticationManager baseAuthenticationManager;
+    private UserServiceImplementation userServiceImplementation;
 
     public OtpAuthenticationManager(UserServiceImplementation userServiceImplementation, AuthenticationManager baseAuthenticationManager)
     {
-        _baseAuthenticationManager = baseAuthenticationManager;
-        _userServiceImplementation = userServiceImplementation;
+        baseAuthenticationManager = baseAuthenticationManager;
+        userServiceImplementation = userServiceImplementation;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class OtpAuthenticationManager implements AuthenticationManager {
         if(!(authentication instanceof OtpAuthenticationToken otpToken))
             throw new AuthenticationCredentialsNotFoundException("");
         // Provera OTP Koda
-        var user =_userServiceImplementation.getUser(otpToken.getUsername());
+        var user =userServiceImplementation.getUser(otpToken.getUsername());
         if(user.hasOTP()){
             var otpSeecret = user.getOtpSeecret();
             var sentOtp = otpToken.getOtp();
@@ -34,6 +34,6 @@ public class OtpAuthenticationManager implements AuthenticationManager {
         }
 
         var passwordToken = new UsernamePasswordAuthenticationToken(otpToken.getUsername(), otpToken.getPassword());
-        return _baseAuthenticationManager.authenticate(passwordToken);
+        return baseAuthenticationManager.authenticate(passwordToken);
     }
 }

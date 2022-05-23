@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
 
 import javax.jms.Queue;
+import java.util.Arrays;
 
 @Configuration
 public class MailConfig {
@@ -30,6 +31,7 @@ public class MailConfig {
     @Bean
     public ActiveMQConnectionFactory activeMQConnectionFactory() {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
+        factory.setTrustedPackages(Arrays.asList("org.mypackage1", "org.mypackage2"));
         factory.setBrokerURL(brokerUrl);
         factory.setUserName(username);
         factory.setPassword(password);
