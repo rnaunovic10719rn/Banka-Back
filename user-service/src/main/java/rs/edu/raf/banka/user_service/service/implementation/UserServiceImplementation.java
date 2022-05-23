@@ -49,9 +49,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Autowired
     Queue mailQueue;
 
-    String bearer = "Bearer ";
-    String secret = "secret";
-    String errMessage = "User not found in database";
+    private String bearer = "Bearer ";
+    private String secret = "secret";
+    private String errMessage = "User not found in database";
+    private Random rnd = new Random();
+
 
     @Autowired
     public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
@@ -119,7 +121,6 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public User createUser(CreateUserForm createUserForm) {
         String username = createUserForm.getIme().toLowerCase()+ "." + createUserForm.getPrezime().toLowerCase();
-        Random rnd = new Random();
 
         if(this.getUser(username) instanceof User){
             username = username + (rnd.nextInt() * (100)) + 1;
