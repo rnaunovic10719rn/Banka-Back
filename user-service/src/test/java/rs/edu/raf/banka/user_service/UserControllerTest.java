@@ -1,6 +1,5 @@
 package rs.edu.raf.banka.user_service;
 
-import ch.qos.logback.core.joran.action.NewRuleAction;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +7,6 @@ import org.apache.http.HttpHeaders;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,7 +17,6 @@ import rs.edu.raf.banka.user_service.controller.UserController;
 import rs.edu.raf.banka.user_service.controller.response_forms.*;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
-import rs.edu.raf.banka.user_service.security.OTPUtilities;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
 import java.util.ArrayList;

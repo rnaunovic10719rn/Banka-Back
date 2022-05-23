@@ -84,10 +84,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public User getUser(String username) {
         log.info("Showing user {}", username);
-        if(userRepository.findByUsername(username).isEmpty()){
-            return null;
-        }else{
+        if(userRepository.findByUsername(username).isPresent()){
             return userRepository.findByUsername(username).get();
+        }else{
+            return null;
         }
     }
 
