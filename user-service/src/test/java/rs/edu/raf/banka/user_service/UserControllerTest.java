@@ -650,6 +650,7 @@ public class UserControllerTest {
     String initInvalidJWT(){
         return JWT.create()
                 .withSubject(dummyName+",ROLE")
+                .withSubject("ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"X_LIST_USERS", "DUMMY_FAKE_PERMISSION"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));

@@ -85,6 +85,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     public User getUser(String username) {
         log.info("Showing user {}", username);
         if(userRepository.findByUsername(username).isPresent()){
+            Optional<User> user = userRepository.findByUsername(username);
             return userRepository.findByUsername(username).get();
         }else{
             return null;
