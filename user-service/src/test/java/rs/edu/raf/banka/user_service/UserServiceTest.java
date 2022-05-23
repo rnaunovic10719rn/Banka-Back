@@ -1,20 +1,17 @@
 package rs.edu.raf.banka.user_service;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import org.assertj.core.util.Arrays;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import rs.edu.raf.banka.user_service.mail.PasswordResetToken;
+import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.Permissions;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
@@ -28,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
@@ -46,12 +44,22 @@ public class UserServiceTest {
     @Mock
     private PasswordTokenRepository passwordTokenRepository;
 
+    private CreateUserForm createUserForm = initUserMockForm();
+
     @Test
     void testGetUser() {
         User user = new User("UserX", "X");
         given(userRepository.findByUsername("UserX")).willReturn(Optional.of(user));
 
         assertEquals(user, userService.getUser("UserX"));
+    }
+
+    @Test
+    void testGetRole(){
+        Role role = new Role();
+        given(roleRepository.findByName("dummyRole")).willReturn(role);
+
+        assertEquals(role, userService.getRole("dummyRole"));
     }
 
     @Test
@@ -255,8 +263,8 @@ public class UserServiceTest {
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
 
-        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
-        assertEquals("User not found in database", exception.getMessage());
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.getUserByToken(token));
+        assertEquals("Bad credentials", exception.getMessage());
     }
 
     @Test
@@ -272,7 +280,7 @@ public class UserServiceTest {
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret2".getBytes()));
 
-        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.getUserByToken(token));
         assertEquals("Token is invalid", exception.getMessage());
     }
 
@@ -308,6 +316,28 @@ public class UserServiceTest {
         given(userRepository.findByEmail("user@mock")).willReturn(Optional.empty());
 
         assertEquals(null, userService.getUserByEmail("user@mock"));
+    }
+
+    @Test
+    void testCreateUser() {
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        user.setId(0L);
+
+        when(userRepository.save(any())).thenReturn(user);
+
+        assertEquals(user, userService.createUser(createUserForm));
+    }
+
+    private CreateUserForm initUserMockForm() {
+        CreateUserForm userMockForm = new CreateUserForm();
+        userMockForm.setIme("dummyName");
+        userMockForm.setPrezime("Test");
+        userMockForm.setEmail("mock@test");
+        userMockForm.setJmbg("123");
+        userMockForm.setBrTelefon("123");
+        userMockForm.setPozicija("ROLE_ADMIN");
+
+        return userMockForm;
     }
 
 }
