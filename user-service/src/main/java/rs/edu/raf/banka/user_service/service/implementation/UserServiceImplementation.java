@@ -142,7 +142,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     public User getUserByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
-            String username = decodedToken.getSubject();
+            String username = decodedToken.getSubject().split(",")[0];
             var user = userRepository.findByUsername(username);
 
             if (!user.isPresent() || !(user.get().isAktivan())) {
@@ -174,7 +174,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
-        String usernameFromJWT = decodedJWT.getSubject();
+        String usernameFromJWT = decodedJWT.getSubject().split(",")[0];
 
         //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
         if(user.getUsername().equals("admin"))
@@ -199,7 +199,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
-        String usernameFromJWT = decodedJWT.getSubject();
+        String usernameFromJWT = decodedJWT.getSubject().split(",")[0];
         var user = this.getUser(usernameFromJWT);
         if(user == null)
             return null;
