@@ -54,7 +54,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     private String secret = "secret";
     private String errMessage = "Bad credentials";
     private SecureRandom rnd = new SecureRandom();
-    
+
     @Autowired
     public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
         this.userRepository = userRepository;

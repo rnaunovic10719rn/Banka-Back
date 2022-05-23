@@ -255,8 +255,8 @@ public class UserServiceTest {
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
 
-        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
-        assertEquals("User not found in database", exception.getMessage());
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.getUserByToken(token));
+        assertEquals("Bad credentials", exception.getMessage());
     }
 
     @Test
@@ -272,7 +272,7 @@ public class UserServiceTest {
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret2".getBytes()));
 
-        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.getUserByToken(token));
         assertEquals("Token is invalid", exception.getMessage());
     }
 
