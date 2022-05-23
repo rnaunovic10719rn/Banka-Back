@@ -324,7 +324,6 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Invalid token!"));
     }
-    
 
     @Test
     void testInvalidNewPassword() throws Exception{
