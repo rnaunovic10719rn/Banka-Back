@@ -29,6 +29,7 @@ import javax.jms.Queue;
 import org.springframework.messaging.MessagingException;
 
 import javax.transaction.Transactional;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +53,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     private String bearer = "Bearer ";
     private String secret = "secret";
     private String errMessage = "User not found in database";
-    private Random rnd = new Random();
+    private SecureRandom rnd = new SecureRandom();
 
 
     @Autowired
