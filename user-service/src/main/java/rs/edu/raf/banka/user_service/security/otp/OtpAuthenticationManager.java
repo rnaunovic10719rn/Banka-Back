@@ -15,8 +15,8 @@ public class OtpAuthenticationManager implements AuthenticationManager {
 
     public OtpAuthenticationManager(UserServiceImplementation userServiceImplementation, AuthenticationManager baseAuthenticationManager)
     {
-        baseAuthenticationManager = baseAuthenticationManager;
-        userServiceImplementation = userServiceImplementation;
+        this.baseAuthenticationManager = baseAuthenticationManager;
+        this.userServiceImplementation = userServiceImplementation;
     }
 
     @Override

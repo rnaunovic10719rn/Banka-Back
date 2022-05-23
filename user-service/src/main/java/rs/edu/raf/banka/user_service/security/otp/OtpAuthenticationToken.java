@@ -72,4 +72,9 @@ public class OtpAuthenticationToken extends AbstractAuthenticationToken {
         OtpAuthenticationToken that = (OtpAuthenticationToken) o;
         return Objects.equals(principal, that.principal) && Objects.equals(credentials, that.credentials);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), principal, credentials);
+    }
 }
