@@ -95,8 +95,6 @@ public class UserController {
             //Sonnar pass
             if (!userService.hasEditPermissions(user.get(), token))
                 return ResponseEntity.badRequest().build();
-            //if(user.isRequiresOtp())
-            //    return ResponseEntity.badRequest().build();
 
             userService.editUser(user.get(), createUserForm);
             return ResponseEntity.ok().body(user.get().getUsername() + " edited");
@@ -140,33 +138,38 @@ public class UserController {
         return ResponseEntity.ok().body(valid);
     }
 
-
-    //TODO: Dodati permisije na otp urleove
-
     @PostMapping("/otp/set/{id}")
     @ApiOperation("Edit users 2FA secret with specific user id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>setOtp(@PathVariable long id, @RequestBody String secret, @RequestHeader("Authorization") String token) {
-        var user = userService.getUserById(id).get();
-        if(!userService.hasEditPermissions(user, token))
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            if(!userService.hasEditPermissions(user.get(), token))
+                return ResponseEntity.badRequest().build();
+            if(!OTPUtilities.isValidSeecret(secret))
+                return ResponseEntity.badRequest().build();
+            userService.editOtpSeecret(user.get(), secret);
+            return ResponseEntity.ok().build();
+        }else{
             return ResponseEntity.badRequest().build();
-        if(!OTPUtilities.isValidSeecret(secret))
-            return ResponseEntity.badRequest().build();
-        userService.editOtpSeecret(user, secret);
-        return ResponseEntity.ok().build();
+        }
     }
 
     @PostMapping("/otp/clear/{id}")
     @ApiOperation("Removes users 2FA secret with specific user id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>clearOtp(@PathVariable long id, @RequestHeader("Authorization") String token) {
-        var user = userService.getUserById(id).get();
-        if(!userService.hasEditPermissions(user, token))
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            if(!userService.hasEditPermissions(user.get(), token))
+                return ResponseEntity.badRequest().build();
+            if(user.get().isRequiresOtp())
+                return ResponseEntity.badRequest().build();
+            userService.editOtpSeecret(user.get(), null);
+            return ResponseEntity.ok().build();
+        }else{
             return ResponseEntity.badRequest().build();
-        if(user.isRequiresOtp())
-            return ResponseEntity.badRequest().build();
-        userService.editOtpSeecret(user, null);
-        return ResponseEntity.ok().build();
+        }
     }
 
     @PostMapping("/otp/requires/{username}")
