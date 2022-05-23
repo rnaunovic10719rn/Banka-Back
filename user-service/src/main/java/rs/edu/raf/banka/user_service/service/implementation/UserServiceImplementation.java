@@ -51,6 +51,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     String bearer = "Bearer ";
     String secret = "secret";
+    String errMessage = "User not found in database";
 
     @Autowired
     public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
@@ -65,7 +66,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         if(user.isPresent()){
             if(!(user.get().isAktivan())){
                 log.error("User {} not found in database", username);
-                throw new UsernameNotFoundException("User not found in database");
+                throw new UsernameNotFoundException(errMessage);
             }
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
             user.get().getRole().getPermissions().forEach(permission ->
@@ -74,7 +75,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             return new org.springframework.security.core.userdetails.User(user.get().getUsername(), user.get().getPassword(), authorities);
 
         }else{
-            throw new UsernameNotFoundException("User not found in database");
+            throw new UsernameNotFoundException(errMessage);
         }
     }
 
@@ -118,9 +119,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public User createUser(CreateUserForm createUserForm) {
         String username = createUserForm.getIme().toLowerCase()+ "." + createUserForm.getPrezime().toLowerCase();
+        Random rnd = new Random();
 
         if(this.getUser(username) instanceof User){
-            username = username + (int)((new Random()).nextInt() * (100)) + 1;
+            username = username + (rnd.nextInt() * (100)) + 1;
         }
 
         String password = createUserForm.getIme() + "Test123";
@@ -144,7 +146,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
             if (!user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
-                throw new UsernameNotFoundException("User not found in database");
+                throw new UsernameNotFoundException(errMessage);
             }else{
                 return user.get();
             }
