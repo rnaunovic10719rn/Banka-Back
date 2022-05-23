@@ -52,10 +52,9 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     private String bearer = "Bearer ";
     private String secret = "secret";
-    private String errMessage = "User not found in database";
+    private String errMessage = "Bad credentials";
     private SecureRandom rnd = new SecureRandom();
-
-
+    
     @Autowired
     public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
         this.userRepository = userRepository;
