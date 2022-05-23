@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -27,7 +28,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -326,6 +327,32 @@ public class UserServiceTest {
         when(userRepository.save(any())).thenReturn(user);
 
         assertEquals(user, userService.createUser(createUserForm));
+    }
+
+    @Test
+    void testCreateUserWithExistingUsername() {
+        User existingUser = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        existingUser.setId(0L);
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        user.setId(2L);
+
+        when(userService.getUser(user.getUsername())).thenReturn(any());
+
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(existingUser));
+
+        when(userRepository.save(any())).thenReturn(user);
+
+        assertEquals(user, userService.createUser(createUserForm));
+    }
+
+    @Test
+    void testCreateUserAdmin() {
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        user.setId(2L);
+
+        userService = Mockito.spy(new UserServiceImplementation(userRepository, roleRepository, passwordTokenRepository));
+
+        lenient().doNothing().when(userService).createUserAdmin(user);
     }
 
     private CreateUserForm initUserMockForm() {
