@@ -641,7 +641,7 @@ public class UserControllerTest {
 
     String initValidJWT(){
         return JWT.create()
-                .withSubject(dummyName)
+                .withSubject(dummyName+",ADMIN_ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
@@ -649,7 +649,7 @@ public class UserControllerTest {
 
     String initInvalidJWT(){
         return JWT.create()
-                .withSubject(dummyName)
+                .withSubject(dummyName+",ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"X_LIST_USERS", "DUMMY_FAKE_PERMISSION"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));

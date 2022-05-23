@@ -15,16 +15,19 @@ import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
 public class OTPUtilities {
 
-    private static SecureRandom _random = new SecureRandom();
+    private static SecureRandom random = new SecureRandom();
 
 
     private static TimeProvider timeProvider = new SystemTimeProvider();
     private static CodeGenerator codeGenerator = new DefaultCodeGenerator();
     private static CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
 
+    private OTPUtilities() {
+        throw new IllegalStateException("Utility class");
+    }
     public static String generateTOTPSecretKey() {
         byte[] bytes = new byte[20];
-        _random.nextBytes(bytes);
+        random.nextBytes(bytes);
         Base32 base32 = new Base32();
         return base32.encodeToString(bytes);
     }
@@ -45,7 +48,7 @@ public class OTPUtilities {
     }
 
     public static QrData createTOTPQRCodeData(String secretKey, String label, String issuer) {
-        QrData data = new QrData.Builder()
+        return new QrData.Builder()
                 .label(label)
                 .secret(secretKey)
                 .issuer(issuer)
@@ -53,7 +56,6 @@ public class OTPUtilities {
                 .digits(6)
                 .period(30)
                 .build();
-        return data;
     }
 
     public static String createTOTPQRCodeBase64Png(String secretKey, String label, String issuer) {

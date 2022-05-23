@@ -74,7 +74,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             user.get().getRole().getPermissions().forEach(permission ->
                     authorities.add(new SimpleGrantedAuthority(permission)));
 
-            return new org.springframework.security.core.userdetails.User(user.get().getUsername(), user.get().getPassword(), authorities);
+            return new org.springframework.security.core.userdetails.User(user.get().getUsername() + "," + user.get().getRole().getName(), user.get().getPassword(), authorities);
 
         }else{
             throw new UsernameNotFoundException(errMessage);
@@ -85,10 +85,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     public User getUser(String username) {
         log.info("Showing user {}", username);
         if(userRepository.findByUsername(username).isPresent()){
-            return userRepository.findByUsername(username).get();
-        }else{
-            return null;
+            Optional<User> user = userRepository.findByUsername(username);
+            if(user.isPresent()){
+                return user.get();
+            }
         }
+        return null;
     }
 
     @Override
@@ -142,7 +144,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     public User getUserByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
-            String username = decodedToken.getSubject();
+            String username = decodedToken.getSubject().split(",")[0];
             var user = userRepository.findByUsername(username);
 
             if (!user.isPresent() || !(user.get().isAktivan())) {
@@ -174,23 +176,19 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
-        String usernameFromJWT = decodedJWT.getSubject();
+        String usernameFromJWT = decodedJWT.getSubject().split(",")[0];
 
         //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
         if(user.getUsername().equals("admin"))
         {
-            if(usernameFromJWT.equalsIgnoreCase(user.getUsername()))
-                return true;
-            return false;
+            return usernameFromJWT.equalsIgnoreCase(user.getUsername());
         }
 
         String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
 
         if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT))
             return true;
-        if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER))
-            return true;
-        return false;
+        return hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER);
     }
 
     @Override
@@ -199,7 +197,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
-        String usernameFromJWT = decodedJWT.getSubject();
+        String usernameFromJWT = decodedJWT.getSubject().split(",")[0];
         var user = this.getUser(usernameFromJWT);
         if(user == null)
             return null;
@@ -240,10 +238,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     public boolean hasEditPermission(String[] permissions,Permissions permission){
-        if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
-            return true;
-        }
-        return false;
+        return Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)));
     }
 
     public void createPasswordResetTokenForUser(User user, String token) {
@@ -253,10 +248,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public User getUserByEmail(String email){
-        if(userRepository.findByEmail(email).isEmpty()){
-            return null;
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isPresent()){
+            return user.get();
         }
-        return userRepository.findByEmail(email).get();
+        return null;
     }
 
     @Override
