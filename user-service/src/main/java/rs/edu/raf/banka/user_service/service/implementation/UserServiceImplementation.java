@@ -74,7 +74,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
             user.get().getRole().getPermissions().forEach(permission ->
                     authorities.add(new SimpleGrantedAuthority(permission)));
 
-            return new org.springframework.security.core.userdetails.User(user.get().getUsername(), user.get().getPassword(), authorities);
+            return new org.springframework.security.core.userdetails.User(user.get().getUsername() + "," + user.get().getRole().getName(), user.get().getPassword(), authorities);
 
         }else{
             throw new UsernameNotFoundException(errMessage);
