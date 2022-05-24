@@ -29,7 +29,7 @@
 		<jacoco.version>0.8.8</jacoco.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-		<sonar.coverage.exclusions>**/config/*, **/model/*,**/repository/*,**/controller/response_forms/*,**/mail/*</sonar.coverage.exclusions>
+		<sonar.coverage.exclusions>**/config/*, **/model/*,**/repository/*,**/controller/response_forms/*,**/mail/*,**/security/otp/OTPCredentials,**/security/otp/OtpAuthenticationToken</sonar.coverage.exclusions>
 	</properties>
 
 	<dependencies>
