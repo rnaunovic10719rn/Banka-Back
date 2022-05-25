@@ -1,9 +1,10 @@
 package racun.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import racun.model.SredstvaKapital;
 import racun.repository.SredstvaKapitalRepository;
+
+import java.util.List;
 
 @Service
 public class SredstvaKapitalService {
@@ -11,8 +12,12 @@ public class SredstvaKapitalService {
     private SredstvaKapitalRepository sredstvaKapitalRepository;
 
 
-    public SredstvaKapitalService(){
+    public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository){
+        this.sredstvaKapitalRepository = sredstvaKapitalRepository;
+    }
 
+    public SredstvaKapital getAll(long userID){
+        return sredstvaKapitalRepository.findByUser(userID);
     }
 
     public SredstvaKapital updateStanje(long userID,double uplata, long isplata, double rezervisano,double rezervisanoKoristi){
