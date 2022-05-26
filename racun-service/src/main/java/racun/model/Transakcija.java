@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class Transakcija {
     @Id
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

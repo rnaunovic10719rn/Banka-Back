@@ -1,0 +1,36 @@
+##Rute
+
+Sve rute zahtevaju token u headeru!
+
+Inicijalno kreiranje racuna
+POST /api/racun/{id}
+
+Provera stanja
+GET api/racun/stanje/{id}
+
+Pregled transakcija
+GET api/racun/transakcije
+
+Uplata
+POST api/racun/uplata
+```
+{
+       "userid":1,
+       "brojRacuna":"e428a579-5841-4a44-b8a3-3703ce903704",
+       "opis":"",
+       "valuta":1,
+       "uplata":"1000"
+}
+ ```
+
+ Isplata
+ POST api/racun/uplata
+ ```
+ {
+        "userid":1,
+        "brojRacuna":"e428a579-5841-4a44-b8a3-3703ce903704",
+        "opis":"",
+        "valuta":1,
+        "isplata":"1000"
+ }
+  ```

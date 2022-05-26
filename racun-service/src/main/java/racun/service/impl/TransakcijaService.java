@@ -28,7 +28,7 @@ public class TransakcijaService {
         return transakcijaRepository.findByUserID(userid);
     }
 
-    public Transakcija uplata(long userid, String brojRacuna, String opis, Valuta valuta, long uplata){
+    public Transakcija uplata(long userid, String brojRacuna, String opis, int valuta, long uplata){
         Transakcija t = new Transakcija();
         Racun racun = racunRepository.findByBroj(brojRacuna);
         t.setRacun(racun);
@@ -40,7 +40,7 @@ public class TransakcijaService {
         return transakcijaRepository.save(t);
     }
 
-    public Transakcija isplata(long userid, String brojRacuna, String opis, Valuta valuta, long isplata){
+    public Transakcija isplata(long userid, String brojRacuna, String opis, int valuta, long isplata){
         Transakcija t = new Transakcija();
         Racun racun = racunRepository.findByBroj(brojRacuna);
         t.setRacun(racun);
