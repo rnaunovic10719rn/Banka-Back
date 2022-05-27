@@ -20,19 +20,22 @@ public class SredstvaKapitalService {
         this.racunRepository = racunRepository;
     }
 
-    public SredstvaKapital getAll(long userID){
-        return sredstvaKapitalRepository.findByUser(userID);
+    public SredstvaKapital getAll(String username){
+        return sredstvaKapitalRepository.findByUser(username);
     }
 
-    public SredstvaKapital updateStanje(long userID,double uplata, long isplata, double rezervisano,double rezervisanoKoristi){
-            SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByUser(userID);
-            if (sredstvaKapital!=null){
+    public SredstvaKapital updateStanje(String username,String racun,double uplata, long isplata, double rezervisano,double rezervisanoKoristi){
+            SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByUser(username);
+            SredstvaKapital sredstvaKapital_primalac = sredstvaKapitalRepository.findByRacun(racun);
+
+            if (!racun.equals("")){ //Provera inicijalnog kreiranja racuna
                 sredstvaKapital.setUkupno(sredstvaKapital.getUkupno()+uplata-isplata);
+                sredstvaKapital_primalac.setUkupno(sredstvaKapital_primalac.getUkupno()+isplata-uplata);
                 sredstvaKapital.setRezervisano(sredstvaKapital.getRezervisano()+rezervisano-rezervisanoKoristi);
                 return sredstvaKapitalRepository.save(sredstvaKapital);
             }else{
                 sredstvaKapital = new SredstvaKapital();
-                sredstvaKapital.setRacun(racunRepository.findByUser(userID));
+                sredstvaKapital.setRacun(racunRepository.findByUser(username));
                 sredstvaKapital.setUkupno(uplata-isplata);
                 sredstvaKapital.setRezervisano(rezervisano-rezervisanoKoristi);
                 sredstvaKapital.setRaspolozivo(0);

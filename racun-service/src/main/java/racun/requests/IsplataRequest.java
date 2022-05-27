@@ -1,15 +1,9 @@
 package racun.requests;
 
-import lombok.Data;
-import racun.model.Valuta;
-
-@Data
-public class UplataRequest {
+public class IsplataRequest {
 
     private String brojRacuna;
     private String opis;
     private int valuta_id;
     private long uplata;
-
-
 }

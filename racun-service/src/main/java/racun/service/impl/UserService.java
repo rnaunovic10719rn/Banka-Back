@@ -15,7 +15,18 @@ public class UserService {
         try {
             DecodedJWT decodedToken = decodeToken(token);
 
-            return decodedToken.getSubject();
+            return decodedToken.getSubject().split(",")[0];
+        } catch (JWTVerificationException e) {
+            // TODO find a better exception for this case
+            throw new UsernameNotFoundException("Token is invalid");
+        }
+    }
+
+    public String[] getRoleByToken(String token) {
+        try {
+            DecodedJWT decodedToken = decodeToken(token);
+
+            return decodedToken.getClaim("permissions").asArray(String.class);
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
             throw new UsernameNotFoundException("Token is invalid");

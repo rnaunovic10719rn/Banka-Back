@@ -7,7 +7,10 @@ import racun.model.SredstvaKapital;
 
 public interface SredstvaKapitalRepository extends JpaRepository<SredstvaKapital,Long> {
 
-    @Query("SELECT SK FROM SredstvaKapital SK LEFT JOIN Racun R ON R.id=SK.racun.id WHERE R.userID=:userID")
-    SredstvaKapital findByUser(Long userID);
+    @Query("SELECT SK FROM SredstvaKapital SK LEFT JOIN Racun R ON R.id=SK.racun.id WHERE R.username=:username")
+    SredstvaKapital findByUser(String username);
+
+    @Query("SELECT SK FROM SredstvaKapital SK WHERE SK.racun=:racun")
+    SredstvaKapital findByRacun(String racun);
 
 }

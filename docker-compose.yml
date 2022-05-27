@@ -36,6 +36,18 @@ services:
       - db-berza:/var/lib/postgresql/data
     profiles: ["all", "core"]
 
+  db-racun:
+    image: postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: postgres
+    volumes:
+      - db-racun:/var/lib/postgresql/data
+    profiles: [ "all", "core" ]
+
   db-influx:
     image: influxdb:2.1.1
     environment:
@@ -112,8 +124,21 @@ services:
       - influx-scrapper
     profiles: ["all"]
 
+  racun-servis:
+    build: ./racun-service
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-racun:5432/postgres
+    ports:
+      - "8083:8083"
+    links:
+      - db-racun
+    depends_on:
+      - db-racun
+    profiles: [ "all" ]
+
 volumes:
   db-user:
   db-berza:
+  db-racun:
   influx-data:
   influx-config:

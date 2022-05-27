@@ -27,37 +27,39 @@ public class RacunController {
     }
 
 
-    @PostMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> dodajRacun(@RequestHeader("Authorization") String token,@PathVariable Long id) {
-        //String user = userService.getUserByToken(token); //Read id from token
-        return ResponseEntity.ok(racunService.createRacun(id));
+    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> dodajRacun(@RequestHeader("Authorization") String token) {
+        String username = userService.getUserByToken(token); //Read id from token
+        return ResponseEntity.ok(racunService.createRacun(username));
     }
 
     @PostMapping(value = "/uplata", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> dodajUplatu(@RequestHeader("Authorization") String token,@RequestBody UplataRequest uplataRequest) {
-        //String user = userService.getUserByToken(token); //Read id from token
-        return ResponseEntity.ok(transakcijaService.uplata(uplataRequest.getUserid(), uplataRequest.getBrojRacuna(), uplataRequest.getOpis(), uplataRequest.getValuta_id(), uplataRequest.getUplata()));
+    public ResponseEntity<?> dodajUplatu(@RequestHeader("Authorization") String token, @RequestBody UplataRequest uplataRequest) {
+        String username = userService.getUserByToken(token); //Read id from token
+        return ResponseEntity.ok(transakcijaService.uplata(username, uplataRequest.getBrojRacuna(), uplataRequest.getOpis(), uplataRequest.getValuta_id(), uplataRequest.getUplata()));
     }
 
     @PostMapping(value = "/isplata", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> dodajIsplatu(@RequestHeader("Authorization") String token,@RequestBody UplataRequest uplataRequest) {
-        //String user = userService.getUserByToken(token); //Read id from token
-        return ResponseEntity.ok(transakcijaService.isplata(uplataRequest.getUserid(), uplataRequest.getBrojRacuna(), uplataRequest.getOpis(), uplataRequest.getValuta_id(), uplataRequest.getUplata()));
+    public ResponseEntity<?> dodajIsplatu(@RequestHeader("Authorization") String token, @RequestBody UplataRequest uplataRequest) {
+        String username = userService.getUserByToken(token); //Read id from token
+        return ResponseEntity.ok(transakcijaService.isplata(username, uplataRequest.getBrojRacuna(), uplataRequest.getOpis(), uplataRequest.getValuta_id(), uplataRequest.getUplata()));
     }
 
 
     @GetMapping(value = "/transakcije", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTransakcije(@RequestHeader("Authorization") String token) {
-        //String user = userService.getUserByToken(token);
-        return ResponseEntity.ok(transakcijaService.getAll(1)); //Read id from token
+        String username = userService.getUserByToken(token);
+        return ResponseEntity.ok(transakcijaService.getAll(username)); //Read id from token
     }
 
-    @GetMapping (value = "/stanje/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token,@PathVariable Long id){
-       // String user = userService.getUserByToken(token); //Provera da li je supervizor
-        return ResponseEntity.ok(sredstvaKapitalService.getAll(id));
+    @GetMapping(value = "/stanje/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String username) {
+        String user = userService.getUserByToken(token);
+        /*
+          TODO Porvera da li je supervizor
+         */
+        return ResponseEntity.ok(sredstvaKapitalService.getAll(username));
     }
-
 
 
 }

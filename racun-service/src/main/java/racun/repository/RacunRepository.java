@@ -10,6 +10,6 @@ public interface RacunRepository extends JpaRepository<Racun, Long>{
     @Query("SELECT R FROM Racun R WHERE R.brojRacuna=:broj")
     Racun findByBroj(String broj);
 
-    @Query("SELECT R FROM Racun R WHERE R.userID=:userID")
-    Racun findByUser(Long userID);
+    @Query("SELECT R FROM Racun R WHERE R.username=:username")
+    Racun findByUser(String username);
 }

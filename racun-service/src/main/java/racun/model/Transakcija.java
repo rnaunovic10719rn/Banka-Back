@@ -23,7 +23,7 @@ public class Transakcija {
     private Date datumVreme;
 
     private long order_id;
-    private long user_id;
+    private String username;
     private String opis;
 
     @ManyToOne

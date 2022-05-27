@@ -24,31 +24,31 @@ public class TransakcijaService {
         this.transakcijaRepository = transakcijaRepository;
     }
 
-    public List<Transakcija> getAll(long userid){
-        return transakcijaRepository.findByUserID(userid);
+    public List<Transakcija> getAll(String username){
+        return transakcijaRepository.findByUsername(username);
     }
 
-    public Transakcija uplata(long userid, String brojRacuna, String opis, int valuta, long uplata){
+    public Transakcija uplata(String username, String brojRacuna, String opis, int valuta, long uplata){
         Transakcija t = new Transakcija();
         Racun racun = racunRepository.findByBroj(brojRacuna);
         t.setRacun(racun);
-        t.setUser_id(userid);
+        t.setUsername(username);
         t.setOpis(opis);
         t.setUplata(uplata);
 
-        sredstvaKapitalService.updateStanje(userid,uplata,0,0,0);
+        sredstvaKapitalService.updateStanje(username,brojRacuna,uplata,0,0,0);
         return transakcijaRepository.save(t);
     }
 
-    public Transakcija isplata(long userid, String brojRacuna, String opis, int valuta, long isplata){
+    public Transakcija isplata(String username, String brojRacuna, String opis, int valuta, long isplata){
         Transakcija t = new Transakcija();
         Racun racun = racunRepository.findByBroj(brojRacuna);
         t.setRacun(racun);
-        t.setUser_id(userid);
+        t.setUsername(username);
         t.setOpis(opis);
         t.setIsplata(isplata);
 
-        sredstvaKapitalService.updateStanje(userid,0,isplata,0,0);
+        sredstvaKapitalService.updateStanje(username,brojRacuna,0,isplata,0,0);
         return transakcijaRepository.save(t);
     }
 

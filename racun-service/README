@@ -3,19 +3,18 @@
 Sve rute zahtevaju token u headeru!
 
 Inicijalno kreiranje racuna
- ```POST /api/racun/{id} ```
+POST /api/racun/
 
 Provera stanja
- ```GET api/racun/stanje/{id} ```
+GET api/racun/stanje/
 
 Pregled transakcija
- ```GET api/racun/transakcije ```
+GET api/racun/transakcije/{username}
 
 Uplata
-```POST api/racun/uplata```
+POST api/racun/uplata
 ```
 {
-       "userid":1,
        "brojRacuna":"e428a579-5841-4a44-b8a3-3703ce903704",
        "opis":"",
        "valuta":1,
@@ -24,10 +23,9 @@ Uplata
  ```
 
  Isplata
- ``` POST api/racun/uplata ```
+ POST api/racun/uplata
  ```
  {
-        "userid":1,
         "brojRacuna":"e428a579-5841-4a44-b8a3-3703ce903704",
         "opis":"",
         "valuta":1,
