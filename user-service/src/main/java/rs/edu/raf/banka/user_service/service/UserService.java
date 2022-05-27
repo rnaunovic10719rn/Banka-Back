@@ -26,4 +26,8 @@ public interface UserService {
     void setRoleToUser(String username, String roleName);
     void editOtpSeecret(User user, String optSeecret);
     boolean changePassword(String newPassword, User user);
+    void resetLimitUsed(User user);
+    void resetLimitUsedAllAgents();
+    void changeLimit(User user, Double limit);
+    User saveUser(User user);
 }

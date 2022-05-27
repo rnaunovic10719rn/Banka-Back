@@ -4,8 +4,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.models.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -49,6 +51,30 @@ public class UserController {
         }
     }
 
+    @PatchMapping("/limit-change/{id}")
+    @ApiOperation("Changes agent's limit")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?> changeLimit(@PathVariable long id, @RequestBody ChangeLimitForm changeLimitForm){
+        Optional<User> user = userService.getUserById(id);
+        if(user.isEmpty())
+            return ResponseEntity.notFound().build();
+        User u = user.get();
+        userService.changeLimit(u, changeLimitForm.getLimit());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/limit-reset/{id}")
+    @ApiOperation("Resets agent's limitUsed")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?> resetLimit(@PathVariable long id){
+        Optional<User> user = userService.getUserById(id);
+        if(user.isEmpty())
+            return ResponseEntity.notFound().build();
+        User u = user.get();
+        userService.resetLimitUsed(u);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/user")
     @ApiOperation("Patches user by JWT token")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
@@ -70,6 +96,9 @@ public class UserController {
     @ApiOperation("Create user with username, ime, prezime, email, jmbg, br_telefona, password, aktivan, pozicija")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<User>createUser(@RequestBody CreateUserForm createUserForm) {
+        if(createUserForm.getPozicija().equals("ROLE_AGENT") && createUserForm.getLimit() == null){
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok().body(userService.createUser(createUserForm));
     }
 

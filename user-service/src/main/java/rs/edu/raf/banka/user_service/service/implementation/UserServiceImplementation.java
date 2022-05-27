@@ -63,6 +63,33 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public void resetLimitUsed(User user) {
+        user.setLimitUsed(0.0);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void resetLimitUsedAllAgents() {
+        List<User> users = userRepository.findAll();
+        for(User u: users){
+            u.setLimitUsed(0.0);
+        }
+        userRepository.saveAll(users);
+    }
+
+    @Override
+    public void changeLimit(User user, Double limit) {
+        user.setLimit(limit);
+        userRepository.save(user);
+    }
+
+    @Override
+    public User saveUser(User user) {
+        log.info("Saving new user {} to the database", user.getUsername());
+        return userRepository.save(user);
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
         if(user.isPresent()){
@@ -134,6 +161,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
                             createUserForm.getPrezime(), createUserForm.getEmail(),
                             createUserForm.getJmbg(), createUserForm.getBrTelefon(),
                             password, null, true, false, this.getRole(createUserForm.getPozicija()));
+        if(createUserForm.getPozicija().equals("ROLE_AGENT")){
+            user.setLimit(createUserForm.getLimit());
+            user.setLimitUsed(0.0);
+            user.setNeedsSupervisorPermission(createUserForm.isNeedsSupervisorPermission());
+        }
+
         log.info("Saving new user {} to the database", user.getUsername());
         String hashPW = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(hashPW);
@@ -212,6 +245,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setJmbg(newUser.getJmbg());
         user.setBrTelefon(newUser.getBrTelefon());
         user.setRole(getRole(newUser.getPozicija()));
+        user.setNeedsSupervisorPermission(newUser.isNeedsSupervisorPermission());
         userRepository.save(user);
     }
 

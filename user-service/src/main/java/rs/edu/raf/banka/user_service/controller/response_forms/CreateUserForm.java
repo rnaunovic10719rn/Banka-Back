@@ -14,4 +14,6 @@ public class CreateUserForm {
     private String jmbg;
     private String brTelefon;
     private String pozicija;
+    private Double limit;
+    private boolean needsSupervisorPermission;
 }
