@@ -1,6 +1,5 @@
 package rs.edu.raf.banka.user_service;
 
-import ch.qos.logback.core.joran.action.NewRuleAction;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +7,6 @@ import org.apache.http.HttpHeaders;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,7 +17,6 @@ import rs.edu.raf.banka.user_service.controller.UserController;
 import rs.edu.raf.banka.user_service.controller.response_forms.*;
 import rs.edu.raf.banka.user_service.model.Role;
 import rs.edu.raf.banka.user_service.model.User;
-import rs.edu.raf.banka.user_service.security.OTPUtilities;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
 import java.util.ArrayList;
@@ -138,17 +135,12 @@ public class UserControllerTest {
 
     @Test
     void testInvalidDeleteAPI() throws Exception{
-        given(userServiceImplementation.getUserById(2L)).willReturn(null);
-
-        when(userServiceImplementation.deleteUser(any())).thenReturn(true);
+        given(userServiceImplementation.getUserById(2L)).willReturn(Optional.ofNullable(null));
 
         mockMvc.perform(delete("/api/user/delete/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
-
-
-
 
     @Test
     void testGetUser() throws Exception{
@@ -185,7 +177,70 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void testGetUserId() throws Exception{
+        long id = 2L;
+        String token = "dummyToken";
 
+        when(userServiceImplementation.getUserId(token)).thenReturn(id);
+
+        mockMvc.perform(post("/api/user/getId/{token}", token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testInvalidGetUserId() throws Exception{
+        String invalidToken = "dummyToken";
+
+        when(userServiceImplementation.getUserId(invalidToken)).thenReturn(null);
+
+        mockMvc.perform(post("/api/user/getId/{token}", invalidToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testChangePasswordInternal() throws Exception{
+        long id = 2L;
+        User user = new User(dummyName, "Test");
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.of(user));
+
+        when(userServiceImplementation.changePassword("mockPass", user)).thenReturn(true);
+
+        mockMvc.perform(post("/api/user/new-password/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(newPasswordForm)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testChangeBadPasswordInternal() throws Exception{
+        long id = 2L;
+        User user = new User(dummyName, "Test");
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.of(user));
+
+        when(userServiceImplementation.changePassword("mockPass", user)).thenReturn(false);
+
+        mockMvc.perform(post("/api/user/new-password/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(newPasswordForm)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testInvalidChangeBadPasswordInternal() throws Exception{
+        long id = 2L;
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.ofNullable(null));
+
+        mockMvc.perform(post("/api/user/new-password/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(newPasswordForm)))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     void testEditUserFromToken() throws Exception{
@@ -266,7 +321,6 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().string("Invalid token!"));
     }
-    
 
     @Test
     void testInvalidNewPassword() throws Exception{
@@ -339,7 +393,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void tesInvalidtSetOtp() throws Exception{
+    void tesInvalidSetOtp() throws Exception{
         User user = new User(dummyName, "Test");
         user.setId(2L);
         user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
@@ -350,8 +404,33 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/api/otp/set/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString("secret"))
-                )
+                        .content(objectMapper.writeValueAsString("secret")))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testInvalidEditPermissionSetOtp() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(Optional.ofNullable(user));
+        when(userServiceImplementation.hasEditPermissions(user,"Bearer " + validJWToken)).thenReturn(false);
+
+        mockMvc.perform(post("/api/otp/set/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString("secret")))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testEmptySetOtp() throws Exception{
+        long id = 2L;
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.ofNullable(null));
+
+        mockMvc.perform(post("/api/otp/set/{id}", id).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString("secret")))
                 .andExpect(status().isBadRequest());
     }
 
@@ -368,10 +447,33 @@ public class UserControllerTest {
         //doNothing().when(userServiceImplementation.editOtpSeecret(user, any()));
 
         mockMvc.perform(post("/api/otp/clear/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-
-                )
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testEmptyClearOtp() throws Exception{
+        long id = 2L;
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(Optional.ofNullable(null));
+
+        mockMvc.perform(post("/api/otp/clear/{id}", id).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testInvalidPermissionsClearOtp() throws Exception{
+        User user = new User(dummyName, "Test");
+        long id = 2L;
+
+        when(userServiceImplementation.getUserById(2L)).thenReturn(Optional.of(user));
+
+        when(userServiceImplementation.hasEditPermissions(user, validJWToken)).thenReturn(false);
+
+        mockMvc.perform(post("/api/otp/clear/{id}", id).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -387,9 +489,7 @@ public class UserControllerTest {
         //doNothing().when(userServiceImplementation.editOtpSeecret(user, any()));
 
         mockMvc.perform(post("/api/otp/clear/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-
-                )
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
@@ -503,6 +603,33 @@ public class UserControllerTest {
                 .andExpect(content().string("Can't delete admin"));
     }
 
+    @Test
+    void testInvalidEditUser() throws Exception{
+        long id = 2L;
+
+        when(userServiceImplementation.getUserById(id)).thenReturn(Optional.ofNullable(null));
+
+        mockMvc.perform(post("/api/user/edit/{id}", id).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userMockForm)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testInvalidPermissionsForEdit() throws Exception{
+            User user = new User(dummyName, "Test");
+            user.setId(2L);
+            user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+            given(userServiceImplementation.getUserById(2L)).willReturn(Optional.of(user));
+
+            when(userServiceImplementation.hasEditPermissions(user, "Bearer " + invalidJWToken)).thenReturn(false);
+
+            mockMvc.perform(post("/api/user/edit/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(asJsonString(userMockForm)))
+                    .andExpect(status().isBadRequest());
+    }
 
     public static String asJsonString(final Object obj) {
         try {
@@ -514,7 +641,7 @@ public class UserControllerTest {
 
     String initValidJWT(){
         return JWT.create()
-                .withSubject(dummyName)
+                .withSubject(dummyName+",ADMIN_ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
@@ -522,7 +649,7 @@ public class UserControllerTest {
 
     String initInvalidJWT(){
         return JWT.create()
-                .withSubject(dummyName)
+                .withSubject(dummyName+",ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"X_LIST_USERS", "DUMMY_FAKE_PERMISSION"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));

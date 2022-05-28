@@ -21,9 +21,13 @@ public interface UserService {
     boolean resetPassword(String email);
     boolean setNewPassword(String password, String token);
     List<User> getUsers();
-    Role getRole(String role_name);
+    Role getRole(String roleName);
     Role saveRole(Role role);
-    void setRoleToUser(String username, String role_name);
+    void setRoleToUser(String username, String roleName);
     void editOtpSeecret(User user, String optSeecret);
     boolean changePassword(String newPassword, User user);
+    void resetLimitUsed(User user);
+    void resetLimitUsedAllAgents();
+    void changeLimit(User user, Double limit);
+    User saveUser(User user);
 }

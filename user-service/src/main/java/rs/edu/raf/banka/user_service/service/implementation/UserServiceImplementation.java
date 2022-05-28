@@ -29,6 +29,7 @@ import javax.jms.Queue;
 import org.springframework.messaging.MessagingException;
 
 import javax.transaction.Transactional;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +50,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Autowired
     Queue mailQueue;
 
+    private String bearer = "Bearer ";
+    private String secret = "secret";
+    private String errMessage = "Bad credentials";
+    private SecureRandom rnd = new SecureRandom();
+
     @Autowired
     public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
         this.userRepository = userRepository;
@@ -57,27 +63,61 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username).get();
-        if(user == null || !(user.isAktivan())){
-            log.error("User {} not found in database", username);
-            throw new UsernameNotFoundException("User not found in database");
-        }
-        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getRole().getPermissions().forEach(permission -> {
-            authorities.add(new SimpleGrantedAuthority(permission));
-        });
+    public void resetLimitUsed(User user) {
+        user.setLimitUsed(0.0);
+        userRepository.save(user);
+    }
 
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
+    @Override
+    public void resetLimitUsedAllAgents() {
+        List<User> users = userRepository.findAll();
+        for(User u: users){
+            u.setLimitUsed(0.0);
+        }
+        userRepository.saveAll(users);
+    }
+
+    @Override
+    public void changeLimit(User user, Double limit) {
+        user.setLimit(limit);
+        userRepository.save(user);
+    }
+
+    @Override
+    public User saveUser(User user) {
+        log.info("Saving new user {} to the database", user.getUsername());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isPresent()){
+            if(!(user.get().isAktivan())){
+                log.error("User {} not found in database", username);
+                throw new UsernameNotFoundException(errMessage);
+            }
+            Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            user.get().getRole().getPermissions().forEach(permission ->
+                    authorities.add(new SimpleGrantedAuthority(permission)));
+
+            return new org.springframework.security.core.userdetails.User(user.get().getUsername() + "," + user.get().getRole().getName(), user.get().getPassword(), authorities);
+
+        }else{
+            throw new UsernameNotFoundException(errMessage);
+        }
     }
 
     @Override
     public User getUser(String username) {
         log.info("Showing user {}", username);
-        if(userRepository.findByUsername(username).isEmpty()){
-            return null;
+        if(userRepository.findByUsername(username).isPresent()){
+            Optional<User> user = userRepository.findByUsername(username);
+            if(user.isPresent()){
+                return user.get();
+            }
         }
-        return userRepository.findByUsername(username).get();
+        return null;
     }
 
     @Override
@@ -110,15 +150,23 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public User createUser(CreateUserForm createUserForm) {
         String username = createUserForm.getIme().toLowerCase()+ "." + createUserForm.getPrezime().toLowerCase();
+
         if(this.getUser(username) instanceof User){
-            username = username + (int)(Math.random() * (100)) + 1;
+            username = username + (rnd.nextInt() * (100)) + 1;
         }
+
         String password = createUserForm.getIme() + "Test123";
 
         User user = new User(username, createUserForm.getIme(),
                             createUserForm.getPrezime(), createUserForm.getEmail(),
                             createUserForm.getJmbg(), createUserForm.getBrTelefon(),
                             password, null, true, false, this.getRole(createUserForm.getPozicija()));
+        if(createUserForm.getPozicija().equals("ROLE_AGENT")){
+            user.setLimit(createUserForm.getLimit());
+            user.setLimitUsed(0.0);
+            user.setNeedsSupervisorPermission(createUserForm.isNeedsSupervisorPermission());
+        }
+
         log.info("Saving new user {} to the database", user.getUsername());
         String hashPW = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(hashPW);
@@ -129,18 +177,17 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     public User getUserByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
-            String username = decodedToken.getSubject();
+            String username = decodedToken.getSubject().split(",")[0];
             var user = userRepository.findByUsername(username);
 
-            if (user == null || !user.isPresent() || !(user.get().isAktivan())) {
+            if (!user.isPresent() || !(user.get().isAktivan())) {
                 log.error("User {} not found in database", username);
-                throw new UsernameNotFoundException("User not found in database");
+                throw new BadCredentialsException(errMessage);
+            }else{
+                return user.get();
             }
-
-            return user.get();
         } catch (JWTVerificationException e) {
-            // TODO find a better exception for this case
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new BadCredentialsException("Token is invalid");
         }
     }
 
@@ -155,39 +202,35 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public boolean hasEditPermissions(User user, String token) {
-        if(token.startsWith("Bearer "))
-            token = token.substring("Bearer ".length());
+        if(token.startsWith(bearer))
+            token = token.substring(bearer.length());
         //Cupamo username i permisije iz tokena
-        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        Algorithm algorithm = Algorithm.HMAC256(secret.getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
-        String usernameFromJWT = decodedJWT.getSubject();
+        String usernameFromJWT = decodedJWT.getSubject().split(",")[0];
 
         //glavni admin moze biti editovan samo ako je ulogovan kao glavni amdin
         if(user.getUsername().equals("admin"))
         {
-            if(usernameFromJWT.equalsIgnoreCase(user.getUsername()))
-                return true;
-            return false;
+            return usernameFromJWT.equalsIgnoreCase(user.getUsername());
         }
 
         String[] permissionsFromJWT = decodedJWT.getClaim("permissions").asArray(String.class);
-        //Ako si to ti, edituj se || Ako nisi mozda je admin || u suprotnom neko hoce da edituje drugog a nije admin
+
         if(user.getUsername().equalsIgnoreCase(usernameFromJWT) && hasEditPermission(permissionsFromJWT, Permissions.MY_EDIT))
             return true;
-        if(hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER))
-            return true;
-        return false;
+        return hasEditPermission(permissionsFromJWT, Permissions.EDIT_USER);
     }
 
     @Override
     public Long getUserId(String token) {
-        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        Algorithm algorithm = Algorithm.HMAC256(secret.getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
 
-        String usernameFromJWT = decodedJWT.getSubject();
+        String usernameFromJWT = decodedJWT.getSubject().split(",")[0];
         var user = this.getUser(usernameFromJWT);
         if(user == null)
             return null;
@@ -202,6 +245,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setJmbg(newUser.getJmbg());
         user.setBrTelefon(newUser.getBrTelefon());
         user.setRole(getRole(newUser.getPozicija()));
+        user.setNeedsSupervisorPermission(newUser.isNeedsSupervisorPermission());
         userRepository.save(user);
     }
 
@@ -214,9 +258,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     @Override
     public void setRoleToUser(String username, String roleName) {
         log.info("Adding role {} to user {} to the database", roleName, username);
-        User user = userRepository.findByUsername(username).get();
-        Role role = roleRepository.findByName(roleName);
-        user.setRole(role);
+        var user = userRepository.findByUsername(username);
+        if(user.isPresent()){
+            Role role = roleRepository.findByName(roleName);
+            user.get().setRole(role);
+        }
     }
 
     @Override
@@ -226,10 +272,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     public boolean hasEditPermission(String[] permissions,Permissions permission){
-        if(Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)))){
-            return true;
-        }
-        return false;
+        return Arrays.stream(permissions).anyMatch(pm -> pm.equalsIgnoreCase(String.valueOf(permission)));
     }
 
     public void createPasswordResetTokenForUser(User user, String token) {
@@ -239,10 +282,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public User getUserByEmail(String email){
-        if(userRepository.findByEmail(email).isEmpty()){
-            return null;
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isPresent()){
+            return user.get();
         }
-        return userRepository.findByEmail(email).get();
+        return null;
     }
 
     @Override
@@ -292,8 +336,8 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public boolean setNewPassword(String password, String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring("Bearer ".length());
+        if (token.startsWith(bearer)) {
+            token = token.substring(bearer.length());
         }else{
             return false;
         }
@@ -318,13 +362,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     private DecodedJWT decodeToken(String token) throws JWTVerificationException {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring("Bearer ".length());
+        if (token.startsWith(bearer)) {
+            token = token.substring(bearer.length());
         }
 
-        Algorithm   algorithm = Algorithm.HMAC256("secret".getBytes());
+        Algorithm   algorithm = Algorithm.HMAC256(secret.getBytes());
         JWTVerifier verifier  = JWT.require(algorithm).build();
-        DecodedJWT  decoded   = verifier.verify(token);
-        return decoded;
+        return verifier.verify(token);
     }
 }

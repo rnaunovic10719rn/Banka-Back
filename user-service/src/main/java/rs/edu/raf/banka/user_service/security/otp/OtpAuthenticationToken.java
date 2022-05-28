@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
+import java.util.Objects;
 
 public class OtpAuthenticationToken extends AbstractAuthenticationToken {
     private static final long serialVersionUID = 560L;
@@ -57,8 +58,23 @@ public class OtpAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() { return principal; }
 
+    @Override
     public void eraseCredentials() {
         super.eraseCredentials();
         this.credentials = null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        OtpAuthenticationToken that = (OtpAuthenticationToken) o;
+        return Objects.equals(principal, that.principal) && Objects.equals(credentials, that.credentials);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), principal, credentials);
     }
 }

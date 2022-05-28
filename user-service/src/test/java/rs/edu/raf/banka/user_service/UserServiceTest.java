@@ -1,19 +1,16 @@
 package rs.edu.raf.banka.user_service;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import org.assertj.core.util.Arrays;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.mail.PasswordResetToken;
 import rs.edu.raf.banka.user_service.model.Permissions;
 import rs.edu.raf.banka.user_service.model.Role;
@@ -28,11 +25,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
 
     @InjectMocks
     private UserServiceImplementation userService;
@@ -46,12 +44,31 @@ public class UserServiceTest {
     @Mock
     private PasswordTokenRepository passwordTokenRepository;
 
+    private CreateUserForm createUserForm = initUserMockForm();
+
     @Test
     void testGetUser() {
         User user = new User("UserX", "X");
         given(userRepository.findByUsername("UserX")).willReturn(Optional.of(user));
 
         assertEquals(user, userService.getUser("UserX"));
+    }
+
+    @Test
+    void testGetRole(){
+        Role role = new Role();
+        given(roleRepository.findByName("dummyRole")).willReturn(role);
+
+        assertEquals(role, userService.getRole("dummyRole"));
+    }
+
+    @Test
+    void testSaveRole() {
+        Role role = new Role();
+
+        given(roleRepository.save(role)).willReturn(role);
+
+        assertEquals(role, userService.saveRole(role));
     }
 
     @Test
@@ -122,7 +139,19 @@ public class UserServiceTest {
         userService.changePassword("mockPass123", user);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
+        assertEquals(true, passwordEncoder.matches("mockPass123", user.getPassword()));
+    }
+
+    @Test
+    void testNullResetPassword() {
+        User user = new User("UserX", "X");
+        user.setEmail("user@mock");
+
+        when(userService.getUserByEmail(user.getEmail())).thenReturn(null);
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.ofNullable(null));
+
+        assertEquals(false, userService.resetPassword(user.getEmail()));
     }
 
     @Test
@@ -133,42 +162,8 @@ public class UserServiceTest {
         userService.changePassword("mockPass", user);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        assertEquals(passwordEncoder.matches("mockPass", user.getPassword()), false);
+        assertEquals(false, passwordEncoder.matches("mockPass", user.getPassword()));
     }
-
-   /*@Test
-    void testSetNewPassword() {
-        String token = "token";
-        User user = new User("UserX", "X");
-        user.setEmail("user@mock");
-
-        PasswordResetToken passwordResetToken = new PasswordResetToken();
-        passwordResetToken.setUser(user);
-
-        given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
-
-        userService.setNewPassword("mockPass123", "token");
-
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-        assertEquals(passwordEncoder.matches("mockPass123", user.getPassword()), true);
-    }
-
-    @Test
-    void testSetNewInvalidPassword() {
-        String token = "token";
-        User user = new User("UserX", "X");
-        user.setEmail("user@mock");
-
-        PasswordResetToken passwordResetToken = new PasswordResetToken();
-        passwordResetToken.setUser(user);
-
-        given(passwordTokenRepository.findByToken(token)).willReturn(passwordResetToken);
-
-        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("mockPass", "token"));
-
-        assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());
-    }*/
 
     @Test
     void testHasEditPermisions() {
@@ -181,7 +176,21 @@ public class UserServiceTest {
         user.setId(2L);
         user.setRole(new Role(null, "ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
 
-        assertEquals(true,userService.hasEditPermissions(user, token));
+        assertEquals(true,userService.hasEditPermissions(user, "Bearer "+token));
+    }
+
+    @Test
+    void testHasEditPermissionsAdmin() {
+        String token = JWT.create()
+                .withSubject("admin")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+        User user = new User("admin", "Test");
+        user.setId(2L);
+        user.setRole(new Role(null, "ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        assertEquals(true,userService.hasEditPermissions(user, "Bearer "+token));
     }
 
     @Test
@@ -225,6 +234,23 @@ public class UserServiceTest {
     }
 
     @Test
+    void testNullGetUserId() {
+        User user = new User("UserX", "X");
+        user.setId(2L);
+        user.setEmail("user@mock");
+
+        String token = JWT.create()
+                .withSubject("userX")
+                .withIssuer("mock")
+                .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
+                .sign(Algorithm.HMAC256("secret".getBytes()));
+
+        when(userRepository.findByUsername("userX")).thenReturn(Optional.ofNullable(null));
+
+        assertEquals(null,userService.getUserId(token));
+    }
+
+    @Test
     void testGetUserByToken() {
         User user = new User("UserX", "X");
         user.setId(2L);
@@ -255,8 +281,8 @@ public class UserServiceTest {
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
 
-        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
-        assertEquals("User not found in database", exception.getMessage());
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.getUserByToken(token));
+        assertEquals("Bad credentials", exception.getMessage());
     }
 
     @Test
@@ -272,7 +298,7 @@ public class UserServiceTest {
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret2".getBytes()));
 
-        Throwable exception = assertThrows(UsernameNotFoundException.class, () -> userService.getUserByToken(token));
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.getUserByToken(token));
         assertEquals("Token is invalid", exception.getMessage());
     }
 
@@ -308,6 +334,119 @@ public class UserServiceTest {
         given(userRepository.findByEmail("user@mock")).willReturn(Optional.empty());
 
         assertEquals(null, userService.getUserByEmail("user@mock"));
+    }
+
+    @Test
+    void testCreateUser() {
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        user.setId(0L);
+
+        when(userRepository.save(any())).thenReturn(user);
+
+        assertEquals(user, userService.createUser(createUserForm));
+    }
+
+    @Test
+    void testCreateUserWithExistingUsername() {
+        User existingUser = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        existingUser.setId(0L);
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        user.setId(2L);
+
+        when(userService.getUser(user.getUsername())).thenReturn(any());
+
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(existingUser));
+
+        when(userRepository.save(any())).thenReturn(user);
+
+        assertEquals(user, userService.createUser(createUserForm));
+    }
+
+    @Test
+    void testCreateAdminRole() {
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+
+        userService.editUser(user, createUserForm);
+
+        // Then
+        verify(userRepository, times(1)).save(user);
+    }
+
+
+    @Test
+    void testEditUser() {
+        User user = new User("dummyname.test", createUserForm.getIme() + "Test123");
+        user.setId(2L);
+
+        userService.createUserAdmin(user);
+
+        // Then
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void testCreatePasswordResetTokenForUser() {
+        PasswordResetToken token = new PasswordResetToken();
+        token.setToken("token");
+
+        userService.createPasswordResetTokenForUser(null, token.getToken());
+
+        // Then
+        verify(passwordTokenRepository, times(1)).save(token);
+    }
+
+    @Test
+    void testSetNewPassword() {
+        String token = "Bearer token";
+        User user = new User("UserX", "X");
+        user.setEmail("user@mock");
+
+        PasswordResetToken passwordResetToken = new PasswordResetToken();
+        passwordResetToken.setUser(user);
+
+        given(passwordTokenRepository.findByToken("token")).willReturn(passwordResetToken);
+
+        userService.setNewPassword("MockPass123", token);
+
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        assertEquals(true, passwordEncoder.matches("MockPass123", user.getPassword()));
+    }
+
+    @Test
+    void testInvalidRegexSetNewPassword() {
+        String token = "Bearer token";
+        PasswordResetToken prt = new PasswordResetToken();
+
+        when(passwordTokenRepository.findByToken("token")).thenReturn(prt);
+
+        Throwable exception = assertThrows(BadCredentialsException.class, () -> userService.setNewPassword("passdummy", token));
+        assertEquals("Password: must have 8 characters,one uppercase and one digit minimum", exception.getMessage());    }
+
+    @Test
+    void testInvalidPrtSetNewPassword() {
+        String token = "Bearer token";
+
+        when(passwordTokenRepository.findByToken("token")).thenReturn(null);
+
+        assertEquals(false, userService.setNewPassword("passDummy", token));
+    }
+
+    @Test
+    void testInvalidTokenSetNewPassword() {
+        assertEquals(false, userService.setNewPassword("passDummy", "token"));
+    }
+
+    private CreateUserForm initUserMockForm() {
+        CreateUserForm userMockForm = new CreateUserForm();
+        userMockForm.setIme("dummyName");
+        userMockForm.setPrezime("Test");
+        userMockForm.setEmail("mock@test");
+        userMockForm.setJmbg("123");
+        userMockForm.setBrTelefon("123");
+        userMockForm.setPozicija("ROLE_ADMIN");
+
+        return userMockForm;
     }
 
 }
