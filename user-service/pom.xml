@@ -30,6 +30,7 @@
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.coverage.exclusions>**/config/*, **/model/*,**/repository/*,**/controller/response_forms/*,**/mail/*,**/security/otp/*,**/filter/*</sonar.coverage.exclusions>
+		<sonar.cpd.exclusions>**/model/*</sonar.cpd.exclusions>
 	</properties>
 
 	<dependencies>
