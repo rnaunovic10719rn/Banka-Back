@@ -6,5 +6,6 @@ public enum Permissions {
     MY_EDIT,
     DELETE_USER,
     LIST_USERS,
-    MANAGE_STUFF
+    MANAGE_STUFF,
+    MANAGE_AGENTS
 }
