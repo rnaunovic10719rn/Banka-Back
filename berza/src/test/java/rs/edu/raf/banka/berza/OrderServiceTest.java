@@ -31,7 +31,7 @@ public class OrderServiceTest {
         Order order = new Order();
         order.setOrderType(OrderType.LIMIT_ORDER);
         when(orderRepository.findAll()).thenReturn(List.of(order));
-        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders().get(0).getOrderType());
+        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("", null).get(0).getOrderType());
     }
 
     @Test

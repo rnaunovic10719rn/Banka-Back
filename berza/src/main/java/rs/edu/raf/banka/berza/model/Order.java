@@ -3,6 +3,7 @@ package rs.edu.raf.banka.berza.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
 import rs.edu.raf.banka.berza.enums.OrderStatus;
@@ -49,7 +50,9 @@ public class Order {
 
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
-    private boolean done;
+
+    @ColumnDefault("false")
+    private Boolean done;
     private Long orderManagerId;
     private Date lastModified;
 }

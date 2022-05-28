@@ -50,6 +50,12 @@ public class FuturesUgovoriPodaciService {
         return podaci;
     }
 
+    public boolean isRelevant(Long id){
+        if(futuresUgovoriRepository.findFuturesUgovoriByIdAndSettlementDateAfter(id, new Date()) == null)
+            return false;
+        return true;
+    }
+
     public FuturesPodaciDto getFuturesUgovor(String symbol) {
         FuturesUgovori future = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
         if(future == null){

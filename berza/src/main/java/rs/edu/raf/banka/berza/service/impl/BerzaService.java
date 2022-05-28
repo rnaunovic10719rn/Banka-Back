@@ -125,21 +125,15 @@ public class BerzaService {
             return new MakeOrderResponse("Error");
 
         Double ukupnaCena = getPrice(ask, bid, orderAkcija);
-      
-//        if(ukupnaCena * kolicina > userAccount.getWallet())
-//            return new MakeOrderResponse("You don't have enough money for this action.");
-
-//        if(ukupnaCena * kolicina > userAccount.getWallet())
-//            return new MakeOrderResponse("You don't have enough money for this action.");
-
         Double provizija = getCommission(ukupnaCena, orderType);
 
         Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
                 provizija, orderType, isAON, isMargin, oznakaHartije);
-        executeTransaction(berzaId, order, ask, bid);
+    //    executeTransaction(berzaId, order, ask, bid);
 
         return new MakeOrderResponse("Order Successful");
     }
+
 
     @Async
     public MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
@@ -188,6 +182,8 @@ public class BerzaService {
             kolicina -= kolicinaZaTransakciju;
             kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
         }
+
+        orderService.finishOrder(order);
 
         return new MakeOrderResponse("OK");
     }

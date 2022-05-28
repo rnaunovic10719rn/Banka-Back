@@ -42,9 +42,9 @@ public class BerzaController {
         return ResponseEntity.ok(berzaService.findAkcije(s));
     }
 
-    @GetMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getOrders(){
-        List<Order> orders = orderService.getOrders();
+    @GetMapping(value = "/order/{status}/{done}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getOrders(@PathVariable String status, @PathVariable Boolean done){
+        List<Order> orders = orderService.getOrders(status, done);
         return ResponseEntity.ok(orders.stream().map(this::convertToDto).collect(Collectors.toList()));
     }
 
@@ -53,6 +53,20 @@ public class BerzaController {
         return ResponseEntity.ok(berzaService.makeOrder(orderRequest.getUserId(), orderRequest.getSymbol(), orderRequest.getHartijaOdVrednostiTip(),
                 orderRequest.getKolicina(), orderRequest.getAkcija(),
                 orderRequest.getLimitValue(), orderRequest.getStopValue(), orderRequest.isAllOrNoneFlag(), orderRequest.isMarginFlag()));
+    }
+
+//    public ResponseEntity<?> executeOrder(){
+//        return ResponseEntity.ok();
+//    }
+
+    @GetMapping(value = "/order/approve/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> approveOrder(@PathVariable Long id){
+        return ResponseEntity.ok(orderService.approveOrder(id));
+    }
+
+    @GetMapping(value = "/order/reject/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> rejectOrder(@PathVariable Long id){
+        return ResponseEntity.ok(orderService.rejectOrder(id));
     }
 
     @GetMapping(value = "/order-status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
