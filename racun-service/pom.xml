@@ -37,14 +37,10 @@
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.coverage.exclusions>**/bootstrap/*, **/configuration/*, **/dto/**, **/enums/*, **/model/*, **/requests/*, **/response/*, **/security/*</sonar.coverage.exclusions>
+        <sonar.cpd.exclusions>**/model/*</sonar.cpd.exclusions>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.modelmapper</groupId>
-            <artifactId>modelmapper</artifactId>
-            <version>2.3.5</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -71,16 +67,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-            <version>2.6.6</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.crazzyghost</groupId>
-            <artifactId>alphavantage-java</artifactId>
-            <version>1.6.2</version>
         </dependency>
         <dependency>
             <groupId>com.opencsv</groupId>
