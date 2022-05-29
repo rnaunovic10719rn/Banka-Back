@@ -1,7 +1,7 @@
 using InfluxScrapper.Influx;
 using InfluxScrapper.Models.Controllers;
 using InfluxScrapper.Models.Stock;
-using InfluxScrapper.Utilites;
+using InfluxScrapper.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 using NodaTime.Extensions;

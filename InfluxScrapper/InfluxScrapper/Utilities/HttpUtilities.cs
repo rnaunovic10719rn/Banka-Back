@@ -6,7 +6,7 @@ using InfluxScrapper.Models.Forex;
 using InfluxScrapper.Models.Quote;
 using InfluxScrapper.Models.Stock;
 
-namespace InfluxScrapper.Utilites;
+namespace InfluxScrapper.Utilities;
 
 public static class HttpUtilities
 {

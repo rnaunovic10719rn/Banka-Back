@@ -4,7 +4,7 @@ using InfluxDB.Client.Core;
 using InfluxDB.Client.Core.Flux.Domain;
 using InfluxDB.Client.Writes;
 using InfluxScrapper.Models.Influx;
-using InfluxScrapper.Utilites;
+using InfluxScrapper.Utilities;
 
 namespace InfluxScrapper.Models.Forex;
 
