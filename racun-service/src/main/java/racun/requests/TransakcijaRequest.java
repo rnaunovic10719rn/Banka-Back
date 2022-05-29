@@ -10,7 +10,7 @@ public class TransakcijaRequest {
     private UUID brojRacuna;
     private String opis;
     private String valutaOznaka;
-    private long iznos;
+    private double iznos;
 
 
 }

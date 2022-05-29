@@ -30,9 +30,9 @@ public class Transakcija {
     @JoinColumn(name = "valuta_id")
     private Valuta valuta;
 
-    private long uplata;
-    private long isplata;
-    private long rezervisano;
-    private long rezervisanoKoristi;
+    private double uplata;
+    private double isplata;
+    private double rezervisano;
+    private double rezervisanoKoristi;
 
 }

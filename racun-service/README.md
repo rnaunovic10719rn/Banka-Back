@@ -4,7 +4,7 @@ Sve rute zahtevaju token u headeru!
 
 
 Provera stanja
-GET api/racun/stanje/{racun}
+GET api/racun/stanje/{racun}/{valuta}
 
 Pregled transakcija
 GET api/racun/transakcije/{username}

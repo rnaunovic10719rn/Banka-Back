@@ -40,7 +40,7 @@ public class BootstrapData implements CommandLineRunner {
         System.out.println("Loading Data...");
 
         if (valutaRepository.count()==0) {
-            racunService.createRacun();
+
 
             FileOutputStream fos = null;
             try {
@@ -79,6 +79,8 @@ public class BootstrapData implements CommandLineRunner {
                 valute.add(v);
             }
             valutaRepository.saveAll(valute);
+
+            racunService.createRacun();
         }
 
 
