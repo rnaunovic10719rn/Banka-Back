@@ -13,10 +13,9 @@ FROM docker.io/openjdk:17-alpine@sha256:a996cdcc040704ec6badaf5fecf1e144c096e002
 LABEL org.opencontainers.image.source https://github.com/RAF-SI-2021/Banka-Back
 
 ARG VERSION=0.0.1-SNAPSHOT
-ARG SERVICE_NAME="racunservice"
-
+ARG SERVICE_NAME="racun"
 
 COPY --from=builder /usr/app/target/$SERVICE_NAME-$VERSION.jar /app.jar
 
-EXPOSE 8082
+EXPOSE 8083
 ENTRYPOINT ["java", "-jar", "/app.jar"]
