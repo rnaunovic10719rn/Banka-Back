@@ -34,6 +34,7 @@
         <module>user-service</module>
         <module>mail-service</module>
         <module>berza</module>
+        <module>racun-service</module>
     </modules>
 
     <properties>

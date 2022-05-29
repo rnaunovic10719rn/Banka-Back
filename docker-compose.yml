@@ -125,6 +125,7 @@ services:
     profiles: ["all"]
 
   racun-servis:
+    image: ghcr.io/raf-si-2021/banka-racun-service:latest
     build: ./racun-service
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-racun:5432/postgres
