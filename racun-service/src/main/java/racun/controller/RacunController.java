@@ -1,6 +1,7 @@
 package racun.controller;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class RacunController {
     private final TransakcijaService transakcijaService;
     private final UserService userService;
 
+    @Autowired
     public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService) {
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaService = transakcijaService;

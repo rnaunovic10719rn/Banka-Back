@@ -42,7 +42,7 @@ public class TransakcijaService {
             if (iznos>0){
                 t.setUplata(iznos);
             }else {
-                t.setIsplata(iznos);
+                t.setIsplata(Math.abs(iznos));
             }
             return transakcijaRepository.save(t);
         }
