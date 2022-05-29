@@ -15,7 +15,7 @@ public class UserService {
         try {
             DecodedJWT decodedToken = decodeToken(token);
 
-            return decodedToken.getSubject();//.split(",")[0];
+            return decodedToken.getSubject().split(",")[0];
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
             throw new UsernameNotFoundException("Token is invalid");
