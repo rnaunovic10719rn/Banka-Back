@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 public class OTPCredentials {
 
-    public String password;
-    public String otp;
+    private String password;
+    private String otp;
 }

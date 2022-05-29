@@ -91,3 +91,24 @@ berza) je potrebno pokrenuti ručno i to možete učiniti preko IntelliJ-a kao �
 ### Manuelno
 
 Moguće je manuelno pokrenuti sve, bez upotrebe Docker Compose-a, ali to se **NE PREPORUČUJE**!
+
+## Kredencijali
+
+####Glavni admin:
+  * Username: admin
+  * Password: Admin123
+####Admin:
+  * Username: test
+  * Password: 1234
+####Agent 1:
+  * Username: jovan.jovanovic
+  * Password: agent1agent1
+####Agent 2:
+  * Username: milica.mihajlovic
+  * Password: agent2agent2
+####Supervisor 1:
+  * Username: vladimir.vladimirovic
+  * Password: supervisor1
+####Supervisor 2:
+  * Username: marija.marijanovic
+  * Password: supervisor2
