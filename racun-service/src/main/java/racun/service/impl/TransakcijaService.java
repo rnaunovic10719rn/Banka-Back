@@ -44,7 +44,7 @@ public class TransakcijaService {
             t.setIsplata(iznos);
         }
 
-        sredstvaKapitalService.updateStanje(username,brojRacuna,iznos,0,0);
+        sredstvaKapitalService.updateStanje(brojRacuna,iznos,0,0);
         return transakcijaRepository.save(t);
     }
 

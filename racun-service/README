@@ -6,18 +6,29 @@ Inicijalno kreiranje racuna
 POST /api/racun/
 
 Provera stanja
-GET api/racun/stanje/{username}
+GET api/racun/stanje/
 
 Pregled transakcija
 GET api/racun/transakcije/{username}
 
-Uplata/Isplata
-POST api/racun/transakcija
+Uplata
+POST api/racun/uplata
 ```
 {
-    "brojRacuna":"bc97c2f1-ceae-4e03-8a13-a42518cbbb06",
-    "opis":"",
-    "valutaOznaka":"DJF",
-    "iznos":2000
+       "brojRacuna":"e428a579-5841-4a44-b8a3-3703ce903704",
+       "opis":"",
+       "valuta":1,
+       "uplata":"1000"
 }
  ```
+
+ Isplata
+ POST api/racun/uplata
+ ```
+ {
+        "brojRacuna":"e428a579-5841-4a44-b8a3-3703ce903704",
+        "opis":"",
+        "valuta":1,
+        "isplata":"1000"
+ }
+  ```

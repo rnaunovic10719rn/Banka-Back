@@ -21,13 +21,12 @@ public class RacunService {
         this.sredstvaKapitalService = sredstvaKapitalService;
     }
 
-    public Racun createRacun(String username){
+    public Racun createRacun(){
         Racun racun = new Racun();
-        racun.setUsername(username);
         racun.setBrojRacuna(UUID.randomUUID());
         racun.setTipRacuna(RacunType.KES);
         racunRepository.save(racun);
-        sredstvaKapitalService.updateStanje(username,new UUID(0,0),1000,0,0); //Pocetno stanje za testiranje
+        sredstvaKapitalService.updateStanje(racun.getBrojRacuna(),1000,0,0); //Pocetno stanje za testiranje
 
         return racun;
     }

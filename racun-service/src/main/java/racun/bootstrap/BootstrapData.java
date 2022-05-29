@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import racun.dto.CurrencyCSV;
 import racun.model.Valuta;
 import racun.repository.ValutaRepository;
+import racun.service.impl.RacunService;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -25,54 +26,60 @@ public class BootstrapData implements CommandLineRunner {
 
 
     private final ValutaRepository valutaRepository;
+    private final RacunService racunService;
+
 
     @Autowired
-    public BootstrapData(ValutaRepository valutaRepository) {
-
+    public BootstrapData(ValutaRepository valutaRepository, RacunService racunService) {
         this.valutaRepository = valutaRepository;
+        this.racunService = racunService;
     }
 
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Loading Data...");
 
-        FileOutputStream fos = null;
-        try {
-            URL website = new URL("https://www.alphavantage.co/physical_currency_list/");
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-            fos = new FileOutputStream("currency.csv");
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            fos.close();
-        }
+        if (valutaRepository.count()==0) {
+            racunService.createRacun();
 
-        String fileName = "currency.csv";
-
-        List<CurrencyCSV> currencies = new CsvToBeanBuilder<CurrencyCSV>(new FileReader(fileName))
-                .withType(CurrencyCSV.class)
-                .withSkipLines(1)
-                .build()
-                .parse();
-
-        List<Valuta> valute = new ArrayList<>();
-        for(CurrencyCSV c: currencies) {
-            System.out.println(c);
-            Valuta v = new Valuta();
-            v.setKodValute(c.getIsoCode());
-            v.setNazivValute(c.getDescription());
+            FileOutputStream fos = null;
             try {
-                Currency jc = Currency.getInstance(c.getIsoCode());
-                if (jc != null) {
-                    v.setOznakaValute(jc.getSymbol());
-                }
+                URL website = new URL("https://www.alphavantage.co/physical_currency_list/");
+                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                fos = new FileOutputStream("currency.csv");
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                fos.close();
             }
-            valute.add(v);
+
+            String fileName = "currency.csv";
+
+            List<CurrencyCSV> currencies = new CsvToBeanBuilder<CurrencyCSV>(new FileReader(fileName))
+                    .withType(CurrencyCSV.class)
+                    .withSkipLines(1)
+                    .build()
+                    .parse();
+
+            List<Valuta> valute = new ArrayList<>();
+            for (CurrencyCSV c : currencies) {
+                System.out.println(c);
+                Valuta v = new Valuta();
+                v.setKodValute(c.getIsoCode());
+                v.setNazivValute(c.getDescription());
+                try {
+                    Currency jc = Currency.getInstance(c.getIsoCode());
+                    if (jc != null) {
+                        v.setOznakaValute(jc.getSymbol());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                valute.add(v);
+            }
+            valutaRepository.saveAll(valute);
         }
-        valutaRepository.saveAll(valute);
 
 
     }

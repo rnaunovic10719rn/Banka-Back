@@ -21,11 +21,7 @@ public class Racun {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
     private UUID brojRacuna;
     private RacunType tipRacuna;
-
-
-
 
 }
