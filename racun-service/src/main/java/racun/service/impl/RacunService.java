@@ -24,11 +24,12 @@ public class RacunService {
     public Racun createRacun(String username){
         Racun racun = new Racun();
         racun.setUsername(username);
-        racun.setBrojRacuna(UUID.randomUUID().toString());
+        racun.setBrojRacuna(UUID.randomUUID());
         racun.setTipRacuna(RacunType.KES);
-        sredstvaKapitalService.updateStanje(username,"",1000,0,0,0); //Pocetno stanje za testiranje
+        racunRepository.save(racun);
+        sredstvaKapitalService.updateStanje(username,new UUID(0,0),1000,0,0); //Pocetno stanje za testiranje
 
-        return racunRepository.save(racun);
+        return racun;
     }
 
 

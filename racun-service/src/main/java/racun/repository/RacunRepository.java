@@ -4,12 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import racun.model.Racun;
 
+import java.util.UUID;
+
 
 public interface RacunRepository extends JpaRepository<Racun, Long>{
 
-    @Query("SELECT R FROM Racun R WHERE R.brojRacuna=:broj")
-    Racun findByBroj(String broj);
 
-    @Query("SELECT R FROM Racun R WHERE R.username=:username")
-    Racun findByUser(String username);
+    Racun findByBrojRacuna(UUID broj);
+
+    Racun findByUsername(String username);
 }
