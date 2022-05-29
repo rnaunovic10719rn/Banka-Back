@@ -45,13 +45,16 @@ public class BootstrapData implements CommandLineRunner {
             FileOutputStream fos = null;
             try {
                 URL website = new URL("https://www.alphavantage.co/physical_currency_list/");
-                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                fos = new FileOutputStream("currency.csv");
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                try (ReadableByteChannel rbc = Channels.newChannel(website.openStream())) {
+                    fos = new FileOutputStream("currency.csv");
+                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                fos.close();
+                if(fos != null) {
+                    fos.close();
+                }
             }
 
             String fileName = "currency.csv";
