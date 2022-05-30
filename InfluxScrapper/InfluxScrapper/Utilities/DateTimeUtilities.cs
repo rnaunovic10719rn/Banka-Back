@@ -1,6 +1,6 @@
-namespace InfluxScrapper.Utilites;
+namespace InfluxScrapper.Utilities;
 
-public static class DateTimeUtils
+public static class DateTimeUtilities
 {
     public static long ToUnixTimestamp(this DateTime time)
     {
