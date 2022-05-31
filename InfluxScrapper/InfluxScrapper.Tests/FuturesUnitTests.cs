@@ -40,7 +40,6 @@ public class FuturesUnitTests
         var controller = GenerateController();
         var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
-
         var updateQuery = new FutureCacheQuery()
         {
             Symbol = symbol
