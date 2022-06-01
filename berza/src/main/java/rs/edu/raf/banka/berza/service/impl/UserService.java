@@ -15,7 +15,7 @@ import rs.edu.raf.banka.berza.utils.HttpUtils;
 public class UserService {
 
     public UserDto getUserByToken(String token) {
-        ResponseEntity<UserDto> response = HttpUtils.getUser("http://korisnicki-servis:8080/api/user", token);
+        ResponseEntity<UserDto> response = HttpUtils.getUser(HttpUtils.USER_SERVICE_URL, token);
         return response.getBody();
     }
 

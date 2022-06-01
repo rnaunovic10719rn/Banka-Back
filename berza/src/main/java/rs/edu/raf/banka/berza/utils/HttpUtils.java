@@ -9,6 +9,8 @@ import rs.edu.raf.banka.berza.dto.UserDto;
 
 public class HttpUtils {
 
+    public static final String USER_SERVICE_URL = "http://korisnicki-servis:8080/api/user";
+
     public static ResponseEntity<UserDto> getUser(String url, String token) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

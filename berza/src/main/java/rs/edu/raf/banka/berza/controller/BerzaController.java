@@ -1,7 +1,6 @@
 package rs.edu.raf.banka.berza.controller;
 
 
-import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -9,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.berza.dto.OrderDto;
 import rs.edu.raf.banka.berza.model.Order;
-import rs.edu.raf.banka.berza.requests.ExecuteOrderRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.service.impl.BerzaService;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
