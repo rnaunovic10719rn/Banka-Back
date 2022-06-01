@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
+import rs.edu.raf.banka.berza.enums.OrderStatus;
 import rs.edu.raf.banka.berza.enums.OrderType;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
@@ -47,6 +48,8 @@ public class OrderServiceTest {
         boolean isAON = true;
         boolean isMargin = true;
         String oznakaHartije = "usd";
+        Double ask = 1.0;
+        Double bid = 0.0;
 
         Order order = new Order();
         order.setUserId(userAccount);
@@ -60,11 +63,13 @@ public class OrderServiceTest {
         order.setAON(isAON);
         order.setMargin(isMargin);
         order.setOznakaHartije(oznakaHartije);
+        order.setAsk(ask);
+        order.setBid(bid);
 
         when(orderRepository.save(order)).thenReturn(order);
 
         assertEquals(OrderAction.SELL, orderService.saveOrder(userAccount, hartijaOdVrednostiId,
                 hartijaOdVrednostiType,kolicina, orderAction,ukupnaCena,provizija,
-                orderType, isAON, isMargin, oznakaHartije).getOrderAction());
+                orderType, isAON, isMargin, oznakaHartije, OrderStatus.APPROVED, ask, bid).getOrderAction());
     }
 }

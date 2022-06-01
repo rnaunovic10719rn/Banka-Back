@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class MakeOrderResponse {
+public class OrderResponse {
 
     private String message;
 }

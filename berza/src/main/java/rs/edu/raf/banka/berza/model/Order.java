@@ -48,6 +48,10 @@ public class Order {
     private boolean AON;
     private boolean margin;
 
+    //
+    private Double ask;
+    private Double bid;
+
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 

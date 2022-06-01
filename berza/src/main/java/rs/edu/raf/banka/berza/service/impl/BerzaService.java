@@ -6,14 +6,14 @@ import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
-import rs.edu.raf.banka.berza.enums.OrderAction;
-import rs.edu.raf.banka.berza.enums.OrderType;
+import rs.edu.raf.banka.berza.dto.UserDto;
+import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.*;
-import rs.edu.raf.banka.berza.response.MakeOrderResponse;
+import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -24,31 +24,29 @@ import java.util.*;
 public class BerzaService {
 
     private BerzaRepository berzaRepository;
-    private UserAccountRepository userAccountRepository;
     private AkcijeRepository akcijeRepository;
-    private ForexRepository forexRepository;
-    private FuturesUgovoriRepository futuresUgovoriRepository;
     private OrderService orderService;
     private TransakcijaService transakcijaService;
     private AkcijePodaciService akcijePodaciService;
     private ForexPodaciService forexPodaciService;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
 
+    private UserService userService;
+
+
     @Autowired
-    public BerzaService(BerzaRepository berzaRepository, UserAccountRepository userAccountRepository,
-                        AkcijeRepository akcijeRepository, ForexRepository forexRepository, FuturesUgovoriRepository futuresUgovoriRepository,
+    public BerzaService(BerzaRepository berzaRepository, AkcijeRepository akcijeRepository,
                         TransakcijaService transakcijaService, OrderService orderService, AkcijePodaciService akcijePodaciService,
-                        ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService){
+                        ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
+                        UserService userService){
         this.berzaRepository = berzaRepository;
-        this.userAccountRepository = userAccountRepository;
         this.akcijeRepository = akcijeRepository;
-        this.forexRepository = forexRepository;
-        this.futuresUgovoriRepository = futuresUgovoriRepository;
         this.transakcijaService = transakcijaService;
         this.orderService = orderService;
         this.akcijePodaciService = akcijePodaciService;
         this.forexPodaciService = forexPodaciService;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
+        this.userService = userService;
     }
 
     public List<Berza> findAll(){
@@ -69,20 +67,12 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
-    @Async
-    public MakeOrderResponse makeOrder(Long userId, String oznakaHartije, String hartijaTipString, Integer kolicina, String action,
+    public OrderResponse makeOrder(String token, Long userId, String oznakaHartije, String hartijaTipString,
+                                       Integer kolicina, String action,
                                        Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
-//        UserAccount userAccount = userAccountRepository.getById(userId);
         HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(hartijaTipString.toUpperCase());
         OrderAction orderAkcija = OrderAction.valueOf(action.toUpperCase());
-        OrderType orderType = OrderType.MARKET_ORDER;
-
-        if(limitValue > 0 && stopValue > 0)
-            orderType = OrderType.STOP_LIMIT_ORDER;
-        else if(limitValue > 0)
-            orderType = OrderType.LIMIT_ORDER;
-        else if(stopValue > 0)
-            orderType = OrderType.STOP_ORDER;
+        OrderType orderType = getOrderType(limitValue, stopValue);
 
         Double ask = 0.0;
         Double bid = 0.0;
@@ -122,21 +112,33 @@ public class BerzaService {
         }
 
         if(hartijaId == -1L)
-            return new MakeOrderResponse("Error");
+            return new OrderResponse("Error");
 
         Double ukupnaCena = getPrice(ask, bid, orderAkcija);
         Double provizija = getCommission(ukupnaCena, orderType);
 
-        Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
-                provizija, orderType, isAON, isMargin, oznakaHartije);
-    //    executeTransaction(berzaId, order, ask, bid);
+        OrderStatus status = getOrderStatus(token, ukupnaCena);
 
-        return new MakeOrderResponse("Order Successful");
+        Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
+                provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
+
+        return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
+    @Async
+    public OrderResponse executeOrder(Long berzaId, Long orderId) {
+        Order order = orderService.getOrder(orderId);
+
+        if(!order.getOrderStatus().equals(OrderStatus.APPROVED))
+            return new OrderResponse(MessageUtils.ORDER_REJECTED);
+
+        executeTransaction(berzaId, order, order.getAsk(), order.getBid());
+        order.setDone(true);
+        return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
+    }
 
     @Async
-    public MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
+    public OrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
         boolean flag = true;
         if(berzaId != -1){
             OrderStatusResponse orderStatus = this.getOrderStatus(berzaId);
@@ -150,7 +152,7 @@ public class BerzaService {
                 transakcija = transactionOrderWithDelay(order.getKolicina(), order, ask, bid);
             if(berzaId != -1)
                 this.addOrderToBerza(order, berzaId);
-            return new MakeOrderResponse("OK");
+            return new OrderResponse("OK");
         }
 
         return executeMiniTransactions(berzaId, order, flag, ask, bid);
@@ -161,16 +163,16 @@ public class BerzaService {
      * s obzirom na to, bice obradjen nakon nastavka specifikacije
      */
     @Async
-    public MakeOrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
+    public OrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
         Random random = new Random();
         int kolicina = order.getKolicina();
         int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
 
         if(order.getOrderAction().equals(OrderAction.BUY) && !canExecuteTransactionBuy(order, bid))
-            return new MakeOrderResponse("You can't proceed this action.");
+            return new OrderResponse("You can't proceed this action.");
 
         if(order.getOrderAction().equals(OrderAction.SELL) && !canExecuteTransactionSell(order, ask))
-            return new MakeOrderResponse("You can't proceed this action.");
+            return new OrderResponse("You can't proceed this action.");
 
         while(kolicina - kolicinaZaTransakciju > 0){
             //transakcija fixe delay
@@ -185,7 +187,7 @@ public class BerzaService {
 
         orderService.finishOrder(order);
 
-        return new MakeOrderResponse("OK");
+        return new OrderResponse("OK");
     }
 
     @Async
@@ -321,6 +323,28 @@ public class BerzaService {
     public boolean differenceInHours(Date closingTime, Date timeToCheck){
         long differenceInMilliSeconds = timeToCheck.getTime() - closingTime.getTime();
         return (differenceInMilliSeconds / (60 * 60 * 1000)) % 24 <= 4;
+    }
+
+    private OrderType getOrderType(Integer limitValue, Integer stopValue) {
+        if(limitValue > 0 && stopValue > 0)
+            return OrderType.STOP_LIMIT_ORDER;
+        else if(limitValue > 0)
+            return OrderType.LIMIT_ORDER;
+        else if(stopValue > 0)
+            return OrderType.STOP_ORDER;
+        return OrderType.MARKET_ORDER;
+    }
+
+    private OrderStatus getOrderStatus(String token, double price) {
+        UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
+
+        if(role.equals(UserRole.ROLE_AGENT)) {
+            UserDto user = userService.getUserByToken(token);
+            if(user.isNeedsSupervisorPermission() && user.getLimitUsed() == user.getLimit() && user.getLimit() < price)
+                return OrderStatus.ON_HOLD;
+        }
+
+        return OrderStatus.APPROVED;
     }
 
 }
