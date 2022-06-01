@@ -264,7 +264,7 @@ public class BerzaServiceTest {
         berza.setOrderi(new ArrayList<>());
         when(berzaRepository.findBerzaById(berzaId)).thenReturn(berza);
         when(berzaRepository.save(berza)).thenReturn(berza);
-        berzaService.addOrderToBerza(order,berzaId);
+        orderService.addOrderToBerza(order,berzaId);
         assertEquals(1,berza.getOrderi().size());
     }
 
@@ -302,7 +302,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order, ask));
     }
 
     @Test
@@ -314,7 +314,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.STOP_LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order, ask));
     }
 
     @Test
@@ -326,7 +326,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.STOP_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order, ask));
     }
 
     @Test
@@ -338,7 +338,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.MARKET_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order, ask));
     }
 
     @Test
@@ -350,7 +350,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
     }
 
     @Test
@@ -362,7 +362,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.STOP_LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
     }
 
     @Test
@@ -374,7 +374,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.STOP_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
     }
 
     @Test
@@ -386,7 +386,7 @@ public class BerzaServiceTest {
         order.setOrderType(OrderType.MARKET_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(berzaService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
     }
 
 
@@ -415,7 +415,7 @@ public class BerzaServiceTest {
         berza.setOrderi(new ArrayList<>());
         when(berzaRepository.findBerzaById(1L)).thenReturn(berza);
 
-        assertEquals("OK", berzaService.executeTransaction(berzaId, order,ask,bid).getMessage());
+        assertEquals("OK", orderService.executeTransaction(berzaId, order,ask,bid).getMessage());
     }
 
     @Test
@@ -443,7 +443,7 @@ public class BerzaServiceTest {
         berza.setOrderi(new ArrayList<>());
         when(berzaRepository.findBerzaById(1L)).thenReturn(berza);
 
-        assertEquals("You can't proceed this action.", berzaService.executeTransaction(berzaId, order,ask,bid).getMessage());
+        assertEquals("You can't proceed this action.", orderService.executeTransaction(berzaId, order,ask,bid).getMessage());
     }
 
     @Test
@@ -471,7 +471,7 @@ public class BerzaServiceTest {
         berza.setOrderi(new ArrayList<>());
         when(berzaRepository.findBerzaById(1L)).thenReturn(berza);
 
-        assertEquals("You can't proceed this action.", berzaService.executeTransaction(berzaId, order,ask,bid).getMessage());
+        assertEquals("You can't proceed this action.", orderService.executeTransaction(berzaId, order,ask,bid).getMessage());
     }
 
     @Test

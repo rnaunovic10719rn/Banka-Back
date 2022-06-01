@@ -72,7 +72,7 @@ public class BerzaController {
 
     @GetMapping(value = "/order-status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getOrderStatus(@PathVariable Long id){
-        return ResponseEntity.ok(berzaService.getOrderStatus(id));
+        return ResponseEntity.ok(orderService.getOrderStatus(id));
     }
 
     private OrderDto convertToDto(Order order) {
