@@ -45,16 +45,11 @@ public class BerzaController {
     }
 
     @GetMapping(value = "/order/{status}/{done}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getOrders(@PathVariable(required = false) String status,
+    public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token,
+                                       @PathVariable(required = false) String status,
                                        @PathVariable(required = false) Boolean done){
         List<Order> orders = orderService.getOrders(status, done);
         return ResponseEntity.ok(orders.stream().map(this::convertToDto).collect(Collectors.toList()));
-    }
-
-    //getUser by token
-    @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token){
-        return ResponseEntity.ok(userService.getUserByToken(token));
     }
 
     @PostMapping(value = "/order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,11 +58,6 @@ public class BerzaController {
         return ResponseEntity.ok(berzaService.makeOrder(token, orderRequest.getUserId(), orderRequest.getSymbol(), orderRequest.getHartijaOdVrednostiTip(),
                 orderRequest.getKolicina(), orderRequest.getAkcija(),
                 orderRequest.getLimitValue(), orderRequest.getStopValue(), orderRequest.isAllOrNoneFlag(), orderRequest.isMarginFlag()));
-    }
-
-    @GetMapping(value = "/order/execute/{id}/{berzaId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> executeOrder(@PathVariable Long id, @PathVariable Long berzaId) {
-        return ResponseEntity.ok(berzaService.executeOrder(id, berzaId));
     }
 
     @GetMapping(value = "/order/approve/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -16,11 +16,14 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
+    private BerzaService berzaService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService){
+    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
+                        BerzaService berzaService){
         this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
+        this.berzaService = berzaService;
     }
 
     public Order getOrder(Long id) {
@@ -49,6 +52,8 @@ public class OrderService {
         order.setOrderStatus(OrderStatus.APPROVED);
         order.setLastModified(new Date());
         orderRepository.save(order);
+
+        berzaService.executeOrder(id);
 
         return new ApproveRejectOrderResponse(MessageUtils.ORDER_APPROVED);
     }

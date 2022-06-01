@@ -23,6 +23,8 @@ import java.util.*;
 @Service
 public class BerzaService {
 
+    private static Long berzaId = -1L;
+
     private BerzaRepository berzaRepository;
     private AkcijeRepository akcijeRepository;
     private OrderService orderService;
@@ -77,13 +79,13 @@ public class BerzaService {
         Double ask = 0.0;
         Double bid = 0.0;
         Long hartijaId = -1L;
-        Long berzaId = -1L;
+        Long berza = -1L;
         if(hartijaTip.equals(HartijaOdVrednostiType.AKCIJA)){
             AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(oznakaHartije);
   //          Akcije akcije = akcijeRepository.findAkcijeByOznakaHartije(symbol);
             if(akcije != null) {
                 hartijaId = akcije.getId();
-                berzaId = akcije.getBerzaId();
+                berza = akcije.getBerzaId();
                 //ne postoje podaci o asku, bidu, uzima se trnt cena
                 ask = akcije.getPrice();
                 bid = akcije.getPrice();
@@ -94,7 +96,7 @@ public class BerzaService {
 //            FuturesUgovori futuresUgovori = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
             if(futuresUgovori != null) {
                 hartijaId = futuresUgovori.getId();
-//                berzaId = futuresUgovori.getBerza().getId();
+//                berza = futuresUgovori.getBerza().getId();
                 ask = futuresUgovori.getHigh();
                 bid = futuresUgovori.getHigh();
             }
@@ -105,7 +107,7 @@ public class BerzaService {
 //            Forex forex = forexRepository.findForexByOznakaHartije(symbol);
             if(forex != null) {
                 hartijaId = forex.getId();
-//                berzaId = forex.getBerza().getId();
+//                berza = forex.getBerza().getId();
                 ask = forex.getAsk();
                 bid = forex.getBid();
             }
@@ -113,6 +115,7 @@ public class BerzaService {
 
         if(hartijaId == -1L)
             return new OrderResponse("Error");
+        berzaId = berza;
 
         Double ukupnaCena = getPrice(ask, bid, orderAkcija);
         Double provizija = getCommission(ukupnaCena, orderType);
@@ -122,11 +125,14 @@ public class BerzaService {
         Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
                 provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
 
+        if(status == OrderStatus.APPROVED)
+            executeOrder(order.getId());
+
         return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
     @Async
-    public OrderResponse executeOrder(Long berzaId, Long orderId) {
+    public OrderResponse executeOrder(Long orderId) {
         Order order = orderService.getOrder(orderId);
 
         if(!order.getOrderStatus().equals(OrderStatus.APPROVED))
