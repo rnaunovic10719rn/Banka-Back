@@ -1,7 +1,5 @@
 package rs.edu.raf.banka.berza.controller;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +10,6 @@ import rs.edu.raf.banka.berza.service.impl.FuturesUgovoriPodaciService;
 public class FuturesUgovoriPodaciController {
 
     private final FuturesUgovoriPodaciService futuresUgovoriPodaciService;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     public FuturesUgovoriPodaciController(FuturesUgovoriPodaciService futuresUgovoriPodaciService){
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;

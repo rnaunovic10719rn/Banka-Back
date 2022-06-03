@@ -3,6 +3,7 @@ package rs.edu.raf.banka.berza.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
@@ -29,23 +30,34 @@ public class OrderService {
     private OrderRepository orderRepository;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
     private BerzaRepository berzaRepository;
+    private UserService userService;
 
     private TransakcijaService transakcijaService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
-                        TransakcijaService transakcijaService, BerzaRepository berzaRepository){
+                        TransakcijaService transakcijaService, BerzaRepository berzaRepository, UserService userService){
         this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
         this.transakcijaService = transakcijaService;
         this.berzaRepository = berzaRepository;
+        this.userService = userService;
     }
 
     public Order getOrder(Long id) {
         return orderRepository.getById(id);
     }
 
-    public List<Order> getOrders(String status, Boolean done) {
+    public List<Order> getOrders(String token, String status, Boolean done) {
+        UserDto user = userService.getUserByToken(token);
+        UserRole role = UserRole.valueOf(user.getRoleName());
+
+        if(role.equals(UserRole.ROLE_AGENT)) {
+            if(status.length() == 0 && done == null)
+                return orderRepository.findOrdersByUserId(user.getId());
+            return orderRepository.findOrderByOrderStatusAndUserId(OrderStatus.valueOf(status.toUpperCase()), user.getId());
+        }
+
         if(status.length() == 0 && done == null)
             return orderRepository.findAll();
         return orderRepository.findOrderByOrderStatus(OrderStatus.valueOf(status.toUpperCase()));

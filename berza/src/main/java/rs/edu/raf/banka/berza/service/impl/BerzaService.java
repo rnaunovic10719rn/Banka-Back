@@ -109,7 +109,7 @@ public class BerzaService {
             return new OrderResponse("Error");
         OrderService.berzaId = berza;
 
-        Double ukupnaCena = getPrice(ask, bid, orderAkcija);
+        Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
         Double provizija = getCommission(ukupnaCena, orderType);
 
         OrderStatus status = getOrderStatus(token, ukupnaCena);
