@@ -15,6 +15,7 @@ import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
+import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -129,6 +130,7 @@ public class OrderService {
     }
 
     @Async
+    @Transactional
     public OrderResponse executeOrder(Long orderId) {
         Order order = getOrder(orderId);
 
@@ -140,7 +142,6 @@ public class OrderService {
         return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
-    @Async
     public OrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
         boolean flag = true;
         if(berzaId != -1){
@@ -165,7 +166,6 @@ public class OrderService {
      * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
      * s obzirom na to, bice obradjen nakon nastavka specifikacije
      */
-    @Async
     public OrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
         Random random = new Random();
         int kolicina = order.getKolicina();
@@ -193,7 +193,6 @@ public class OrderService {
         return new OrderResponse("OK");
     }
 
-    @Async
     Transakcija transactionOrder(Integer transactionAmount, Order order, Double ask, Double bid){
         /**
          * MARKET_ORDER se izvrsava odmah, pa nema potrebe da cekamo
@@ -217,7 +216,6 @@ public class OrderService {
     /**
      * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
      */
-    @Async
     public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
         try {
             //3s simulaciju 30 minuta
