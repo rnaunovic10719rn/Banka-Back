@@ -167,7 +167,8 @@ public class BerzaService {
 
         if(role.equals(UserRole.ROLE_AGENT)) {
             UserDto user = userService.getUserByToken(token);
-            if(user.isNeedsSupervisorPermission() && user.getLimitUsed() == user.getLimit() && user.getLimit() < price)
+            Double presostaoLimit = user.getLimit() - user.getLimitUsed();
+            if(user.isNeedsSupervisorPermission() || (presostaoLimit - price < 0))
                 return OrderStatus.ON_HOLD;
         }
 
