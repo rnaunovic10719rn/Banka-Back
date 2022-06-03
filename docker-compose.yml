@@ -114,6 +114,7 @@ services:
       berza.influxscrapper.endpoint: http://influx-scrapper/
       berza.berze.csv: berze.csv
       berza.inflacije.csv: inflacije.csv
+      berza.user-service-url: http://korisnicki-servis:8080/
     ports:
       - "8082:8082"
     links:
