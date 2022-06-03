@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,11 @@ import rs.edu.raf.banka.berza.utils.HttpUtils;
 @Service
 public class UserService {
 
+    @Value("${berza.user-service-url}")
+    private String USER_SERVICE_URL;
+
     public UserDto getUserByToken(String token) {
-        ResponseEntity<UserDto> response = HttpUtils.getUser(HttpUtils.USER_SERVICE_URL, token);
+        ResponseEntity<UserDto> response = HttpUtils.getUser(USER_SERVICE_URL, token);
         return response.getBody();
     }
 

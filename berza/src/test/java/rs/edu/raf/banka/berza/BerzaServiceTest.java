@@ -82,7 +82,7 @@ public class BerzaServiceTest {
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                17L, "usd", "AKCIJA",
+                "usd", "AKCIJA",
                 100, "buy", 0, 0, true, false);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
@@ -108,13 +108,13 @@ public class BerzaServiceTest {
 
         when(futuresUgovoriPodaciService.getFuturesUgovor(any())).thenReturn(futuresUgovori);
 //        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.FUTURES_UGOVOR,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.FUTURES_UGOVOR,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false,"usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                17L, "usd", "FUTURES_UGOVOR",
+                "usd", "FUTURES_UGOVOR",
                 100, "buy", 1, 1, true, false);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
@@ -141,13 +141,13 @@ public class BerzaServiceTest {
 
         when(forexPodaciService.getForexBySymbol(any(), any())).thenReturn(forex);
 //        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.FOREX,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.FOREX,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false, "usd lol",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                17L, "usd lol", "FOREX",
+                "usd lol", "FOREX",
                 100, "buy", 1, 1, true, false);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
@@ -173,13 +173,13 @@ public class BerzaServiceTest {
 
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false, "usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                17L, "usd", "AKCIJA",
+                "usd", "AKCIJA",
                 100, "buy", 1, 1, true, false);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
@@ -205,13 +205,13 @@ public class BerzaServiceTest {
 
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
                 10.0,2.4,OrderType.LIMIT_ORDER,true,false, "usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                17L, "usd", "AKCIJA",
+                "usd", "AKCIJA",
                 100, "buy", 1, 0, true, false);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
@@ -243,7 +243,7 @@ public class BerzaServiceTest {
         when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                17L, "usd", "AKCIJA",
+                "usd", "AKCIJA",
                 100, "buy", 0, 1, true, false);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }

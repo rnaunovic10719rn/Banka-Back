@@ -1,7 +1,5 @@
 package rs.edu.raf.banka.berza.controller;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +11,6 @@ import rs.edu.raf.banka.berza.service.impl.ForexPodaciService;
 public class ForexPodaciController {
 
     private final ForexPodaciService forexPodaciService;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
 
     public ForexPodaciController(ForexPodaciService forexPodaciService){
         this.forexPodaciService = forexPodaciService;

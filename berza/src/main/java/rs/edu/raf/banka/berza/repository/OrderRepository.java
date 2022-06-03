@@ -12,6 +12,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findOrderByOrderStatus(OrderStatus orderStatus);
 
+    List<Order> findOrderByOrderStatusAndUserId(OrderStatus orderStatus, Long userId);
+
+    List<Order> findOrdersByUserId(Long userId);
+
     @Query("SELECT o FROM Order o WHERE (:orderStatus is NULL OR o.orderStatus = :orderStatus) AND " +
             "(:done IS NULL OR o.done = :done)")
     List<Order> findOrders(OrderStatus orderStatus, Boolean done);

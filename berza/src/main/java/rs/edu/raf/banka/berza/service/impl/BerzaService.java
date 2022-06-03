@@ -61,7 +61,7 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
-    public OrderResponse makeOrder(String token, Long userId, String oznakaHartije, String hartijaTipString,
+    public OrderResponse makeOrder(String token, String oznakaHartije, String hartijaTipString,
                                        Integer kolicina, String action,
                                        Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
         HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(hartijaTipString.toUpperCase());
@@ -109,10 +109,12 @@ public class BerzaService {
             return new OrderResponse("Error");
         OrderService.berzaId = berza;
 
-        Double ukupnaCena = getPrice(ask, bid, orderAkcija);
+        Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
         Double provizija = getCommission(ukupnaCena, orderType);
 
         OrderStatus status = getOrderStatus(token, ukupnaCena);
+
+        Long userId = userService.getUserByToken(token).getId();
 
         Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
                 provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
@@ -165,7 +167,8 @@ public class BerzaService {
 
         if(role.equals(UserRole.ROLE_AGENT)) {
             UserDto user = userService.getUserByToken(token);
-            if(user.isNeedsSupervisorPermission() && user.getLimitUsed() == user.getLimit() && user.getLimit() < price)
+            Double presostaoLimit = user.getLimit() - user.getLimitUsed();
+            if(user.isNeedsSupervisorPermission() || (presostaoLimit - price < 0))
                 return OrderStatus.ON_HOLD;
         }
 

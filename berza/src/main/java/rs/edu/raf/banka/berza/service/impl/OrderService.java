@@ -3,6 +3,7 @@ package rs.edu.raf.banka.berza.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
@@ -14,6 +15,7 @@ import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
+import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,23 +31,34 @@ public class OrderService {
     private OrderRepository orderRepository;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
     private BerzaRepository berzaRepository;
+    private UserService userService;
 
     private TransakcijaService transakcijaService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
-                        TransakcijaService transakcijaService, BerzaRepository berzaRepository){
+                        TransakcijaService transakcijaService, BerzaRepository berzaRepository, UserService userService){
         this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
         this.transakcijaService = transakcijaService;
         this.berzaRepository = berzaRepository;
+        this.userService = userService;
     }
 
     public Order getOrder(Long id) {
         return orderRepository.getById(id);
     }
 
-    public List<Order> getOrders(String status, Boolean done) {
+    public List<Order> getOrders(String token, String status, Boolean done) {
+        UserDto user = userService.getUserByToken(token);
+        UserRole role = UserRole.valueOf(user.getRoleName());
+
+        if(role.equals(UserRole.ROLE_AGENT)) {
+            if(status.length() == 0 && done == null)
+                return orderRepository.findOrdersByUserId(user.getId());
+            return orderRepository.findOrderByOrderStatusAndUserId(OrderStatus.valueOf(status.toUpperCase()), user.getId());
+        }
+
         if(status.length() == 0 && done == null)
             return orderRepository.findAll();
         return orderRepository.findOrderByOrderStatus(OrderStatus.valueOf(status.toUpperCase()));
@@ -117,6 +130,7 @@ public class OrderService {
     }
 
     @Async
+    @Transactional
     public OrderResponse executeOrder(Long orderId) {
         Order order = getOrder(orderId);
 
@@ -128,7 +142,6 @@ public class OrderService {
         return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
-    @Async
     public OrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
         boolean flag = true;
         if(berzaId != -1){
@@ -153,7 +166,6 @@ public class OrderService {
      * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
      * s obzirom na to, bice obradjen nakon nastavka specifikacije
      */
-    @Async
     public OrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
         Random random = new Random();
         int kolicina = order.getKolicina();
@@ -181,7 +193,6 @@ public class OrderService {
         return new OrderResponse("OK");
     }
 
-    @Async
     Transakcija transactionOrder(Integer transactionAmount, Order order, Double ask, Double bid){
         /**
          * MARKET_ORDER se izvrsava odmah, pa nema potrebe da cekamo
@@ -205,7 +216,6 @@ public class OrderService {
     /**
      * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
      */
-    @Async
     public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
         try {
             //3s simulaciju 30 minuta
