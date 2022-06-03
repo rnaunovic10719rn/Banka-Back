@@ -32,7 +32,7 @@ public class OrderServiceTest {
         Order order = new Order();
         order.setOrderType(OrderType.LIMIT_ORDER);
         when(orderRepository.findAll()).thenReturn(List.of(order));
-        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("", null).get(0).getOrderType());
+        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M", "", null).get(0).getOrderType());
     }
 
     @Test

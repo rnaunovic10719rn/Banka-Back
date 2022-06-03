@@ -60,7 +60,7 @@ public class BerzaController {
     @PostMapping(value = "/order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> makeOrder(@RequestHeader("Authorization") String token,
                                        @RequestBody OrderRequest orderRequest){
-        OrderResponse resp = berzaService.makeOrder(token, orderRequest.getUserId(), orderRequest.getSymbol(), orderRequest.getHartijaOdVrednostiTip(),
+        OrderResponse resp = berzaService.makeOrder(token, orderRequest.getSymbol(), orderRequest.getHartijaOdVrednostiTip(),
                 orderRequest.getKolicina(), orderRequest.getAkcija(),
                 orderRequest.getLimitValue(), orderRequest.getStopValue(), orderRequest.isAllOrNoneFlag(), orderRequest.isMarginFlag());
         if(resp.getMessage().equals("Error")) {
