@@ -5,7 +5,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class MakeOrderResponse {
+public class ApproveRejectOrderResponse {
 
     private String message;
+
 }
