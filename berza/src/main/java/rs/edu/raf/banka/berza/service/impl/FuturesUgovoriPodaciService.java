@@ -50,6 +50,12 @@ public class FuturesUgovoriPodaciService {
         return podaci;
     }
 
+    public boolean isRelevant(Long id){
+        if(futuresUgovoriRepository.findFuturesUgovoriByIdAndSettlementDateAfter(id, new Date()) == null)
+            return false;
+        return true;
+    }
+
     public FuturesPodaciDto getFuturesUgovor(String symbol) {
         FuturesUgovori future = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
         if(future == null){
@@ -65,14 +71,19 @@ public class FuturesUgovoriPodaciService {
             return futuresPodaciDto;
         }
 
+
         return null;
+    }
+
+    public ZonedDateTime getZonedDateTime() {
+        return ZonedDateTime.now().plusDays(2);
     }
 
     public List<FuturesTimeseriesDto> getFuturesTimeseries(String type, String symbol) {
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
         DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        ZonedDateTime zonedDateTime = getZonedDateTime();
         String endDate = zonedDateTime.format(endFormatter);
 
         if(type.equals("1d")) {

@@ -9,4 +9,5 @@ import lombok.Setter;
 @Setter
 public class ChangePasswordForm {
     String newPassword;
+    String emailToken;
 }

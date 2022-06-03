@@ -4,8 +4,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.models.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -49,6 +51,30 @@ public class UserController {
         }
     }
 
+    @PatchMapping("/limit-change/{id}")
+    @ApiOperation("Changes agent's limit")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?> changeLimit(@PathVariable long id, @RequestBody ChangeLimitForm changeLimitForm){
+        Optional<User> user = userService.getUserById(id);
+        if(user.isEmpty())
+            return ResponseEntity.notFound().build();
+        User u = user.get();
+        userService.changeLimit(u, changeLimitForm.getLimit());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/limit-reset/{id}")
+    @ApiOperation("Resets agent's limitUsed")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?> resetLimit(@PathVariable long id){
+        Optional<User> user = userService.getUserById(id);
+        if(user.isEmpty())
+            return ResponseEntity.notFound().build();
+        User u = user.get();
+        userService.resetLimitUsed(u);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/user")
     @ApiOperation("Patches user by JWT token")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
@@ -70,6 +96,9 @@ public class UserController {
     @ApiOperation("Create user with username, ime, prezime, email, jmbg, br_telefona, password, aktivan, pozicija")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<User>createUser(@RequestBody CreateUserForm createUserForm) {
+        if(createUserForm.getPozicija().equals("ROLE_AGENT") && createUserForm.getLimit() == null){
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok().body(userService.createUser(createUserForm));
     }
 
@@ -95,8 +124,6 @@ public class UserController {
             //Sonnar pass
             if (!userService.hasEditPermissions(user.get(), token))
                 return ResponseEntity.badRequest().build();
-            //if(user.isRequiresOtp())
-            //    return ResponseEntity.badRequest().build();
 
             userService.editUser(user.get(), createUserForm);
             return ResponseEntity.ok().body(user.get().getUsername() + " edited");
@@ -140,33 +167,38 @@ public class UserController {
         return ResponseEntity.ok().body(valid);
     }
 
-
-    //TODO: Dodati permisije na otp urleove
-
     @PostMapping("/otp/set/{id}")
     @ApiOperation("Edit users 2FA secret with specific user id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>setOtp(@PathVariable long id, @RequestBody String secret, @RequestHeader("Authorization") String token) {
-        var user = userService.getUserById(id).get();
-        if(!userService.hasEditPermissions(user, token))
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            if(!userService.hasEditPermissions(user.get(), token))
+                return ResponseEntity.badRequest().build();
+            if(!OTPUtilities.isValidSeecret(secret))
+                return ResponseEntity.badRequest().build();
+            userService.editOtpSeecret(user.get(), secret);
+            return ResponseEntity.ok().build();
+        }else{
             return ResponseEntity.badRequest().build();
-        if(!OTPUtilities.isValidSeecret(secret))
-            return ResponseEntity.badRequest().build();
-        userService.editOtpSeecret(user, secret);
-        return ResponseEntity.ok().build();
+        }
     }
 
     @PostMapping("/otp/clear/{id}")
     @ApiOperation("Removes users 2FA secret with specific user id")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?>clearOtp(@PathVariable long id, @RequestHeader("Authorization") String token) {
-        var user = userService.getUserById(id).get();
-        if(!userService.hasEditPermissions(user, token))
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            if(!userService.hasEditPermissions(user.get(), token))
+                return ResponseEntity.badRequest().build();
+            if(user.get().isRequiresOtp())
+                return ResponseEntity.badRequest().build();
+            userService.editOtpSeecret(user.get(), null);
+            return ResponseEntity.ok().build();
+        }else{
             return ResponseEntity.badRequest().build();
-        if(user.isRequiresOtp())
-            return ResponseEntity.badRequest().build();
-        userService.editOtpSeecret(user, null);
-        return ResponseEntity.ok().build();
+        }
     }
 
     @PostMapping("/otp/requires/{username}")
@@ -196,8 +228,8 @@ public class UserController {
 
     @PostMapping("/user/change-password")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordForm changePasswordForm){
-        if(!userService.setNewPassword(changePasswordForm.getNewPassword(), token)){
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordForm changePasswordForm){
+        if(!userService.setNewPassword(changePasswordForm.getNewPassword(), changePasswordForm.getEmailToken())){
             return ResponseEntity.badRequest().body("Invalid token!");
         }
         return ResponseEntity.ok().body("New password!");
@@ -205,10 +237,10 @@ public class UserController {
 
     @PostMapping("/user/new-password/{id}")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK")})
-    public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody ChangePasswordForm changePasswordForm){
+    public ResponseEntity<?> changePasswordInternal(@PathVariable long id, @RequestBody NewPasswordForm newPasswordForm){
         Optional<User> user = userService.getUserById(id);
         if(user.isPresent()){
-            if(!userService.changePassword(changePasswordForm.getNewPassword(), user.get())){
+            if(!userService.changePassword(newPasswordForm.getNewPassword(), user.get())){
                 return ResponseEntity.badRequest().body("Check your pass again");
             }
             return ResponseEntity.ok().body("Password changed for user " + user.get().getUsername());

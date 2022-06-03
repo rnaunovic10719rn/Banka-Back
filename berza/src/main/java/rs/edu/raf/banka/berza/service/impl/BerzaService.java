@@ -6,14 +6,14 @@ import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
-import rs.edu.raf.banka.berza.enums.OrderAction;
-import rs.edu.raf.banka.berza.enums.OrderType;
+import rs.edu.raf.banka.berza.dto.UserDto;
+import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.*;
-import rs.edu.raf.banka.berza.response.MakeOrderResponse;
+import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -24,41 +24,33 @@ import java.util.*;
 public class BerzaService {
 
     private BerzaRepository berzaRepository;
-    private UserAccountRepository userAccountRepository;
     private AkcijeRepository akcijeRepository;
-    private ForexRepository forexRepository;
-    private FuturesUgovoriRepository futuresUgovoriRepository;
     private OrderService orderService;
     private TransakcijaService transakcijaService;
     private AkcijePodaciService akcijePodaciService;
     private ForexPodaciService forexPodaciService;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
 
+    private UserService userService;
+
+
     @Autowired
-    public BerzaService(BerzaRepository berzaRepository, UserAccountRepository userAccountRepository,
-                        AkcijeRepository akcijeRepository, ForexRepository forexRepository, FuturesUgovoriRepository futuresUgovoriRepository,
+    public BerzaService(BerzaRepository berzaRepository, AkcijeRepository akcijeRepository,
                         TransakcijaService transakcijaService, OrderService orderService, AkcijePodaciService akcijePodaciService,
-                        ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService){
+                        ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
+                        UserService userService){
         this.berzaRepository = berzaRepository;
-        this.userAccountRepository = userAccountRepository;
         this.akcijeRepository = akcijeRepository;
-        this.forexRepository = forexRepository;
-        this.futuresUgovoriRepository = futuresUgovoriRepository;
         this.transakcijaService = transakcijaService;
         this.orderService = orderService;
         this.akcijePodaciService = akcijePodaciService;
         this.forexPodaciService = forexPodaciService;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
+        this.userService = userService;
     }
 
     public List<Berza> findAll(){
         return berzaRepository.findAll();
-    }
-
-    public void addOrderToBerza(Order order, Long berzaId){
-        Berza berza = berzaRepository.findBerzaById(berzaId);
-        berza.getOrderi().add(order);
-        berzaRepository.save(berza);
     }
 
     public Berza findBerza(String oznaka){
@@ -69,31 +61,23 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
-    @Async
-    public MakeOrderResponse makeOrder(Long userId, String oznakaHartije, String hartijaTipString, Integer kolicina, String action,
+    public OrderResponse makeOrder(String token, String oznakaHartije, String hartijaTipString,
+                                       Integer kolicina, String action,
                                        Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
-//        UserAccount userAccount = userAccountRepository.getById(userId);
         HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(hartijaTipString.toUpperCase());
         OrderAction orderAkcija = OrderAction.valueOf(action.toUpperCase());
-        OrderType orderType = OrderType.MARKET_ORDER;
-
-        if(limitValue > 0 && stopValue > 0)
-            orderType = OrderType.STOP_LIMIT_ORDER;
-        else if(limitValue > 0)
-            orderType = OrderType.LIMIT_ORDER;
-        else if(stopValue > 0)
-            orderType = OrderType.STOP_ORDER;
+        OrderType orderType = getOrderType(limitValue, stopValue);
 
         Double ask = 0.0;
         Double bid = 0.0;
         Long hartijaId = -1L;
-        Long berzaId = -1L;
+        Long berza = -1L;
         if(hartijaTip.equals(HartijaOdVrednostiType.AKCIJA)){
             AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(oznakaHartije);
   //          Akcije akcije = akcijeRepository.findAkcijeByOznakaHartije(symbol);
             if(akcije != null) {
                 hartijaId = akcije.getId();
-                berzaId = akcije.getBerzaId();
+                berza = akcije.getBerzaId();
                 //ne postoje podaci o asku, bidu, uzima se trnt cena
                 ask = akcije.getPrice();
                 bid = akcije.getPrice();
@@ -104,7 +88,7 @@ public class BerzaService {
 //            FuturesUgovori futuresUgovori = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
             if(futuresUgovori != null) {
                 hartijaId = futuresUgovori.getId();
-//                berzaId = futuresUgovori.getBerza().getId();
+//                berza = futuresUgovori.getBerza().getId();
                 ask = futuresUgovori.getHigh();
                 bid = futuresUgovori.getHigh();
             }
@@ -115,159 +99,30 @@ public class BerzaService {
 //            Forex forex = forexRepository.findForexByOznakaHartije(symbol);
             if(forex != null) {
                 hartijaId = forex.getId();
-//                berzaId = forex.getBerza().getId();
+//                berza = forex.getBerza().getId();
                 ask = forex.getAsk();
                 bid = forex.getBid();
             }
         }
 
         if(hartijaId == -1L)
-            return new MakeOrderResponse("Error");
+            return new OrderResponse("Error");
+        OrderService.berzaId = berza;
 
-        Double ukupnaCena = getPrice(ask, bid, orderAkcija);
-      
-//        if(ukupnaCena * kolicina > userAccount.getWallet())
-//            return new MakeOrderResponse("You don't have enough money for this action.");
-
-//        if(ukupnaCena * kolicina > userAccount.getWallet())
-//            return new MakeOrderResponse("You don't have enough money for this action.");
-
+        Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
         Double provizija = getCommission(ukupnaCena, orderType);
 
+        OrderStatus status = getOrderStatus(token, ukupnaCena);
+
+        Long userId = userService.getUserByToken(token).getId();
+
         Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
-                provizija, orderType, isAON, isMargin, oznakaHartije);
-        executeTransaction(berzaId, order, ask, bid);
+                provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
 
-        return new MakeOrderResponse("Order Successful");
-    }
+        if(status == OrderStatus.APPROVED)
+            orderService.executeOrder(order.getId());
 
-    @Async
-    public MakeOrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
-        boolean flag = true;
-        if(berzaId != -1){
-            OrderStatusResponse orderStatus = this.getOrderStatus(berzaId);
-            flag = orderStatus.isBerzaOtvorena();
-        }
-        if(order.isAON()){
-            Transakcija transakcija;
-            if(flag)
-                transakcija = transactionOrder(order.getKolicina(), order, ask, bid);
-            else
-                transakcija = transactionOrderWithDelay(order.getKolicina(), order, ask, bid);
-            if(berzaId != -1)
-                this.addOrderToBerza(order, berzaId);
-            return new MakeOrderResponse("OK");
-        }
-
-        return executeMiniTransactions(berzaId, order, flag, ask, bid);
-    }
-
-    /**
-     * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
-     * s obzirom na to, bice obradjen nakon nastavka specifikacije
-     */
-    @Async
-    public MakeOrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
-        Random random = new Random();
-        int kolicina = order.getKolicina();
-        int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
-
-        if(order.getOrderAction().equals(OrderAction.BUY) && !canExecuteTransactionBuy(order, bid))
-            return new MakeOrderResponse("You can't proceed this action.");
-
-        if(order.getOrderAction().equals(OrderAction.SELL) && !canExecuteTransactionSell(order, ask))
-            return new MakeOrderResponse("You can't proceed this action.");
-
-        while(kolicina - kolicinaZaTransakciju > 0){
-            //transakcija fixe delay
-            if(flag)
-                transactionOrder(kolicinaZaTransakciju, order, ask, bid);
-            else
-                transactionOrderWithDelay(kolicinaZaTransakciju, order, ask, bid);
-
-            kolicina -= kolicinaZaTransakciju;
-            kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
-        }
-
-        return new MakeOrderResponse("OK");
-    }
-
-    @Async
-    Transakcija transactionOrder(Integer transactionAmount, Order order, Double ask, Double bid){
-        /**
-         * MARKET_ORDER se izvrsava odmah, pa nema potrebe da cekamo
-         */
-        if(!order.getOrderType().equals(OrderType.MARKET_ORDER)) {
-            try {
-                int s = new Random().nextInt(((int)(0.24*60/order.getKolicina() * 1000)));
-                Thread.sleep(s);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        Transakcija transakcija = new Transakcija();
-        transakcija.setOrder(order);
-        transakcija.setCena(transactionAmount * order.getUkupnaCena());
-        transakcija.setKolicina(transactionAmount);
-        transakcija.setVremeTranskacije(new Date());
-        return transakcijaService.saveTranskacija(transakcija);
-    }
-
-    /**
-     * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
-     */
-    @Async
-    public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
-        try {
-            //3s simulaciju 30 minuta
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return transactionOrder(transactionAmount, order, ask, bid);
-    }
-
-    public boolean canExecuteTransactionBuy(Order order, Double bid){
-        switch(order.getOrderType()){
-            case LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue())
-                    return true;
-                break;
-            case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue() && order.getUkupnaCena() < bid){
-                    order.setOrderType(OrderType.LIMIT_ORDER);
-                    return true;
-                }
-                break;
-            case STOP_ORDER:
-                if(order.getUkupnaCena() < bid)
-                    return true;
-                break;
-            default:
-                return true;
-        }
-        return false;
-    }
-
-    public boolean canExecuteTransactionSell(Order order, Double ask){
-        switch(order.getOrderType()){
-            case LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue())
-                    return true;
-                break;
-            case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue() && order.getUkupnaCena() > ask){
-                    order.setOrderType(OrderType.LIMIT_ORDER);
-                    return true;
-                }
-            case STOP_ORDER:
-                if(order.getUkupnaCena() > ask)
-                    return true;
-                break;
-            default:
-                return true;
-        }
-        return false;
+        return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
     public Double getPrice(Double ask, Double bid, OrderAction orderAction){
@@ -297,34 +152,27 @@ public class BerzaService {
         return Math.min(0.24 * price, 12);
     }
 
-    public OrderStatusResponse getOrderStatus(Long id){
-        Berza berza = berzaRepository.findBerzaById(id);
-        Date date = new Date();
+    private OrderType getOrderType(Integer limitValue, Integer stopValue) {
+        if(limitValue > 0 && stopValue > 0)
+            return OrderType.STOP_LIMIT_ORDER;
+        else if(limitValue > 0)
+            return OrderType.LIMIT_ORDER;
+        else if(stopValue > 0)
+            return OrderType.STOP_ORDER;
+        return OrderType.MARKET_ORDER;
+    }
 
-        String openTime = berza.getOpenTime();
-        String closeTime = berza.getCloseTime();
+    private OrderStatus getOrderStatus(String token, double price) {
+        UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
 
-        DateFormat dateFormat = new SimpleDateFormat("hh:mm");
-        try {
-            if(isOverlapping(dateFormat.parse(openTime), dateFormat.parse(closeTime), date))
-                return new OrderStatusResponse(true, "Order odobren.");
-
-            if(differenceInHours(dateFormat.parse(closeTime), date))
-                return new OrderStatusResponse(false, "Berza je trenutno u after-hours stanju.");
-
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if(role.equals(UserRole.ROLE_AGENT)) {
+            UserDto user = userService.getUserByToken(token);
+            Double presostaoLimit = user.getLimit() - user.getLimitUsed();
+            if(user.isNeedsSupervisorPermission() || (presostaoLimit - price < 0))
+                return OrderStatus.ON_HOLD;
         }
-        return new OrderStatusResponse(false, "Berza ne radi.");
-    }
 
-    private boolean isOverlapping(Date start, Date end, Date timeToCheck){
-        return start.before(timeToCheck) && end.after(timeToCheck);
-    }
-
-    public boolean differenceInHours(Date closingTime, Date timeToCheck){
-        long differenceInMilliSeconds = timeToCheck.getTime() - closingTime.getTime();
-        return (differenceInMilliSeconds / (60 * 60 * 1000)) % 24 <= 4;
+        return OrderStatus.APPROVED;
     }
 
 }

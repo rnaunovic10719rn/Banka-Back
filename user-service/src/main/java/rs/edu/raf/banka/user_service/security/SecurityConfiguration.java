@@ -53,7 +53,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(POST, "/api/user/edit/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
                 .antMatchers(POST, "/api/otp/clear/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
                 .antMatchers(POST, "/api/otp/set/**").hasAnyAuthority(String.valueOf(Permissions.EDIT_USER), String.valueOf(Permissions.MY_EDIT))
-                .antMatchers(DELETE, "/api/user/delete/**").hasAuthority(String.valueOf(Permissions.DELETE_USER));
+                .antMatchers(DELETE, "/api/user/delete/**").hasAuthority(String.valueOf(Permissions.DELETE_USER))
+                .antMatchers(PATCH, "/api/limit-change/**").hasAuthority(String.valueOf(Permissions.MANAGE_AGENTS))
+                .antMatchers(PATCH, "/api/limit-reset/**").hasAuthority(String.valueOf(Permissions.MANAGE_AGENTS));
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.cors(Customizer.withDefaults());

@@ -1,7 +1,6 @@
 package rs.edu.raf.banka.berza;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import rs.edu.raf.banka.berza.utils.DateUtils;
 
 import java.time.ZonedDateTime;

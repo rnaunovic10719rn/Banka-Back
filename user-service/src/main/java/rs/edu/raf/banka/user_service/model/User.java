@@ -29,6 +29,10 @@ public class User {
     private Role role;
     private boolean requiresOtp;
 
+    private Double limit;
+    private Double limitUsed;
+    private boolean needsSupervisorPermission;
+
     public boolean hasOTP()
     {
         return otpSeecret != null;
@@ -46,6 +50,37 @@ public class User {
         this.aktivan = aktivan;
         this.role = role;
         this.requiresOtp = requiresOtp;
+    }
+
+    public User(
+            String username,
+            String ime,
+            String prezime,
+            String email,
+            String jmbg,
+            String brTelefon,
+            String password,
+            String otpSeecret,
+            boolean aktivan,
+            Role role,
+            boolean requiresOtp,
+            Double limit,
+            boolean needsSupervisorPermission
+    ) {
+        this.username = username;
+        this.ime = ime;
+        this.prezime = prezime;
+        this.email = email;
+        this.jmbg = jmbg;
+        this.brTelefon = brTelefon;
+        this.password = password;
+        this.otpSeecret = otpSeecret;
+        this.aktivan = aktivan;
+        this.role = role;
+        this.requiresOtp = requiresOtp;
+        this.limit = limit;
+        this.limitUsed = 0.0;
+        this.needsSupervisorPermission = needsSupervisorPermission;
     }
 
     public User(String username, String password){

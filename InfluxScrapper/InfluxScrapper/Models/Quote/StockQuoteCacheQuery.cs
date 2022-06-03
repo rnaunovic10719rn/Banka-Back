@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using InfluxScrapper.Models.Influx;
 using InfluxScrapper.Models.Stock;
-using InfluxScrapper.Utilites;
+using InfluxScrapper.Utilities;
 
 namespace InfluxScrapper.Models.Quote;
 
@@ -17,7 +17,7 @@ public class StockQuoteCacheQuery : InfluxCacheQuery<StockQuoteCacheQuery>
     public DateTime? TimeTo { get; init; } = null;
     public string Measurement  => "stock_quote";
 
-    public string ToQuery(bool singleFile = false) => InfluxDBUtilites.ConstructQuery(this, singleFile);
+    public string ToQuery(bool singleFile = false) => InfluxDbUtilities.ConstructQuery(this, true);
 
     public IEnumerable<StockQuoteQuery> ToQuotes() => Symbols.Select(s => new StockQuoteQuery() {Symbol = s});
 

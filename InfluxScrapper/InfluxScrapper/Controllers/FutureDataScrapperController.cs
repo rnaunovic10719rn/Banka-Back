@@ -12,6 +12,8 @@ namespace InfluxScrapper.Controllers;
 [Route("nasdaq/futures/data")]
 public class FutureDataScrapperController : Controller
 {
+    private const string EurexURI = "https://static.quandl.com/Ticker+CSV%27s/Futures/EUREX.csv";
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<FutureDataScrapperController> _logger;
 
@@ -20,7 +22,6 @@ public class FutureDataScrapperController : Controller
         _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
-
 
     /// <summary>
     /// Updates database cache without wait
@@ -32,7 +33,7 @@ public class FutureDataScrapperController : Controller
     {
         const int allowedScrapeMinutes = 10;
         var cancellationTokenSource = new CancellationTokenSource(allowedScrapeMinutes * 60000);
-        Task.Run(async () => await UpdateWait( cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);;
+        Task.Run(async () => await UpdateWait( cancellationTokenSource.Token), cancellationTokenSource.Token).ConfigureAwait(false);
     }
     
     /// <summary>
@@ -53,8 +54,16 @@ public class FutureDataScrapperController : Controller
                 System.IO.Directory.CreateDirectory("storage");
             if(System.IO.File.Exists("storage/futuredata.json"))
                 System.IO.File.Delete("storage/futuredata.json");
-            await System.IO.File.WriteAllTextAsync(@"storage/futuredata.json", json);
+            await System.IO.File.WriteAllTextAsync(@"storage/futuredata.json", json, token);
             _logger.LogInformation("Writing done");
+        }
+        catch(TaskCanceledException ex)
+        {
+            _logger.LogError(new EventId(2), ex,"Update Cancelled");
+        }
+        catch(OperationCanceledException ex)
+        {
+            _logger.LogError(new EventId(2), ex,"Update Cancelled");
         }
         catch (Exception ex)
         {
@@ -76,12 +85,12 @@ public class FutureDataScrapperController : Controller
             try
             {
                 var httpClient = _httpClientFactory.CreateClient();
-                var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://static.quandl.com/Ticker+CSV%27s/Futures/EUREX.csv");
-                var httpResponseMessage = await httpClient.SendAsync(httpRequest);
+                var httpRequest = new HttpRequestMessage(HttpMethod.Get, EurexURI);
+                var httpResponseMessage = await httpClient.SendAsync(httpRequest, token);
                 if (!httpResponseMessage.IsSuccessStatusCode)
                     return Enumerable.Empty<FutureDataResult>();
 
-                await using var stream = await httpResponseMessage.Content.ReadAsStreamAsync();
+                await using var stream = await httpResponseMessage.Content.ReadAsStreamAsync(token);
                 var reader = new StreamReader(stream);
                 using var csv = new CsvReader(reader,
                     new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -90,6 +99,16 @@ public class FutureDataScrapperController : Controller
                     });
                 var result = csv.GetRecords<FutureDataResult>();
                 return result?.ToArray() ?? Enumerable.Empty<FutureDataResult>();
+            }
+            catch(TaskCanceledException ex)
+            {
+                _logger.LogError(new EventId(2), ex,"Scrape Cancelled");
+                break;
+            }
+            catch(OperationCanceledException ex)
+            {
+                _logger.LogError(new EventId(2), ex,"Scrape Cancelled");
+                break;
             }
             catch(Exception ex)
             {
@@ -101,6 +120,8 @@ public class FutureDataScrapperController : Controller
             const int sleepMinutes = 1;
             await Task.Delay(sleepMinutes * 60000, token);
         }
+
+        return Enumerable.Empty<FutureDataResult>();
     }
     
     /// <summary>

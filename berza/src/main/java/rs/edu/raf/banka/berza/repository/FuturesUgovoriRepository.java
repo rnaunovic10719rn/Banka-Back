@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 
+import java.util.Date;
 import java.util.List;
 
 public interface FuturesUgovoriRepository extends JpaRepository<FuturesUgovori, Long>, JpaSpecificationExecutor<FuturesUgovori> {
@@ -12,6 +13,8 @@ public interface FuturesUgovoriRepository extends JpaRepository<FuturesUgovori, 
     FuturesUgovori findFuturesById(Long id);
 
     FuturesUgovori findFuturesUgovoriByOznakaHartije(String oznakaHartije);
+
+    FuturesUgovori findFuturesUgovoriByIdAndSettlementDateAfter(Long id, Date date);
 
     @Query("SELECT f FROM FuturesUgovori f WHERE (:berzaPrefix IS NULL OR LOWER(f.berza.naziv) LIKE CONCAT('%', :berzaPrefix)) AND " +
             "(:priceLowBound = 0 OR f.cena >= :priceLowBound) AND (:priceUpperBound = 0 OR f.cena <= :priceUpperBound) AND " +
