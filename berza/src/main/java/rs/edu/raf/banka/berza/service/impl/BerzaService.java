@@ -110,7 +110,7 @@ public class BerzaService {
         }
 
         if(hartijaId == -1L)
-            return new OrderResponse("Error");
+            return new OrderResponse(MessageUtils.ERROR);
         OrderService.berzaId = berza;
 
         Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
