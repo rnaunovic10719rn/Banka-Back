@@ -68,6 +68,10 @@ public class BerzaService {
         OrderAction orderAkcija = OrderAction.valueOf(action.toUpperCase());
         OrderType orderType = getOrderType(limitValue, stopValue);
 
+        if(hartijaTip.equals(HartijaOdVrednostiType.FOREX) && orderAkcija.equals(OrderAction.SELL)) {
+            return new OrderResponse(MessageUtils.ORDER_REJECTED);
+        }
+
         Double ask = 0.0;
         Double bid = 0.0;
         Long hartijaId = -1L;
@@ -106,7 +110,7 @@ public class BerzaService {
         }
 
         if(hartijaId == -1L)
-            return new OrderResponse("Error");
+            return new OrderResponse(MessageUtils.ERROR);
         OrderService.berzaId = berza;
 
         Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
