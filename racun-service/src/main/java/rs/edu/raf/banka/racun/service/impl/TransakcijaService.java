@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.Transakcija;
+import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +31,20 @@ public class TransakcijaService {
 
     public List<Transakcija> getAll(String username){
         return transakcijaRepository.findByUsername(username);
+    }
+
+    public List<Transakcija> getAll(String username, Date odFilter, Date doFilter){
+        return transakcijaRepository.findByUsername(username);
+    }
+
+    public List<Transakcija> getAll(String username, String valuta){
+        Valuta val = valutaRepository.findValutaByOznakaValute(valuta);
+        return transakcijaRepository.findByUsername(username, val);
+    }
+
+    public List<Transakcija> getAll(String username, String valuta, Date odFilter, Date doFilter){
+        Valuta val = valutaRepository.findValutaByOznakaValute(valuta);
+        return transakcijaRepository.findByUsername(username, val, odFilter, doFilter);
     }
 
     public Transakcija dodajTransakciju(String username, UUID brojRacuna, String opis, String valuta, double iznos){

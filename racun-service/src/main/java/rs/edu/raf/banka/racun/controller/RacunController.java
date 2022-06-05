@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.edu.raf.banka.racun.model.DateFilter;
 import rs.edu.raf.banka.racun.requests.RezervacijaRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
@@ -37,9 +38,19 @@ public class RacunController {
     }
 
     @GetMapping(value = "/transakcije", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getTransakcije(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getTransakcije(@RequestHeader("Authorization") String token, @RequestBody DateFilter filter) {
         String username = userService.getUserByToken(token);
-        return ResponseEntity.ok(transakcijaService.getAll(username)); //Pregled svojih transakcija
+        if(filter == null || filter.from == null || filter.to == null)
+            return ResponseEntity.ok(transakcijaService.getAll(username)); //Pregled svojih transakcija
+        return ResponseEntity.ok(transakcijaService.getAll(username, filter.from, filter.to));
+    }
+
+    @GetMapping(value = "/transakcije/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getTransakcijeValuta(@RequestHeader("Authorization") String token, @PathVariable String valuta, @RequestBody DateFilter filter) {
+        String username = userService.getUserByToken(token);
+        if(filter == null || filter.from == null || filter.to == null)
+            return ResponseEntity.ok(transakcijaService.getAll(username, valuta));
+        return ResponseEntity.ok(transakcijaService.getAll(username, valuta, filter.from, filter.to));
     }
 
     @GetMapping(value = "/stanje/{racun}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
