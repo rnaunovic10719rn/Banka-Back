@@ -12,6 +12,7 @@ import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.service.impl.BerzaService;
+import rs.edu.raf.banka.berza.service.impl.HartijaService;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
 import rs.edu.raf.banka.berza.service.impl.UserService;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
@@ -27,16 +28,19 @@ public class BerzaController {
     private final UserService userService;
     private final OrderService orderService;
     private final ModelMapper modelMapper;
+    private HartijaService hartijaService;
 
     @Autowired
     public BerzaController(BerzaService berzaService,
                            OrderService orderService,
                            UserService userService,
-                           ModelMapper modelMapper){
+                           ModelMapper modelMapper,
+                           HartijaService hartijaService){
         this.berzaService = berzaService;
         this.orderService = orderService;
         this.userService = userService;
         this.modelMapper = modelMapper;
+        this.hartijaService = hartijaService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -98,6 +102,13 @@ public class BerzaController {
 
     private OrderDto convertToDto(Order order) {
         return modelMapper.map(order, OrderDto.class);
+    }
+
+
+
+    @GetMapping(value = "/hartijeWithSettlementDate", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeTimeseries(){
+        return ResponseEntity.ok(hartijaService.getAllNearSettlement());
     }
 
 }

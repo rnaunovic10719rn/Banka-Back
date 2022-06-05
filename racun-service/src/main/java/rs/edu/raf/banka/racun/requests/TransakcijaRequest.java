@@ -10,7 +10,11 @@ public class TransakcijaRequest {
     private UUID brojRacuna;
     private String opis;
     private String valutaOznaka;
-    private double iznos;
-
+    private Long orderId;
+    private double uplata;
+    private double isplata;
+    private double rezervisano;
+    private double rezervisanoKoristi;
+    private Boolean lastSegment;
 
 }

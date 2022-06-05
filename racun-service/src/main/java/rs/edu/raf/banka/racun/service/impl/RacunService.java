@@ -26,7 +26,7 @@ public class RacunService {
         racun.setBrojRacuna(UUID.randomUUID());
         racun.setTipRacuna(RacunType.KES);
         racunRepository.save(racun);
-        sredstvaKapitalService.updateStanje(racun.getBrojRacuna(),1000,0,0,"RSD",0); //Pocetno stanje za testiranje
+        sredstvaKapitalService.pocetnoStanje(racun.getBrojRacuna(), "RSD", 1000);
 
         return racun;
     }

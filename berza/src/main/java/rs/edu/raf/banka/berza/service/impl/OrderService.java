@@ -172,10 +172,10 @@ public class OrderService {
         int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
 
         if(order.getOrderAction().equals(OrderAction.BUY) && !canExecuteTransactionBuy(order, bid))
-            return new OrderResponse("You can't proceed this action.");
+            return new OrderResponse(MessageUtils.ERROR);
 
         if(order.getOrderAction().equals(OrderAction.SELL) && !canExecuteTransactionSell(order, ask))
-            return new OrderResponse("You can't proceed this action.");
+            return new OrderResponse(MessageUtils.ERROR);
 
         while(kolicina - kolicinaZaTransakciju > 0){
             //transakcija fixe delay
@@ -288,12 +288,12 @@ public class OrderService {
                 return new OrderStatusResponse(true, MessageUtils.ORDER_APPROVED);
 
             if(differenceInHours(dateFormat.parse(closeTime), date))
-                return new OrderStatusResponse(false, "Berza je trenutno u after-hours stanju.");
+                return new OrderStatusResponse(false, MessageUtils.STOCK_AFTERHOURS);
 
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return new OrderStatusResponse(false, "Berza ne radi.");
+        return new OrderStatusResponse(false, MessageUtils.STOCK_CLOSED);
     }
 
     private boolean isOverlapping(Date start, Date end, Date timeToCheck){
