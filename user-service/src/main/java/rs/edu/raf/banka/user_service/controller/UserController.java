@@ -51,15 +51,15 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/limit-change/{id}")
+    @PostMapping("/limit-change/")
     @ApiOperation("Changes agent's limit")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<?> changeLimit(@PathVariable long id, @RequestBody ChangeLimitForm changeLimitForm){
-        Optional<User> user = userService.getUserById(id);
-        if(user.isEmpty())
+    public ResponseEntity<?> changeLimit(@RequestHeader("Authorization") String token, @RequestBody ChangeLimitForm changeLimitForm){
+        User user = userService.getUserByToken(token);
+        if(user == null) {
             return ResponseEntity.notFound().build();
-        User u = user.get();
-        userService.changeLimit(u, changeLimitForm.getLimit());
+        }
+        userService.changeLimit(user, changeLimitForm.getLimitDelta());
         return ResponseEntity.ok().build();
     }
 
