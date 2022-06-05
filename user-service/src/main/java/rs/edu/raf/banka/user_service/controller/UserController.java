@@ -51,7 +51,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/limit-change/")
+    @PostMapping("/limit-change")
     @ApiOperation("Changes agent's limit")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
     public ResponseEntity<?> changeLimit(@RequestHeader("Authorization") String token, @RequestBody ChangeLimitForm changeLimitForm){

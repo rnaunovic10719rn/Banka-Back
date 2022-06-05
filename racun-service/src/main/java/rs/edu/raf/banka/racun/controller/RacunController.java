@@ -34,7 +34,7 @@ public class RacunController {
 
     @PostMapping(value = "/transakcija", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> dodajTransakciju(@RequestHeader("Authorization") String token, @RequestBody TransakcijaRequest transakcijaRequest) {
-        Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi());
+        Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment());
         if(t == null) {
             return ResponseEntity.badRequest().body("bad request");
         }

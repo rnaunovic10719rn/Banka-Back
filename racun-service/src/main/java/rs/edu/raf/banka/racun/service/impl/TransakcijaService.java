@@ -59,7 +59,7 @@ public class TransakcijaService {
     }
 
     public List<Transakcija> getAll(String username, Date odFilter, Date doFilter){
-        return transakcijaRepository.findByUsername(username);
+        return transakcijaRepository.findByUsername(username, odFilter, doFilter);
     }
 
     public List<Transakcija> getAll(String username, String valuta){
@@ -73,7 +73,7 @@ public class TransakcijaService {
     }
 
     @Transactional
-    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, double uplata, double isplata, double rezervisano, double rezervisanoKoristi){
+    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, double rezervisanoKoristi, Boolean lastSegment){
         String username = userService.getUserByToken(token); //Read id from token
 
         // KORAK 1: Uzmi objekat Racuna i Valute.
@@ -105,8 +105,20 @@ public class TransakcijaService {
 
         sredstvaKapital = skList.get(0);
 
+        Double rezervisanoTransakcije = transakcijaRepository.getRezervisanoForOrder(orderId);
+        if (rezervisanoTransakcije == null)
+            rezervisanoTransakcije = 0.0;
+
         Double novoStanje = sredstvaKapital.getUkupno() + uplata - isplata;
-        Double novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoKoristi;
+        Double novoRezervisano;
+        if (rezervisanoTransakcije + rezervisano - rezervisanoKoristi >= 0) {
+            if (lastSegment && rezervisanoTransakcije + rezervisano - rezervisanoKoristi > 0) {
+                rezervisano = rezervisano - (rezervisanoTransakcije + rezervisano - rezervisanoKoristi);
+            }
+            novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoKoristi;
+        } else {
+            novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoTransakcije;
+        }
         Double novoRaspolozivo = novoStanje - novoRezervisano;
         Double limitDelta = rezervisano + (isplata-rezervisanoKoristi);
 
@@ -123,6 +135,7 @@ public class TransakcijaService {
         t.setRacun(racun);
         t.setUsername(username);
         t.setValuta(valuta);
+        t.setOrderId(orderId);
         t.setDatumVreme(new Date());
         t.setOpis(opis);
         t.setUplata(uplata);

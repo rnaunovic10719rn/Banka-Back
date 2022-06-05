@@ -22,7 +22,7 @@ public class Transakcija {
 
     private Date datumVreme;
 
-    private long orderId;
+    private Long orderId;
     private String username;
     private String opis;
 

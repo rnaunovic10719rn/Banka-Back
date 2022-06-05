@@ -13,6 +13,7 @@ public interface TransakcijaRepository extends JpaRepository<Transakcija,Long> {
     @Query("SELECT T FROM Transakcija T WHERE T.username=:username ORDER BY T.datumVreme DESC")
     List<Transakcija> findByUsername(String username);
 
+
     @Query("SELECT T FROM Transakcija T WHERE T.username=:username AND T.datumVreme >=:odFilter AND T.datumVreme <=:odFilter ORDER BY T.datumVreme DESC")
     List<Transakcija> findByUsername(String username, Date odFilter, Date doFilter);
 
@@ -21,4 +22,8 @@ public interface TransakcijaRepository extends JpaRepository<Transakcija,Long> {
 
     @Query("SELECT T FROM Transakcija T WHERE T.username=:username AND T.valuta=:valuta AND T.datumVreme >=:odFilter AND T.datumVreme <=:odFilter ORDER BY T.datumVreme DESC")
     List<Transakcija> findByUsername(String username, Valuta valuta, Date odFilter, Date doFilter);
+
+    @Query("SELECT SUM(rezervisano) - SUM(rezervisanoKoristi) FROM Transakcija WHERE orderId = :orderId")
+    Double getRezervisanoForOrder(Long orderId);
+
 }
