@@ -13,7 +13,6 @@ import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
-
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
@@ -57,6 +56,20 @@ public class TransakcijaService {
 
     public List<Transakcija> getAll(String username){
         return transakcijaRepository.findByUsername(username);
+    }
+
+    public List<Transakcija> getAll(String username, Date odFilter, Date doFilter){
+        return transakcijaRepository.findByUsername(username, odFilter, doFilter);
+    }
+
+    public List<Transakcija> getAll(String username, String valuta){
+        Valuta val = valutaRepository.findValutaByKodValute(valuta);
+        return transakcijaRepository.findByUsername(username, val);
+    }
+
+    public List<Transakcija> getAll(String username, String valuta, Date odFilter, Date doFilter){
+        Valuta val = valutaRepository.findValutaByKodValute(valuta);
+        return transakcijaRepository.findByUsername(username, val, odFilter, doFilter);
     }
 
     @Transactional
