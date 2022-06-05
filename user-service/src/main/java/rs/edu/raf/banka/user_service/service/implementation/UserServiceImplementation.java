@@ -78,9 +78,20 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
-    public void changeLimit(User user, Double limit) {
-        user.setLimit(limit);
+    public void changeLimit(User user, Double limitDelta) {
+        if(!user.getRole().toString().equals("ROLE_AGENT")) {
+            return;
+        }
+        if(user.getLimit() == null) {
+            user.setLimit(0.0);
+        }
+        if(user.getLimitUsed() == null) {
+            user.setLimitUsed(0.0);
+        }
+        Double newLimitUsed = user.getLimitUsed() + limitDelta;
+        user.setLimitUsed(newLimitUsed);
         userRepository.save(user);
+        return;
     }
 
     @Override

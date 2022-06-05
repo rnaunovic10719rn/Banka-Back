@@ -5,5 +5,5 @@ import rs.edu.raf.banka.racun.model.Valuta;
 
 public interface ValutaRepository extends JpaRepository<Valuta,Long> {
 
-    Valuta findValutaByOznakaValute(String oznaka);
+    Valuta findValutaByKodValute(String kodValute);
 }
