@@ -42,7 +42,7 @@ public class RacunController {
     }
 
     @GetMapping(value = "/transakcije", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getTransakcije(@RequestHeader("Authorization") String token, @RequestBody DateFilter filter) {
+    public ResponseEntity<?> getTransakcije(@RequestHeader("Authorization") String token, @RequestBody(required = false) DateFilter filter) {
         String username = userService.getUserByToken(token);
         if(filter == null || filter.from == null || filter.to == null)
             return ResponseEntity.ok(transakcijaService.getAll(username)); //Pregled svojih transakcija
@@ -50,7 +50,7 @@ public class RacunController {
     }
 
     @GetMapping(value = "/transakcije/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getTransakcijeValuta(@RequestHeader("Authorization") String token, @PathVariable String valuta, @RequestBody DateFilter filter) {
+    public ResponseEntity<?> getTransakcijeValuta(@RequestHeader("Authorization") String token, @PathVariable String valuta, @RequestBody(required = false) DateFilter filter) {
         String username = userService.getUserByToken(token);
         if(filter == null || filter.from == null || filter.to == null)
             return ResponseEntity.ok(transakcijaService.getAll(username, valuta));
