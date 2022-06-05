@@ -1,8 +1,10 @@
 package rs.edu.raf.banka.racun.service.impl;
 
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 
+import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
@@ -24,30 +26,26 @@ public class SredstvaKapitalService {
     }
 
     public SredstvaKapital getAll(UUID racun, String valuta) {
-        return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByOznakaValute(valuta));
+        return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta));
     }
 
-    public SredstvaKapital updateStanje(UUID racun, double iznos, double rezervisano, double rezervisanoKoristi, String valuta,long hartijeOdVrednostiID) {
-        SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByOznakaValute(valuta));
-
-        if (sredstvaKapital != null) { //Provera inicijalnog kreiranja racuna
-            if(sredstvaKapital.getUkupno() + iznos<0){
-                return null;
-            }
-            sredstvaKapital.setUkupno(sredstvaKapital.getUkupno() + iznos);
-            sredstvaKapital.setRezervisano(sredstvaKapital.getRezervisano() + rezervisano - rezervisanoKoristi);
-            sredstvaKapital.setRaspolozivo(sredstvaKapital.getUkupno() - rezervisano);
-
-        } else {
-            sredstvaKapital = new SredstvaKapital();
-            sredstvaKapital.setRacun(racunRepository.findByBrojRacuna(racun));
-            sredstvaKapital.setUkupno(iznos);
-            sredstvaKapital.setRezervisano(rezervisano - rezervisanoKoristi);
-            sredstvaKapital.setRaspolozivo(sredstvaKapital.getUkupno() - rezervisano);
-            sredstvaKapital.setValuta(valutaRepository.findValutaByOznakaValute(valuta)); //inicijana valuta
+    public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, double ukupno) {
+        Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
+        if(racun == null) {
+            return null;
+        }
+        Valuta valuta = valutaRepository.findValutaByKodValute(kodValute);
+        if(valuta == null) {
+            return null;
         }
 
-        sredstvaKapital.setHaritjeOdVrednostiID(hartijeOdVrednostiID);
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setRacun(racun);
+        sredstvaKapital.setValuta(valuta);
+        sredstvaKapital.setUkupno(ukupno);
+        sredstvaKapital.setRezervisano(0);
+        sredstvaKapital.setRaspolozivo(ukupno);
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 }
