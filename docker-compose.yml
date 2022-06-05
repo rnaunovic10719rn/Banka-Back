@@ -130,6 +130,7 @@ services:
     build: ./racun-service
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-racun:5432/postgres
+      racun.user-service-url: http://korisnicki-servis:8080/api/limit-change
     ports:
       - "8083:8083"
     links:
