@@ -63,13 +63,11 @@ public class TransakcijaService {
     }
 
     public List<Transakcija> getAll(String username, String valuta){
-        Valuta val = valutaRepository.findValutaByKodValute(valuta);
-        return transakcijaRepository.findByUsername(username, val);
+        return transakcijaRepository.findByUsername(username, valuta);
     }
 
     public List<Transakcija> getAll(String username, String valuta, Date odFilter, Date doFilter){
-        Valuta val = valutaRepository.findValutaByKodValute(valuta);
-        return transakcijaRepository.findByUsername(username, val, odFilter, doFilter);
+        return transakcijaRepository.findByUsername(username, valuta, odFilter, doFilter);
     }
 
     @Transactional
