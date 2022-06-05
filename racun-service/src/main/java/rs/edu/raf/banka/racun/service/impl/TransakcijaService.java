@@ -2,6 +2,7 @@ package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -11,6 +12,7 @@ import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
+import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -29,8 +31,12 @@ public class TransakcijaService {
     private final TransakcijaRepository transakcijaRepository;
     private final SredstvaKapitalRepository sredstvaKapitalRepository;
     private final ValutaRepository valutaRepository;
+    private final UserService userService;
 
     private final EntityManager entityManager;
+
+    @Value("${racun.user-service-url}")
+    private String USER_SERVICE_URL;
 
     @Autowired
     public TransakcijaService(RacunRepository racunRepository,
@@ -38,12 +44,14 @@ public class TransakcijaService {
                               TransakcijaRepository transakcijaRepository,
                               SredstvaKapitalRepository sredstvaKapitalRepository,
                               ValutaRepository valutaRepository,
+                              UserService userService,
                               EntityManager entityManager) {
         this.racunRepository = racunRepository;
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaRepository = transakcijaRepository;
         this.sredstvaKapitalRepository = sredstvaKapitalRepository;
         this.valutaRepository = valutaRepository;
+        this.userService = userService;
         this.entityManager = entityManager;
     }
 
@@ -52,7 +60,9 @@ public class TransakcijaService {
     }
 
     @Transactional
-    public Transakcija dodajTransakciju(String username, UUID brojRacuna, String opis, String kodValute, double uplata, double isplata, double rezervisano, double rezervisanoKoristi){
+    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, double uplata, double isplata, double rezervisano, double rezervisanoKoristi){
+        String username = userService.getUserByToken(token); //Read id from token
+
         // KORAK 1: Uzmi objekat Racuna i Valute.
         Racun racun = racunRepository.findByBrojRacuna(brojRacuna);
         if (racun == null) {
@@ -85,6 +95,7 @@ public class TransakcijaService {
         Double novoStanje = sredstvaKapital.getUkupno() + uplata - isplata;
         Double novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoKoristi;
         Double novoRaspolozivo = novoStanje - novoRezervisano;
+        Double limitDelta = rezervisano + (isplata-rezervisanoKoristi);
 
         if(novoRaspolozivo < 0) {
             log.error("dodajTransakciju: novo raspolozivo is < 0 ({})", novoRaspolozivo);
@@ -108,6 +119,7 @@ public class TransakcijaService {
 
         t = transakcijaRepository.save(t);
         sredstvaKapitalRepository.save(sredstvaKapital);
+        HttpUtils.updateUserLimit(USER_SERVICE_URL, token, limitDelta);
 
         return t;
     }
