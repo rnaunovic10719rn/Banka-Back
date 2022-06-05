@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import rs.edu.raf.banka.racun.controller.RacunController;
+import rs.edu.raf.banka.racun.model.DateFilter;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
@@ -22,8 +23,7 @@ import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
 
-import java.util.Arrays;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,6 +51,7 @@ public class RacunControllerTest {
     private ObjectMapper objectMapper;
 
     TransakcijaRequest transakcijaRequest = initTransakcijaRequest();
+    DateFilter dateFilter = initDateFilter();
 
     String validJWToken = initValidJWT();
     String invalidJWToken = initInvalidJWT();
@@ -62,10 +63,10 @@ public class RacunControllerTest {
     @Test
     void testGetStanjeRacuna() throws Exception {
         when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
-        when(sredstvaKapitalService.getAll(mockRacun,mockValuta)).thenReturn(new SredstvaKapital());
+        when(sredstvaKapitalService.getAll(mockRacun, mockValuta)).thenReturn(new SredstvaKapital());
 
 
-        mockMvc.perform(get("/api/racun/stanje/{racun}/{valuta}",mockRacun,mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken))
+        mockMvc.perform(get("/api/racun/stanje/{racun}/{valuta}", mockRacun, mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken))
                 .andExpect(status().isOk());
     }
 
@@ -74,7 +75,7 @@ public class RacunControllerTest {
         when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
 
 
-        when(transakcijaService.dodajTransakciju("Bearer " +validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment())).thenReturn(new Transakcija());
+        when(transakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment())).thenReturn(new Transakcija());
 
         mockMvc.perform(post("/api/racun/transakcija").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,22 +84,67 @@ public class RacunControllerTest {
     }
 
     @Test
-    void testGetTransakcije() throws Exception {
+    void testDodavanjeTransakcijeNull() throws Exception {
         when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
 
 
-        when(transakcijaService.dodajTransakciju("Bearer " +validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment())).thenReturn(new Transakcija());
+        when(transakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment())).thenReturn(null);
 
         mockMvc.perform(post("/api/racun/transakcija").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(transakcijaRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testGetTransakcijeSaValutom() throws Exception {
+        when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
+        List<Transakcija> list = new ArrayList<>();
+
+        when(transakcijaService.getAll("mockUsername", mockValuta)).thenReturn(list);
+
+        mockMvc.perform(get("/api/racun/transakcije/{valuta}", mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void testGetTransakcijeSaValutomiFilterom() throws Exception {
+        when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
+        List<Transakcija> list = new ArrayList<>();
 
+        when(transakcijaService.getAll("mockUsername", mockValuta, dateFilter.from, dateFilter.to)).thenReturn(list);
 
+        mockMvc.perform(get("/api/racun/transakcije/{valuta}", mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dateFilter)))
+                .andExpect(status().isOk());
+    }
 
+    @Test
+    void testGetTransakcije() throws Exception {
+        when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
+        List<Transakcija> list = new ArrayList<>();
 
+        when(transakcijaService.getAll("mockUsername")).thenReturn(list);
+
+        mockMvc.perform(get("/api/racun/transakcije", mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetTransakcijeIFilterom() throws Exception {
+        when(userService.getUserByToken(validJWToken)).thenReturn("mockUsername");
+        List<Transakcija> list = new ArrayList<>();
+
+        when(transakcijaService.getAll("mockUsername", dateFilter.from, dateFilter.to)).thenReturn(list);
+
+        mockMvc.perform(get("/api/racun/transakcije", mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(dateFilter)))
+                .andExpect(status().isOk());
+    }
 
 
     public static String asJsonString(final Object obj) {
@@ -110,17 +156,17 @@ public class RacunControllerTest {
     }
 
 
-    String initValidJWT(){
+    String initValidJWT() {
         return JWT.create()
-                .withSubject(dummyName+",ADMIN_ROLE")
+                .withSubject(dummyName + ",ADMIN_ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"CREATE_USER", "LIST_USERS", "EDIT_USER", "MY_EDIT", "DELETE_USER"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
     }
 
-    String initInvalidJWT(){
+    String initInvalidJWT() {
         return JWT.create()
-                .withSubject(dummyName+",ROLE")
+                .withSubject(dummyName + ",ROLE")
                 .withIssuer("mock")
                 .withClaim("permissions", Arrays.asList(new String[]{"X_LIST_USERS", "DUMMY_FAKE_PERMISSION"}))
                 .sign(Algorithm.HMAC256("secret".getBytes()));
@@ -141,5 +187,13 @@ public class RacunControllerTest {
 
         return tr;
     }
-  
+
+    private DateFilter initDateFilter() {
+        DateFilter df = new DateFilter();
+        df.from = new Date();
+        df.to = new Date();
+
+        return df;
+    }
+
 }
