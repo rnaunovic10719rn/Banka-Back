@@ -97,7 +97,7 @@ public class TransakcijaService {
             rezervisanoTransakcije = 0.0;
 
         Double novoStanje = sredstvaKapital.getUkupno() + uplata - isplata;
-        Double novoRezervisano = 0.0;
+        Double novoRezervisano;
         if (rezervisanoTransakcije + rezervisano - rezervisanoKoristi >= 0) {
             if (lastSegment && rezervisanoTransakcije + rezervisano - rezervisanoKoristi > 0) {
                 rezervisano = rezervisano - (rezervisanoTransakcije + rezervisano - rezervisanoKoristi);
@@ -106,7 +106,6 @@ public class TransakcijaService {
         } else {
             novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoTransakcije;
         }
-        System.err.println(novoRezervisano);
         Double novoRaspolozivo = novoStanje - novoRezervisano;
         Double limitDelta = rezervisano + (isplata-rezervisanoKoristi);
 
