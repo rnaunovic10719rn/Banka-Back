@@ -3,7 +3,9 @@ package rs.edu.raf.banka.racun.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
@@ -36,6 +38,9 @@ public class TransakcijaService {
 
     @Value("${racun.user-service-url}")
     private String USER_SERVICE_URL;
+
+    @Value("${racun.forex-quote-url}")
+    private String FOREX_EXCHANGE_RATE_URL;
 
     @Autowired
     public TransakcijaService(RacunRepository racunRepository,
@@ -91,7 +96,7 @@ public class TransakcijaService {
     }
 
     @Transactional
-    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, double rezervisanoKoristi, Boolean lastSegment){
+    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, Boolean lastSegment){
         String username = userService.getUserByToken(token); //Read id from token
 
         // KORAK 1: Uzmi objekat Racuna i Valute.
@@ -123,32 +128,45 @@ public class TransakcijaService {
 
         sredstvaKapital = skList.get(0);
 
-        Double rezervisanoTransakcije = transakcijaRepository.getRezervisanoForOrder(orderId);
-        if (rezervisanoTransakcije == null)
-            rezervisanoTransakcije = 0.0;
-
+        // Izracunaj novo ukupno stanje na racunu
         Double novoStanje = sredstvaKapital.getUkupno() + uplata - isplata;
-        Double novoRezervisano;
-        if (rezervisanoTransakcije + rezervisano - rezervisanoKoristi >= 0) {
-            if (lastSegment && rezervisanoTransakcije + rezervisano - rezervisanoKoristi > 0) {
-                rezervisano = rezervisano - (rezervisanoTransakcije + rezervisano - rezervisanoKoristi);
+
+        // Izracunaj koliko se rezervisanih sredstava koristi u transakciji
+        Double rezervisanoKoristi = 0.0;
+        // Pokupi koliko je preostalo rezervisanih sredstava za taj order
+        Double rezervisanoForOrder = transakcijaRepository.getRezervisanoForOrder(orderId);
+        if (rezervisanoForOrder != null) {
+            if(rezervisanoForOrder > isplata) {
+                rezervisanoKoristi = isplata;
+            } else {
+                rezervisanoKoristi = rezervisanoForOrder;
             }
-            novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoKoristi;
-        } else {
-            novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoTransakcije;
         }
+
+        // Ukoliko je poslednji segmet, proveri da li treba izvrsiti povracaj rezervisanih sredstava, u slucaju da je ostao visak
+        if (lastSegment && rezervisanoForOrder != null && rezervisanoForOrder + rezervisano - rezervisanoKoristi > 0) {
+            rezervisano += -1 * (rezervisanoForOrder - rezervisanoKoristi);
+        }
+
+        // Izracunaj novo rezervisano i raspolozivo
+        Double novoRezervisano = sredstvaKapital.getRezervisano() + rezervisano - rezervisanoKoristi;
         Double novoRaspolozivo = novoStanje - novoRezervisano;
+
+        // Izracunaj promenu limita korisnika
         Double limitDelta = rezervisano + (isplata-rezervisanoKoristi);
 
+        // Provera da li je novo raspolozivo u plusu (ako nije, nemamo sredstva na racunu, pa treba odbiti transakciju)
         if(novoRaspolozivo < 0) {
             log.error("dodajTransakciju: novo raspolozivo is < 0 ({})", novoRaspolozivo);
             return null;
         }
 
+        // Azuriranje vrednosti sredstava
         sredstvaKapital.setUkupno(novoStanje);
         sredstvaKapital.setRezervisano(novoRezervisano);
         sredstvaKapital.setRaspolozivo(novoRaspolozivo);
 
+        // Pravljenje transakcije
         Transakcija t = new Transakcija();
         t.setRacun(racun);
         t.setUsername(username);
@@ -161,9 +179,24 @@ public class TransakcijaService {
         t.setRezervisano(rezervisano);
         t.setRezervisanoKoristi(rezervisanoKoristi);
 
+        // Racunanje i izmena limita
+        // Konverzija iz ne-RSD valutu u RSD
+        if(limitDelta != 0) {
+            if (!kodValute.equalsIgnoreCase("RSD")) {
+                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, kodValute, "RSD");
+                if (resp.getBody() == null) {
+                    return null;
+                }
+                ForexPodaciDto fpd = resp.getBody();
+                limitDelta *= fpd.getExchangeRate();
+            }
+            // Poziv user servisu da azurira limit
+            HttpUtils.updateUserLimit(USER_SERVICE_URL, token, limitDelta);
+        }
+
+        // Cuvanje podataka
         t = transakcijaRepository.save(t);
         sredstvaKapitalRepository.save(sredstvaKapital);
-        HttpUtils.updateUserLimit(USER_SERVICE_URL, token, limitDelta);
 
         return t;
     }
