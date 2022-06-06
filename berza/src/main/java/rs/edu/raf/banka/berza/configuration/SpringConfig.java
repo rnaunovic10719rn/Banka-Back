@@ -28,9 +28,9 @@ public class SpringConfig {
     @Bean
     public Config alphavantageApiClient() {
         Config cfg = Config.builder()
-            .key("RFBL3MU0LAQJD3Q2")
-            .timeOut(10)
-            .build();
+                .key("INSERT_API_KEY")
+                .timeOut(10)
+                .build();
         AlphaVantage.api().init(cfg);
 
         return cfg;
