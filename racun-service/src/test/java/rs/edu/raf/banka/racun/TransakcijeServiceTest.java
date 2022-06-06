@@ -2,6 +2,7 @@ package rs.edu.raf.banka.racun;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,10 +12,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -24,6 +22,7 @@ import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
+import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
@@ -52,7 +51,7 @@ public class TransakcijeServiceTest {
     TransakcijaService transakcijaService;
 
     @Spy
-    HttpUtils httpUtils = new HttpUtils();
+    HttpUtils httpUtils;
 
     @Mock
     RacunRepository racunRepository;
@@ -88,7 +87,7 @@ public class TransakcijeServiceTest {
     @Value("${racun.user-service-url}")
     private String USER_SERVICE_URL;
 
-    /*
+
     @Test
     void testDodavanjeTransakcije() throws NoSuchFieldException {
 
@@ -108,24 +107,22 @@ public class TransakcijeServiceTest {
         given(racunRepository.findByBrojRacuna(any())).willReturn(r);
 
         when(valutaRepository.findValutaByKodValute(transakcijaRequest.getValutaOznaka())).thenReturn(v);
-        given(sredstvaKapitalRepository.findByRacunAndValuta(any(),any())).willReturn(sredstvaKapital);
+        given(sredstvaKapitalRepository.findByRacunAndValuta(any(), any())).willReturn(sredstvaKapital);
 
         given(entityManager.createQuery(anyString())).willReturn(query);
 
         List<SredstvaKapital> skList = new ArrayList<>();
         skList.add(sredstvaKapital);
 
-
-
         given(query.getResultList()).willReturn(skList);
 
-        when(transakcijaRepository.save(any())).thenReturn(t);
-        when(sredstvaKapitalRepository.save(any())).thenReturn(sredstvaKapital);
+       // when(transakcijaRepository.save(any())).thenReturn(t);
+       // when(sredstvaKapitalRepository.save(any())).thenReturn(sredstvaKapital);
 
-        //assertEquals(transakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment()),t);
+        assertEquals(transakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment()), null);
+
     }
-    
-     */
+
 
 
     private TransakcijaRequest initTransakcijaRequest() {
@@ -135,7 +132,7 @@ public class TransakcijeServiceTest {
         tr.setValutaOznaka(mockValuta);
         tr.setOrderId(1L);
         tr.setUplata(1000);
-        tr.setIsplata(0);
+        tr.setIsplata(10000);
         tr.setRezervisanoKoristi(0);
         tr.setRezervisano(0);
         tr.setLastSegment(false);
