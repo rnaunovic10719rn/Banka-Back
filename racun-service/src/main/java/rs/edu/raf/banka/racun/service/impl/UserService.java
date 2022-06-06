@@ -22,7 +22,17 @@ public class UserService {
         }
     }
 
-    public String[] getRoleByToken(String token) {
+    public String getRoleByToken(String token) {
+        try {
+            DecodedJWT decodedToken = decodeToken(token);
+            return decodedToken.getSubject().split(",")[1];
+        } catch (JWTVerificationException e) {
+            // TODO find a better exception for this case
+            throw new UsernameNotFoundException("Token is invalid");
+        }
+    }
+
+    public String[] getPermissionsByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
 
