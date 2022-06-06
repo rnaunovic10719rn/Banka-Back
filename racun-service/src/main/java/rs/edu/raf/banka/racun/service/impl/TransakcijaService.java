@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
@@ -91,7 +92,7 @@ public class TransakcijaService {
     }
 
     @Transactional
-    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, double rezervisanoKoristi, Boolean lastSegment){
+    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, double rezervisanoKoristi, Boolean lastSegment, KapitalType kapitalType, Long hartijaId){
         String username = userService.getUserByToken(token); //Read id from token
 
         // KORAK 1: Uzmi objekat Racuna i Valute.
@@ -105,15 +106,34 @@ public class TransakcijaService {
             log.error("dodajTransakciju: failed to get valuta {}", kodValute);
             return null;
         }
-        SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByRacunAndValuta(racun, valuta);
-        if (sredstvaKapital == null) {
-            sredstvaKapitalService.pocetnoStanje(brojRacuna, kodValute, 0);
+        if(kapitalType == KapitalType.NOVAC)
+        {
+            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValuta(racun, valuta);
+            if (sredstvaKapital == null) {
+                sredstvaKapitalService.pocetnoStanje(brojRacuna, kodValute, 0);
+            }
+        }
+        else
+        {
+            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndAndHaritjeOdVrednostiID(racun, hartijaId);
+            if (sredstvaKapital == null) {
+                sredstvaKapitalService.pocetnoStanje(brojRacuna, hartijaId, 0);
+            }
         }
 
-        // KORAK 2: Uzmi sredstva za taj racun i ZAKLJUCAJ red.
-        Query query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta");
+        Query query;
+        if(kapitalType == KapitalType.NOVAC)
+        {
+            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
+            query.setParameter("valuta", valuta);
+        }
+        else
+        {
+            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and haritjeOdVrednostiID = :hartijaId and kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
+            query.setParameter("hartijaId", hartijaId);
+
+        }
         query.setParameter("racun", racun);
-        query.setParameter("valuta", valuta);
         query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
         List<SredstvaKapital> skList = query.getResultList();
         if(skList.size() != 1) {
@@ -121,7 +141,7 @@ public class TransakcijaService {
             return null;
         }
 
-        sredstvaKapital = skList.get(0);
+        SredstvaKapital sredstvaKapital = skList.get(0);
 
         Double rezervisanoTransakcije = transakcijaRepository.getRezervisanoForOrder(orderId);
         if (rezervisanoTransakcije == null)

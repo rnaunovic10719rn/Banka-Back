@@ -1,6 +1,7 @@
 package rs.edu.raf.banka.racun.requests;
 
 import lombok.Data;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 
 import java.util.UUID;
 
@@ -16,5 +17,7 @@ public class TransakcijaRequest {
     private double rezervisano;
     private double rezervisanoKoristi;
     private Boolean lastSegment;
+    private KapitalType type;
+    private long hartijaId;
 
 }

@@ -1,6 +1,7 @@
 package rs.edu.raf.banka.racun.service.impl;
 
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 
@@ -29,6 +30,10 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta));
     }
 
+    public SredstvaKapital getAll(UUID racun, Long hartijaId) {
+        return sredstvaKapitalRepository.findByRacunAndAndHaritjeOdVrednostiID(racunRepository.findByBrojRacuna(racun), hartijaId);
+    }
+
     public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, double ukupno) {
         Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
         if(racun == null) {
@@ -46,6 +51,26 @@ public class SredstvaKapitalService {
         sredstvaKapital.setUkupno(ukupno);
         sredstvaKapital.setRezervisano(0);
         sredstvaKapital.setRaspolozivo(ukupno);
+        sredstvaKapital.setKapitalType(KapitalType.NOVAC);
+        sredstvaKapital.setHaritjeOdVrednostiID(-1L);
+        return sredstvaKapitalRepository.save(sredstvaKapital);
+    }
+
+    public SredstvaKapital pocetnoStanje(UUID uuidRacuna, Long hartijaId, double ukupno) {
+        Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
+        if(racun == null) {
+            return null;
+        }
+
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setRacun(racun);
+        sredstvaKapital.setValuta(null);
+        sredstvaKapital.setUkupno(ukupno);
+        sredstvaKapital.setRezervisano(0);
+        sredstvaKapital.setRaspolozivo(ukupno);
+        sredstvaKapital.setKapitalType(KapitalType.NOVAC);
+        sredstvaKapital.setHaritjeOdVrednostiID(hartijaId);
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 }
