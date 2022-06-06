@@ -18,7 +18,7 @@ public class UserService {
             return decodedToken.getSubject().split(",")[0];
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new UsernameNotFoundException("bad credentials");
         }
     }
 
@@ -29,7 +29,7 @@ public class UserService {
             return decodedToken.getSubject().split(",")[1];
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new UsernameNotFoundException("bad credentials");
         }
     }
 
@@ -40,7 +40,7 @@ public class UserService {
             return decodedToken.getClaim("permissions").asArray(String.class);
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new UsernameNotFoundException("bad credentials");
         }
     }
 
