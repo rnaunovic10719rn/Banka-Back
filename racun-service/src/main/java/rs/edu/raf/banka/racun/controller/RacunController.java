@@ -43,18 +43,16 @@ public class RacunController {
 
     @GetMapping(value = "/transakcije", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTransakcije(@RequestHeader("Authorization") String token, @RequestBody(required = false) DateFilter filter) {
-        String username = userService.getUserByToken(token);
         if(filter == null || filter.from == null || filter.to == null)
-            return ResponseEntity.ok(transakcijaService.getAll(username)); //Pregled svojih transakcija
-        return ResponseEntity.ok(transakcijaService.getAll(username, filter.from, filter.to));
+            return ResponseEntity.ok(transakcijaService.getAll(token)); //Pregled svojih transakcija
+        return ResponseEntity.ok(transakcijaService.getAll(token, filter.from, filter.to));
     }
 
     @GetMapping(value = "/transakcije/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTransakcijeValuta(@RequestHeader("Authorization") String token, @PathVariable String valuta, @RequestBody(required = false) DateFilter filter) {
-        String username = userService.getUserByToken(token);
         if(filter == null || filter.from == null || filter.to == null)
-            return ResponseEntity.ok(transakcijaService.getAll(username, valuta));
-        return ResponseEntity.ok(transakcijaService.getAll(username, valuta, filter.from, filter.to));
+            return ResponseEntity.ok(transakcijaService.getAll(token, valuta));
+        return ResponseEntity.ok(transakcijaService.getAll(token, valuta, filter.from, filter.to));
     }
 
     @GetMapping(value = "/stanje/{racun}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -54,20 +54,40 @@ public class TransakcijaService {
         this.entityManager = entityManager;
     }
 
-    public List<Transakcija> getAll(String username){
-        return transakcijaRepository.findByUsername(username);
+    public List<Transakcija> getAll(String token) {
+        String role = userService.getRoleByToken(token);
+        String username = userService.getUserByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return transakcijaRepository.findByUsername(username);
+        else
+            return transakcijaRepository.getAll();
     }
 
-    public List<Transakcija> getAll(String username, Date odFilter, Date doFilter){
-        return transakcijaRepository.findByUsername(username, odFilter, doFilter);
+    public List<Transakcija> getAll(String token, Date odFilter, Date doFilter){
+        String role = userService.getRoleByToken(token);
+        String username = userService.getUserByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return transakcijaRepository.findByUsername(username, odFilter, doFilter);
+        else
+            return transakcijaRepository.getAll(odFilter, doFilter);
     }
 
-    public List<Transakcija> getAll(String username, String valuta){
-        return transakcijaRepository.findByUsername(username, valuta);
+    public List<Transakcija> getAll(String token, String valuta){
+        String role = userService.getRoleByToken(token);
+        String username = userService.getUserByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return transakcijaRepository.findByUsername(username, valuta);
+        else
+            return transakcijaRepository.getAll(valuta);
     }
 
-    public List<Transakcija> getAll(String username, String valuta, Date odFilter, Date doFilter){
-        return transakcijaRepository.findByUsername(username, valuta, odFilter, doFilter);
+    public List<Transakcija> getAll(String token, String valuta, Date odFilter, Date doFilter){
+        String role = userService.getRoleByToken(token);
+        String username = userService.getUserByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return transakcijaRepository.findByUsername(username, valuta, odFilter, doFilter);
+        else
+            return transakcijaRepository.getAll(valuta, odFilter, doFilter);
     }
 
     @Transactional
