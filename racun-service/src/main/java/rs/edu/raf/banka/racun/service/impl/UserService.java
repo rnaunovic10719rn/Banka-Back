@@ -25,6 +25,7 @@ public class UserService {
     public String getRoleByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
+
             return decodedToken.getSubject().split(",")[1];
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
