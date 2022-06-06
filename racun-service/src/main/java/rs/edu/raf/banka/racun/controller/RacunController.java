@@ -60,8 +60,18 @@ public class RacunController {
         return ResponseEntity.ok(transakcijaService.getAll(token, valuta, filter.from, filter.to));
     }
 
+    @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
+        String user = userService.getUserByToken(token);
+         /*
+               TODO Porvera da li je supervizor
+            */
+        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun)));
+
+    }
+
     @GetMapping(value = "/stanje/{racun}/novac/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta) {
+    public ResponseEntity<?> getStanjeValuta(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta) {
         String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor
@@ -70,7 +80,7 @@ public class RacunController {
 
     }
     @GetMapping(value = "/stanje/{racun}/hartija/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable Long hartijaId) {
+    public ResponseEntity<?> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable Long hartijaId) {
         String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor

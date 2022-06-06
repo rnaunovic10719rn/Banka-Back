@@ -26,6 +26,10 @@ public class SredstvaKapitalService {
         this.valutaRepository = valutaRepository;
     }
 
+    public SredstvaKapital getAll(UUID racun) {
+        return sredstvaKapitalRepository.findByRacun(racunRepository.findByBrojRacuna(racun));
+    }
+
     public SredstvaKapital getAll(UUID racun, String valuta) {
         return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta));
     }
