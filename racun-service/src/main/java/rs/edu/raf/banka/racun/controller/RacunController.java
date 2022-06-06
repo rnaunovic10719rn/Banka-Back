@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.model.DateFilter;
 import rs.edu.raf.banka.racun.model.Transakcija;
-import rs.edu.raf.banka.racun.requests.RezervacijaRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
