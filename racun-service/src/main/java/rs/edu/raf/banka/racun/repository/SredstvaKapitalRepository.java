@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface SredstvaKapitalRepository extends JpaRepository<SredstvaKapital,Long> {
 
-    SredstvaKapital findByRacun(Racun racun);
+    List<SredstvaKapital> findAllByRacun(Racun racun);
 
     @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta AND s.kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
     SredstvaKapital findByRacunAndValuta(Racun racun, Valuta valuta);
@@ -25,5 +25,6 @@ public interface SredstvaKapitalRepository extends JpaRepository<SredstvaKapital
 
     @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta AND s.haritjeOdVrednostiID = :hartijaId AND s.kapitalType = :hartijaType")
     List<SredstvaKapital> findAllByRacunAndValutaAndHaritja(Racun racun, Valuta valuta, KapitalType hartijaType, Long hartijaId);
+
 
 }
