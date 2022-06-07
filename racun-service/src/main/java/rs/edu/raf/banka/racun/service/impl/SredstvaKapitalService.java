@@ -34,8 +34,8 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta));
     }
 
-    public SredstvaKapital getAll(UUID racun, Long hartijaId) {
-        return sredstvaKapitalRepository.findByRacunAndAndHaritjeOdVrednostiID(racunRepository.findByBrojRacuna(racun), hartijaId);
+    public SredstvaKapital getAll(UUID racun, String valuta, Long hartijaId) {
+        return sredstvaKapitalRepository.findByRacunAndValutaAndHaritjeOdVrednostiID(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta), hartijaId);
     }
 
     public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, double ukupno) {
@@ -60,16 +60,21 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 
-    public SredstvaKapital pocetnoStanje(UUID uuidRacuna, Long hartijaId, double ukupno) {
+    public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, Long hartijaId, double ukupno) {
         Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
         if(racun == null) {
+            return null;
+        }
+
+        Valuta valuta = valutaRepository.findValutaByKodValute(kodValute);
+        if(valuta == null) {
             return null;
         }
 
         SredstvaKapital sredstvaKapital = new SredstvaKapital();
         sredstvaKapital = new SredstvaKapital();
         sredstvaKapital.setRacun(racun);
-        sredstvaKapital.setValuta(null);
+        sredstvaKapital.setValuta(valuta);
         sredstvaKapital.setUkupno(ukupno);
         sredstvaKapital.setRezervisano(0);
         sredstvaKapital.setRaspolozivo(ukupno);

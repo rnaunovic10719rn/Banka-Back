@@ -106,6 +106,7 @@ public class TransakcijaService {
             log.error("dodajTransakciju: failed to get valuta {}", kodValute);
             return null;
         }
+
         if(kapitalType == KapitalType.NOVAC)
         {
             SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValuta(racun, valuta);
@@ -115,9 +116,9 @@ public class TransakcijaService {
         }
         else
         {
-            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndAndHaritjeOdVrednostiID(racun, hartijaId);
+            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValutaAndHaritjeOdVrednostiID(racun, valuta, hartijaId);
             if (sredstvaKapital == null) {
-                sredstvaKapitalService.pocetnoStanje(brojRacuna, hartijaId, 0);
+                sredstvaKapitalService.pocetnoStanje(brojRacuna, kodValute, hartijaId, 0);
             }
         }
 
@@ -125,15 +126,15 @@ public class TransakcijaService {
         if(kapitalType == KapitalType.NOVAC)
         {
             query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
-            query.setParameter("valuta", valuta);
         }
         else
         {
-            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and haritjeOdVrednostiID = :hartijaId and kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
+            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and haritjeOdVrednostiID = :hartijaId and kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
             query.setParameter("hartijaId", hartijaId);
 
         }
         query.setParameter("racun", racun);
+        query.setParameter("valuta", valuta);
         query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
         List<SredstvaKapital> skList = query.getResultList();
         if(skList.size() != 1) {

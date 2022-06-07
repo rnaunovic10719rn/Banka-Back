@@ -17,13 +17,13 @@ public interface SredstvaKapitalRepository extends JpaRepository<SredstvaKapital
     @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta AND s.kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
     SredstvaKapital findByRacunAndValuta(Racun racun, Valuta valuta);
 
-    @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.haritjeOdVrednostiID = :hartijaId AND s.kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
-    SredstvaKapital findByRacunAndAndHaritjeOdVrednostiID(Racun racun, Long hartijaId);
+    @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta  AND s.haritjeOdVrednostiID = :hartijaId AND s.kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
+    SredstvaKapital findByRacunAndValutaAndHaritjeOdVrednostiID(Racun racun, Valuta valuta, Long hartijaId);
 
     @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta AND s.kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
     List<SredstvaKapital> findAllByRacunAndValuta(Racun racun, Valuta valuta);
 
-    @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.haritjeOdVrednostiID = :hartijaId AND s.kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
-    List<SredstvaKapital> findAllByRacunAndAndHaritjeOdVrednostiID(Racun racun, Long hartijaId);
+    @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta AND s.haritjeOdVrednostiID = :hartijaId AND s.kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC")
+    List<SredstvaKapital> findAllByRacunAndValutaAndHaritjeOdVrednostiID(Racun racun, Valuta valuta, Long hartijaId);
 
 }

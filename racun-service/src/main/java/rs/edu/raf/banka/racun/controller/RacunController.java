@@ -79,13 +79,13 @@ public class RacunController {
         return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun),valuta));
 
     }
-    @GetMapping(value = "/stanje/{racun}/hartija/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable Long hartijaId) {
+    @GetMapping(value = "/stanje/{racun}/hartija/{valuta}/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta, @PathVariable Long hartijaId) {
         String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor
             */
-        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun), hartijaId));
+        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun), valuta, hartijaId));
 
     }
 
