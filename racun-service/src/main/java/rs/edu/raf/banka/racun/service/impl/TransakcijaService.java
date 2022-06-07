@@ -116,7 +116,7 @@ public class TransakcijaService {
         }
         else
         {
-            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValutaAndHaritjeOdVrednostiID(racun, valuta, hartijaId);
+            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValutaAndHaritja(racun, valuta, kapitalType, hartijaId);
             if (sredstvaKapital == null) {
                 sredstvaKapitalService.pocetnoStanje(brojRacuna, kodValute, hartijaId, 0);
             }

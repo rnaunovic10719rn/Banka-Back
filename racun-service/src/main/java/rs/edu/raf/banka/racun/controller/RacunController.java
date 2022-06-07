@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.DateFilter;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.RezervacijaRequest;
@@ -79,13 +80,14 @@ public class RacunController {
         return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun),valuta));
 
     }
-    @GetMapping(value = "/stanje/{racun}/hartija/{valuta}/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta, @PathVariable Long hartijaId) {
+    @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun,@PathVariable String hartijaType, @PathVariable Long hartijaId, @PathVariable String valuta) {
         String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor
             */
-        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun), valuta, hartijaId));
+        String type = "EUR";
+        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun), valuta, KapitalType.valueOf(hartijaType), hartijaId));
 
     }
 

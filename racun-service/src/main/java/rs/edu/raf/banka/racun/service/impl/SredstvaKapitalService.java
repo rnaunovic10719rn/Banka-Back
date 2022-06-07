@@ -34,8 +34,8 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta));
     }
 
-    public SredstvaKapital getAll(UUID racun, String valuta, Long hartijaId) {
-        return sredstvaKapitalRepository.findByRacunAndValutaAndHaritjeOdVrednostiID(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta), hartijaId);
+    public SredstvaKapital getAll(UUID racun, String valuta, KapitalType hartijaType, Long hartijaId) {
+        return sredstvaKapitalRepository.findByRacunAndValutaAndHaritja(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta),hartijaType, hartijaId);
     }
 
     public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, double ukupno) {
