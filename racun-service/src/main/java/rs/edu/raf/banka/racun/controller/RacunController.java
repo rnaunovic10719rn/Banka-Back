@@ -1,17 +1,16 @@
 package rs.edu.raf.banka.racun.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.model.DateFilter;
 import rs.edu.raf.banka.racun.model.Transakcija;
-import rs.edu.raf.banka.racun.requests.RezervacijaRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
+import org.modelmapper.ModelMapper;
 
 import java.util.UUID;
 
@@ -23,12 +22,14 @@ public class RacunController {
     private final SredstvaKapitalService sredstvaKapitalService;
     private final TransakcijaService transakcijaService;
     private final UserService userService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService) {
+    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService, ModelMapper modelMapper) {
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaService = transakcijaService;
         this.userService = userService;
+        this.modelMapper = modelMapper;
     }
 
 
@@ -58,14 +59,17 @@ public class RacunController {
         return ResponseEntity.ok(transakcijaService.getAll(token, valuta, filter.from, filter.to));
     }
 
-    @GetMapping(value = "/stanje/{racun}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta) {
-        String user = userService.getUserByToken(token);
-         /*
-               TODO Porvera da li je supervizor
-            */
-        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun),valuta));
+    @GetMapping(value = "/stanjeSupervisor", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeSupervisor(@RequestHeader("Authorization") String token) {
 
+        return ResponseEntity.ok(sredstvaKapitalService.findSredstvaKapitalSupervisor(token));
     }
+
+    @GetMapping(value = "/stanjeAgent", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeAgent(@RequestHeader("Authorization") String token) {
+
+        return ResponseEntity.ok(sredstvaKapitalService.findSredstvaKapitalAgent(token));
+    }
+
 
 }
