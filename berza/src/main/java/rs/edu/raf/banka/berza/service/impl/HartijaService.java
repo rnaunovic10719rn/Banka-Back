@@ -1,6 +1,5 @@
 package rs.edu.raf.banka.berza.service.impl;
 
-import org.springframework.data.repository.query.ParameterOutOfBoundsException;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.model.HartijaOdVrednosti;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
@@ -18,8 +17,11 @@ public class HartijaService
     private FuturesUgovoriRepository futuresUgovoriRepository;
     private AkcijeRepository akcijeRepository;
 
-    public HartijaService(HartijaRepository hartijaRepository){
+    public HartijaService(HartijaRepository hartijaRepository, ForexRepository forexRepository, FuturesUgovoriRepository futuresUgovoriRepository, AkcijeRepository akcijeRepository){
         this.hartijaRepository = hartijaRepository;
+        this.forexRepository = forexRepository;
+        this.futuresUgovoriRepository = futuresUgovoriRepository;
+        this.akcijeRepository = akcijeRepository;
     }
 
     //TODO: Call influx update on selected types
