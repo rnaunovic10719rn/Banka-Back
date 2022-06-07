@@ -1,7 +1,11 @@
 package rs.edu.raf.banka.berza.service.impl;
 
+import org.springframework.data.repository.query.ParameterOutOfBoundsException;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.model.HartijaOdVrednosti;
+import rs.edu.raf.banka.berza.repository.AkcijeRepository;
+import rs.edu.raf.banka.berza.repository.ForexRepository;
+import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.repository.HartijaRepository;
 
 import java.util.List;
@@ -10,6 +14,9 @@ import java.util.List;
 public class HartijaService
 {
     private HartijaRepository hartijaRepository;
+    private ForexRepository forexRepository;
+    private FuturesUgovoriRepository futuresUgovoriRepository;
+    private AkcijeRepository akcijeRepository;
 
     public HartijaService(HartijaRepository hartijaRepository){
         this.hartijaRepository = hartijaRepository;
@@ -18,5 +25,17 @@ public class HartijaService
     //TODO: Call influx update on selected types
     public List<HartijaOdVrednosti> getAllNearSettlement() {
         return hartijaRepository.getAllNearSettlement();
+    }
+
+    public HartijaOdVrednosti findHartijaByIdAndType(Long id, String hartijaType)
+    {
+        if(hartijaType == "AKCIJA")
+            return akcijeRepository.findAkcijeById(id);
+        else if(hartijaType == "FOREX")
+            return forexRepository.findForexById(id);
+        else if (hartijaType == "FUTURE_UGOVOR")
+            return futuresUgovoriRepository.findFuturesById(id);
+        else
+            throw new ArrayIndexOutOfBoundsException("hartijaType");
     }
 }

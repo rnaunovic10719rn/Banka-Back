@@ -111,4 +111,9 @@ public class BerzaController {
         return ResponseEntity.ok(hartijaService.getAllNearSettlement());
     }
 
+    @GetMapping(value = "/hartija/{hartijaType}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeTimeseries( @PathVariable String hartijaType,  @PathVariable long id){
+        return ResponseEntity.ok(hartijaService.findHartijaByIdAndType(id, hartijaType));
+    }
+
 }
