@@ -59,16 +59,6 @@ public class RacunController {
         return ResponseEntity.ok(transakcijaService.getAll(token, valuta, filter.from, filter.to));
     }
 
-    @GetMapping(value = "/stanje/{racun}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta) {
-        String username = userService.getUsernameByToken(token);
-         /*
-               TODO Porvera da li je supervizor
-            */
-        return ResponseEntity.ok(sredstvaKapitalService.getAll(UUID.fromString(racun),valuta));
-
-    }
-
     @GetMapping(value = "/stanjeSupervisor", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getStanjeSupervisor(@RequestHeader("Authorization") String token) {
 
@@ -79,12 +69,6 @@ public class RacunController {
     public ResponseEntity<?> getStanjeAgent(@RequestHeader("Authorization") String token) {
 
         return ResponseEntity.ok(sredstvaKapitalService.findSredstvaKapitalAgent(token));
-    }
-
-    @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(userService.getUserByToken(token));
-
     }
 
 
