@@ -61,7 +61,7 @@ public class TransakcijaService {
 
     public List<Transakcija> getAll(String token) {
         String role = userService.getRoleByToken(token);
-        String username = userService.getUserByToken(token);
+        String username = userService.getUsernameByToken(token);
         if (role.equals("ROLE_AGENT"))
             return transakcijaRepository.findByUsername(username);
         else
@@ -70,7 +70,7 @@ public class TransakcijaService {
 
     public List<Transakcija> getAll(String token, Date odFilter, Date doFilter){
         String role = userService.getRoleByToken(token);
-        String username = userService.getUserByToken(token);
+        String username = userService.getUsernameByToken(token);
         if (role.equals("ROLE_AGENT"))
             return transakcijaRepository.findByUsername(username, odFilter, doFilter);
         else
@@ -79,7 +79,7 @@ public class TransakcijaService {
 
     public List<Transakcija> getAll(String token, String valuta){
         String role = userService.getRoleByToken(token);
-        String username = userService.getUserByToken(token);
+        String username = userService.getUsernameByToken(token);
         if (role.equals("ROLE_AGENT"))
             return transakcijaRepository.findByUsername(username, valuta);
         else
@@ -88,7 +88,7 @@ public class TransakcijaService {
 
     public List<Transakcija> getAll(String token, String valuta, Date odFilter, Date doFilter){
         String role = userService.getRoleByToken(token);
-        String username = userService.getUserByToken(token);
+        String username = userService.getUsernameByToken(token);
         if (role.equals("ROLE_AGENT"))
             return transakcijaRepository.findByUsername(username, valuta, odFilter, doFilter);
         else
@@ -97,7 +97,7 @@ public class TransakcijaService {
 
     @Transactional
     public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, Boolean lastSegment){
-        String username = userService.getUserByToken(token); //Read id from token
+        String username = userService.getUsernameByToken(token); //Read id from token
 
         // KORAK 1: Uzmi objekat Racuna i Valute.
         Racun racun = racunRepository.findByBrojRacuna(brojRacuna);
