@@ -6,6 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.*;
+import rs.edu.raf.banka.racun.dto.AgentSredstvaKapitalDto;
+import rs.edu.raf.banka.racun.dto.SredstvaKapitalDto;
 
 import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
@@ -15,6 +17,7 @@ import java.time.Duration;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 @Service
@@ -25,12 +28,14 @@ public class SredstvaKapitalService {
     private final ValutaRepository valutaRepository;
     private final WebClient webClient;
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
+    private final UserService userService;
 
-    public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository, RacunRepository racunRepository, ValutaRepository valutaRepository,WebClient webClient) {
+    public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository, RacunRepository racunRepository, ValutaRepository valutaRepository,WebClient webClient, UserService userService) {
         this.sredstvaKapitalRepository = sredstvaKapitalRepository;
         this.racunRepository = racunRepository;
         this.valutaRepository = valutaRepository;
         this.webClient = webClient;
+        this.userService = userService;
     }
 
     public List<SredstvaKapital> getAll(UUID racun) {
@@ -55,7 +60,7 @@ public class SredstvaKapitalService {
             return null;
         }
 
-        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        SredstvaKapital sredstvaKapital;
         sredstvaKapital = new SredstvaKapital();
         sredstvaKapital.setRacun(racun);
         sredstvaKapital.setValuta(valuta);
@@ -134,5 +139,34 @@ public class SredstvaKapitalService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ForexPodaciDto>() {})
                 .block(REQUEST_TIMEOUT);
+    }
+
+    public List<SredstvaKapitalDto> findSredstvaKapitalSupervisor(String token) {
+        String role = userService.getRoleByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return null;
+        List<SredstvaKapital> sredstvaKapitals = sredstvaKapitalRepository.findAll();
+        List<SredstvaKapitalDto> sredstvaKapitalDtos = new ArrayList<>();
+        for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
+            SredstvaKapitalDto s = new SredstvaKapitalDto();
+            s.setKodValute(sredstvaKapital.getValuta().getKodValute());
+            s.setUkupno(sredstvaKapital.getUkupno());
+            s.setRezervisano(sredstvaKapital.getRezervisano());
+            s.setRaspolozivo(sredstvaKapital.getRaspolozivo());
+            sredstvaKapitalDtos.add(s);
+        }
+        return sredstvaKapitalDtos;
+    }
+
+    public AgentSredstvaKapitalDto findSredstvaKapitalAgent(String token) {
+        String role = userService.getRoleByToken(token);
+        if (role.equals("ROLE_AGENT")) {
+            AgentSredstvaKapitalDto agentSredstvaKapitalDto = new AgentSredstvaKapitalDto();
+            agentSredstvaKapitalDto.setLimit(userService.getUserByToken(token).getLimit());
+            agentSredstvaKapitalDto.setLimitUsed(userService.getUserByToken(token).getLimitUsed());
+            agentSredstvaKapitalDto.setRaspolozivoAgentu(agentSredstvaKapitalDto.getLimit() - agentSredstvaKapitalDto.getLimitUsed());
+            return agentSredstvaKapitalDto;
+        }
+           return null;
     }
 }

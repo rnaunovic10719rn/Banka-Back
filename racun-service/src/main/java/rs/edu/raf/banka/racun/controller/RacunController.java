@@ -1,6 +1,5 @@
 package rs.edu.raf.banka.racun.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
+import org.modelmapper.ModelMapper;
 
 import java.util.UUID;
 
@@ -26,22 +26,27 @@ public class RacunController {
     private final SredstvaKapitalService sredstvaKapitalService;
     private final TransakcijaService transakcijaService;
     private final UserService userService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService) {
+    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService, ModelMapper modelMapper) {
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaService = transakcijaService;
         this.userService = userService;
+        this.modelMapper = modelMapper;
     }
 
 
     @PostMapping(value = "/transakcija", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> dodajTransakciju(@RequestHeader("Authorization") String token, @RequestBody TransakcijaRequest transakcijaRequest) {
+        if(transakcijaRequest.getOrderId() == null && transakcijaRequest.getRezervisano() > 0) {
+            return ResponseEntity.badRequest().body("bad request");
+        }
         Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest.getBrojRacuna()
                 , transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka()
                 , transakcijaRequest.getOrderId(), transakcijaRequest.getUplata()
                 , transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano()
-                , transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment()
+                , transakcijaRequest.getLastSegment()
                 , transakcijaRequest.getType(), transakcijaRequest.getHartijaId());
         if (t == null) {
             return ResponseEntity.badRequest().body("bad request");
@@ -63,28 +68,36 @@ public class RacunController {
         return ResponseEntity.ok(transakcijaService.getAll(token, valuta, filter.from, filter.to));
     }
 
+    @GetMapping(value = "/stanjeSupervisor", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeSupervisor(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(sredstvaKapitalService.findSredstvaKapitalSupervisor(token));
+
+
+    }
     @GetMapping(value = "/stanje/{racun}/novac/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SredstvaKapital> getStanjeValuta(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta) {
-        String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor
             */
         return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun),valuta));
-
     }
     @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SredstvaKapital> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String hartijaType, @PathVariable Long hartijaId, @PathVariable String valuta) {
-        String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor
             */
         return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun), valuta, KapitalType.valueOf(hartijaType), hartijaId));
-
     }
+
+    @GetMapping(value = "/stanjeAgent", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeAgent(@RequestHeader("Authorization") String token) {
+
+        return ResponseEntity.ok(sredstvaKapitalService.findSredstvaKapitalAgent(token));
+    }
+
 
     @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<KapitalStanje> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
-        String user = userService.getUserByToken(token);
          /*
                TODO Porvera da li je supervizor
             */

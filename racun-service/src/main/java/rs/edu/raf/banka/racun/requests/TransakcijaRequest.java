@@ -15,7 +15,6 @@ public class TransakcijaRequest {
     private double uplata;
     private double isplata;
     private double rezervisano;
-    private double rezervisanoKoristi;
     private Boolean lastSegment;
     private KapitalType type;
     private long hartijaId;
