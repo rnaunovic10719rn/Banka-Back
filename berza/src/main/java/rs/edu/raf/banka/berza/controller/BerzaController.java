@@ -112,7 +112,7 @@ public class BerzaController {
     }
 
     @GetMapping(value = "/hartija/{hartijaType}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAkcijeTimeseries( @PathVariable String hartijaType,  @PathVariable long id){
+    public ResponseEntity<?> getHartija(@PathVariable String hartijaType,  @PathVariable long id){
         return ResponseEntity.ok(hartijaService.findHartijaByIdAndType(id, hartijaType));
     }
 
