@@ -1,11 +1,11 @@
-package rs.edu.raf.banka.racun.model;
+package rs.edu.raf.banka.racun.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class KapitalStanje {
+public class KapitalStanjeDto {
     double ukupno;
     double novac;
     double forex;
