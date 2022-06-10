@@ -6,7 +6,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestTemplate;
+import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
+import rs.edu.raf.banka.racun.dto.UserDto;
 import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
+
+import java.net.URI;
 
 public class HttpUtils {
 
@@ -20,6 +24,29 @@ public class HttpUtils {
 
         HttpEntity<ChangeUserLimitRequest> entity = new HttpEntity<>(newLimit, headers);
         return restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+    }
+
+    public static ResponseEntity<ForexPodaciDto> getExchangeRate(String url, String token, String from, String to) {
+        URI main = URI.create(url);
+        URI exchangeRateUrl = main.resolve("./" + from + "/" + to);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", token);
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        return restTemplate.exchange(exchangeRateUrl.toString(), HttpMethod.GET, entity, ForexPodaciDto.class);
+    }
+
+    public static ResponseEntity<UserDto> getUser(String url, String token) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", token);
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<UserDto> response = restTemplate.exchange(url, HttpMethod.GET, entity, UserDto.class);
+
+        return response;
     }
 
 }
