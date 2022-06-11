@@ -95,7 +95,7 @@ public class RacunController {
             return ResponseEntity.badRequest().body("bad request");
         }
         var kapitali = sredstvaKapitalService.getAll(UUID.fromString(racun));
-        var result = sredstvaKapitalService.getSumStanje(kapitali);
+        var result = sredstvaKapitalService.getSumStanje(kapitali, token);
         return ResponseEntity.ok(result);
 
     }

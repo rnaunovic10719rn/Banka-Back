@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    List<Order> findOrderByOrderStatus(OrderStatus orderStatus);
+    List<Order> findOrderByOrderStatusAndDone(OrderStatus orderStatus, Boolean done);
 
-    List<Order> findOrderByOrderStatusAndUserId(OrderStatus orderStatus, Long userId);
+    List<Order> findOrderByUserIdAndDoneAndOrderStatus(Long userId, Boolean done, OrderStatus orderStatus);
 
-    List<Order> findOrdersByUserId(Long userId);
+    List<Order> findOrderByUserId(Long userId);
 
     @Query("SELECT o FROM Order o WHERE (:orderStatus is NULL OR o.orderStatus = :orderStatus) AND " +
             "(:done IS NULL OR o.done = :done)")

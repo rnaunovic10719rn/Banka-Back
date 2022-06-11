@@ -1,16 +1,9 @@
 package rs.edu.raf.banka.berza.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
-import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesTimeseriesDto;
-import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.dto.request.FuturesTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
@@ -74,6 +67,21 @@ public class FuturesUgovoriPodaciService {
 
         return null;
     }
+
+//    public FuturesPodaciDto getFuturesUgovor(Long id) {
+//        FuturesUgovori future = futuresUgovoriRepository.findFuturesById(id);
+//
+//
+//        List<FuturesPodaciDto> res = influxScrapperService.getFuturesQoute(symbol);
+//        if(res != null && res.size() > 0) {
+//            FuturesPodaciDto futuresPodaciDto = res.get(res.size()-1);
+//            futuresPodaciDto.setId(future.getId());
+//            return futuresPodaciDto;
+//        }
+//
+//
+//        return null;
+//    }
 
     public ZonedDateTime getZonedDateTime() {
         return ZonedDateTime.now().plusDays(2);

@@ -28,6 +28,11 @@ public class FuturesUgovoriPodaciController {
         return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesUgovor(symbol));
     }
 
+//    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> getFuturesUgovor(@PathVariable Long id){
+//        return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesUgovor(id));
+//    }
+
     @GetMapping(value = "/timeseries/{type}/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAkcijeTimeseries(@PathVariable String type, @PathVariable String symbol){
         if(type == null || type.isBlank()) {

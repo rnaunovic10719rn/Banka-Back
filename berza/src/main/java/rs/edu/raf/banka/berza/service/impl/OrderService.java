@@ -49,19 +49,22 @@ public class OrderService {
         return orderRepository.getById(id);
     }
 
+    public List<Order> getOrders(String token) {
+        UserDto user = userService.getUserByToken(token);
+        String role = userService.getUserRoleByToken(token);
+        if (role.equals("ROLE_ADMIN")) {
+            return orderRepository.findOrderByUserId(user.getId());
+        }
+        return orderRepository.findAll();
+    }
+
     public List<Order> getOrders(String token, String status, Boolean done) {
         UserDto user = userService.getUserByToken(token);
-        UserRole role = UserRole.valueOf(user.getRoleName());
-
-        if(role.equals(UserRole.ROLE_AGENT)) {
-            if(status.length() == 0 && done == null)
-                return orderRepository.findOrdersByUserId(user.getId());
-            return orderRepository.findOrderByOrderStatusAndUserId(OrderStatus.valueOf(status.toUpperCase()), user.getId());
+        String role = userService.getUserRoleByToken(token);
+        if(role.equals("ROLE_AGENT")) {
+            return orderRepository.findOrderByUserIdAndDoneAndOrderStatus(user.getId(), done, OrderStatus.valueOf(status.toUpperCase()));
         }
-
-        if(status.length() == 0 && done == null)
-            return orderRepository.findAll();
-        return orderRepository.findOrderByOrderStatus(OrderStatus.valueOf(status.toUpperCase()));
+        return orderRepository.findOrderByOrderStatusAndDone(OrderStatus.valueOf(status.toUpperCase()), done);
     }
 
     public ApproveRejectOrderResponse approveOrder(String userRole, Long id){

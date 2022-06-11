@@ -56,7 +56,7 @@ public class Order {
     private OrderStatus orderStatus;
 
     @ColumnDefault("false")
-    private Boolean done;
+    private Boolean done = false;
     private Long orderManagerId;
     private Date lastModified;
 }

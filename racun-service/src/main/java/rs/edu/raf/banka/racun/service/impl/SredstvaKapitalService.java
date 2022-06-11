@@ -118,8 +118,9 @@ public class SredstvaKapitalService {
                 if (resp.getBody() == null) {
                     return null;
                 }
-                var rate = getRSDForexRate(valuta);
-                rates.put(valuta, rate.getExchangeRate());
+
+                //var rate = getRSDForexRate(valuta);
+                //rates.put(valuta, rate.getExchangeRate());
             }
             double value = kapital.getUkupno() * rates.get(valuta);
             values.compute(kapital.getKapitalType(), (k,v) -> v + value);
