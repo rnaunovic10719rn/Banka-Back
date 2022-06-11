@@ -5,15 +5,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
-import rs.edu.raf.banka.racun.model.DateFilter;
-import rs.edu.raf.banka.racun.model.KapitalStanje;
+import rs.edu.raf.banka.racun.dto.DateFilter;
+import rs.edu.raf.banka.racun.dto.KapitalStanjeDto;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
-import rs.edu.raf.banka.racun.utils.HttpUtils;
 import org.modelmapper.ModelMapper;
 
 import java.util.UUID;
@@ -74,13 +73,6 @@ public class RacunController {
 
 
     }
-    @GetMapping(value = "/stanje/{racun}/novac/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SredstvaKapital> getStanjeValuta(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String valuta) {
-         /*
-               TODO Porvera da li je supervizor
-            */
-        return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun),valuta));
-    }
     @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SredstvaKapital> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String hartijaType, @PathVariable Long hartijaId, @PathVariable String valuta) {
          /*
@@ -97,12 +89,13 @@ public class RacunController {
 
 
     @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<KapitalStanje> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
-         /*
-               TODO Porvera da li je supervizor
-            */
+    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
+        String role = userService.getRoleByToken(token);
+        if (role.equals("ROLE_AGENT")) {
+            return ResponseEntity.badRequest().body("bad request");
+        }
         var kapitali = sredstvaKapitalService.getAll(UUID.fromString(racun));
-        var result = sredstvaKapitalService.getSumStanje(kapitali);
+        var result = sredstvaKapitalService.getSumStanje(kapitali, token);
         return ResponseEntity.ok(result);
 
     }
