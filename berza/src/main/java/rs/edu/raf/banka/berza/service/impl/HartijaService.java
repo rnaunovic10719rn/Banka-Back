@@ -32,11 +32,11 @@ public class HartijaService
 
     public HartijaOdVrednosti findHartijaByIdAndType(Long id, String hartijaType)
     {
-        if(hartijaType == "AKCIJA")
+        if(hartijaType.equalsIgnoreCase("AKCIJA"))
             return akcijeRepository.findAkcijeById(id);
-        else if(hartijaType == "FOREX")
+        else if(hartijaType.equalsIgnoreCase("FOREX"))
             return forexRepository.findForexById(id);
-        else if (hartijaType == "FUTURE_UGOVOR")
+        else if (hartijaType.equalsIgnoreCase("FUTURE_UGOVOR"))
             return futuresUgovoriRepository.findFuturesById(id);
         else
             throw new ArrayIndexOutOfBoundsException("hartijaType");
