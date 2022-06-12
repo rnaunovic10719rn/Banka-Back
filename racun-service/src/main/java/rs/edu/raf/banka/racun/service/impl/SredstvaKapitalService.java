@@ -38,6 +38,9 @@ public class SredstvaKapitalService {
     @Value("${racun.futures-quote-url}")
     private String FUTURES_BY_ID_URL;
 
+    @Value("${racun.berzaById-url}")
+    private String BERZA_BY_ID_URL;
+
     @Autowired
     public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository,
                                   TransakcijaRepository transakcijaRepository,
@@ -112,8 +115,8 @@ public class SredstvaKapitalService {
 
                 AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
 
-                //TODO: iz berze dohvatiti valutu za hartiju pa onda za tu valutu racunati rate, za sada se pretpostavlja da je dolar
-                ForexPodaciDto forexPodaciDto = this.getForex(token);
+                BerzaDto berzaDto = this.getBerza(akcijePodaciDto.getBerzaId());
+                ForexPodaciDto forexPodaciDto = this.getForex(token, berzaDto.getKodValute());
 
                 Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
@@ -123,8 +126,7 @@ public class SredstvaKapitalService {
 
                 FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
 
-                //TODO: iz berze dohvatiti valutu za hartiju pa onda za tu valutu racunati rate, za sada se pretpostavlja da je dolar
-                ForexPodaciDto forexPodaciDto = this.getForex(token);
+                ForexPodaciDto forexPodaciDto = this.getForex(token, "USD");
 
                 Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
@@ -146,8 +148,8 @@ public class SredstvaKapitalService {
                 AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
                 kapitalPoTipuHartijeDto.setOznakaHartije(akcijePodaciDto.getTicker());
-                kapitalPoTipuHartijeDto.setOpisHartije(akcijePodaciDto.getOpisHartije());
-                //kapitalPoTipuHartijeDto.setBerza("NYSE");
+                BerzaDto berzaDto = this.getBerza(akcijePodaciDto.getBerzaId());
+                kapitalPoTipuHartijeDto.setBerza(berzaDto.getOznakaBerze());
                 Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
                 kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
                 Double cena = akcijePodaciDto.getPrice();
@@ -164,7 +166,6 @@ public class SredstvaKapitalService {
                 FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
                 kapitalPoTipuHartijeDto.setOznakaHartije(futuresPodaciDto.getSymbol());
-                //kapitalPoTipuHartijeDto.setOpisHartije(futuresPodaciDto.get);
                 kapitalPoTipuHartijeDto.setBerza("EUREX");
                 Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
                 kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
@@ -213,8 +214,17 @@ public class SredstvaKapitalService {
         return akcijePodaciDto;
     }
 
-    public ForexPodaciDto getForex(String token) {
-        ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, "USD", "RSD");
+    public BerzaDto getBerza(Long id) {
+        ResponseEntity<BerzaDto> berzaResp = HttpUtils.getBerzaById(BERZA_BY_ID_URL, id);
+        if (berzaResp.getBody() == null) {
+            return null;
+        }
+        BerzaDto berzaDto = berzaResp.getBody();
+        return berzaDto;
+    }
+
+    public ForexPodaciDto getForex(String token, String from) {
+        ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, from, "RSD");
         if (fpdResp.getBody() == null) {
             return null;
         }

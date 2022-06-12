@@ -135,6 +135,7 @@ services:
       racun.forex-quote-url: http://berza:8082/api/forex/podaci/
       racun.akcije-quote-url: http://berza:8082/api/akcije/podaci/id/
       racun.futures-quote-url: http://berza:8082/api/futures/podaci/id/
+      racun.berzaById-url: http://berza:8082/api/berza/id/
     ports:
       - "8083:8083"
     links:

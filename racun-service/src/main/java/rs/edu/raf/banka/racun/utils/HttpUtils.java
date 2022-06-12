@@ -6,10 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestTemplate;
-import rs.edu.raf.banka.racun.dto.AkcijePodaciDto;
-import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
-import rs.edu.raf.banka.racun.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.racun.dto.UserDto;
+import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
 
 import java.net.URI;
@@ -60,6 +57,17 @@ public class HttpUtils {
 
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         return restTemplate.exchange(futuresByIdUrl.toString(), HttpMethod.GET, entity, FuturesPodaciDto.class);
+    }
+
+    public static ResponseEntity<BerzaDto> getBerzaById(String url, Long id) {
+        URI main = URI.create(url);
+        URI berzaByIdUrl = main.resolve("./" + id);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        return restTemplate.exchange(berzaByIdUrl.toString(), HttpMethod.GET, entity, BerzaDto.class);
     }
 
     public static ResponseEntity<UserDto> getUser(String url, String token) {

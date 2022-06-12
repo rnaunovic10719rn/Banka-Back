@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class KapitalPoTipuHartijeDto {
     String oznakaHartije;
-    String opisHartije;
     String berza;
     Long kolicinaUVlasnistvu;
     Double cena;
