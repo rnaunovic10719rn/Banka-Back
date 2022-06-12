@@ -79,7 +79,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
     @Override
     public void changeLimit(User user, Double limitDelta) {
-        if(!user.getRole().toString().equals("ROLE_AGENT")) {
+        if(!user.getRole().getName().equals("ROLE_AGENT")) {
             return;
         }
         if(user.getLimit() == null) {

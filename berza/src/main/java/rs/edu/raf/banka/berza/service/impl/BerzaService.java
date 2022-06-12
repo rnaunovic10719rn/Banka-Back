@@ -3,21 +3,15 @@ package rs.edu.raf.banka.berza.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
-import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
-import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.berza.dto.UserDto;
+import rs.edu.raf.banka.berza.dto.*;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.*;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -26,31 +20,38 @@ public class BerzaService {
     private BerzaRepository berzaRepository;
     private AkcijeRepository akcijeRepository;
     private OrderService orderService;
-    private TransakcijaService transakcijaService;
     private AkcijePodaciService akcijePodaciService;
     private ForexPodaciService forexPodaciService;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
+    private PriceService priceService;
 
     private UserService userService;
 
-
     @Autowired
     public BerzaService(BerzaRepository berzaRepository, AkcijeRepository akcijeRepository,
-                        TransakcijaService transakcijaService, OrderService orderService, AkcijePodaciService akcijePodaciService,
+                        OrderService orderService, AkcijePodaciService akcijePodaciService,
                         ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
-                        UserService userService){
+                        UserService userService, PriceService priceService){
         this.berzaRepository = berzaRepository;
         this.akcijeRepository = akcijeRepository;
-        this.transakcijaService = transakcijaService;
         this.orderService = orderService;
         this.akcijePodaciService = akcijePodaciService;
         this.forexPodaciService = forexPodaciService;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
         this.userService = userService;
+        this.priceService = priceService;
     }
 
     public List<Berza> findAll(){
         return berzaRepository.findAll();
+    }
+
+    public BerzaDto findBerza(Long id) {
+        Berza berza = berzaRepository.findBerzaById(id);
+        BerzaDto berzaDto = new BerzaDto();
+        berzaDto.setOznakaBerze(berza.getOznakaBerze());
+        berzaDto.setKodValute(berza.getValuta().getKodValute());
+        return berzaDto;
     }
 
     public Berza findBerza(String oznaka){
@@ -61,71 +62,46 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
-    public OrderResponse makeOrder(String token, String oznakaHartije, String hartijaTipString,
-                                       Integer kolicina, String action,
-                                       Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
-        HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(hartijaTipString.toUpperCase());
-        OrderAction orderAkcija = OrderAction.valueOf(action.toUpperCase());
-        OrderType orderType = getOrderType(limitValue, stopValue);
+    public OrderResponse makeOrder(String token, OrderRequest orderRequest) {
+        // Korak 1: Odredi tip hartije od vrednosti koji se trguje, odredi da li je buy ili sell akcija, odredi koji je tip ordera
+        HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(orderRequest.getHartijaOdVrednostiTip().toUpperCase()); // AKCIJA, FOREX, FUTURES_UGOVOR
+        OrderAction orderAkcija = OrderAction.valueOf(orderRequest.getAkcija().toUpperCase()); // BUY ili SELL
+        OrderType orderType = getOrderType(orderRequest.getLimitValue(), orderRequest.getStopValue()); // MARKET, STOP, LIMIT, STOP_LIMIT
 
+        // Korak 1a: Nije definisana akcija SELL za Forex, posto Forex uvek koristi par (prodajem EUR da bih kupio USD)
         if(hartijaTip.equals(HartijaOdVrednostiType.FOREX) && orderAkcija.equals(OrderAction.SELL)) {
             return new OrderResponse(MessageUtils.ORDER_REJECTED);
         }
 
-        Double ask = 0.0;
-        Double bid = 0.0;
-        Long hartijaId = -1L;
-        Long berza = -1L;
-        if(hartijaTip.equals(HartijaOdVrednostiType.AKCIJA)){
-            AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(oznakaHartije);
-  //          Akcije akcije = akcijeRepository.findAkcijeByOznakaHartije(symbol);
-            if(akcije != null) {
-                hartijaId = akcije.getId();
-                berza = akcije.getBerzaId();
-                //ne postoje podaci o asku, bidu, uzima se trnt cena
-                ask = akcije.getPrice();
-                bid = akcije.getPrice();
-            }
-        }
-        else if(hartijaTip.equals(HartijaOdVrednostiType.FUTURES_UGOVOR)){
-            FuturesPodaciDto futuresUgovori = futuresUgovoriPodaciService.getFuturesUgovor(oznakaHartije);
-//            FuturesUgovori futuresUgovori = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
-            if(futuresUgovori != null) {
-                hartijaId = futuresUgovori.getId();
-//                berza = futuresUgovori.getBerza().getId();
-                ask = futuresUgovori.getHigh();
-                bid = futuresUgovori.getHigh();
-            }
-        }
-        else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)){
-            String split[] = oznakaHartije.split(" ");
-            ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[0], split[1]);
-//            Forex forex = forexRepository.findForexByOznakaHartije(symbol);
-            if(forex != null) {
-                hartijaId = forex.getId();
-//                berza = forex.getBerza().getId();
-                ask = forex.getAsk();
-                bid = forex.getBid();
-            }
-        }
+        // Korak 2: Preuzmi podatke o hartiji o vrednosti
+        AskBidPriceDto askBidPrice = priceService.getAskBidPrice(hartijaTip, orderRequest.getSymbol());
 
-        if(hartijaId == -1L)
+        // Korak 2a: Proveri ispravnost hartije od vrednosti
+        if(askBidPrice.getHartijaId() == -1L)
             return new OrderResponse(MessageUtils.ERROR);
-        OrderService.berzaId = berza;
 
-        Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
+        // Korak 3: Izracunaj ukupnu cenu i proviziju
+        Double ukupnaCena = getPrice(askBidPrice.getAsk(), askBidPrice.getBid(), orderAkcija) * orderRequest.getKolicina();
         Double provizija = getCommission(ukupnaCena, orderType);
 
-        OrderStatus status = getOrderStatus(token, ukupnaCena);
+        // Korak 4: Odredi order status, tj. da li order mora da bude approvovan ili je automatski approvovan
+        String valuta = "USD";
+        if(askBidPrice.getBerza() != null) {
+            valuta = askBidPrice.getBerza().getValuta().getKodValute();
+        }
+        OrderStatus status = getOrderStatus(token, ukupnaCena, valuta);
 
+        // Korak 4a: Uzmi ID korisnika kako bi mogli da vezemo porudzbinu za korisnika
         Long userId = userService.getUserByToken(token).getId();
 
-        Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
-                provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
+        // Korak 5: Sacuvaj order u bazi podataka
+        Order order = orderService.saveOrder(token, orderRequest, userId, askBidPrice.getBerza(), askBidPrice.getHartijaId(), hartijaTip, orderAkcija, ukupnaCena,
+                provizija, orderType, status);
+        if(order == null) {
+            return new OrderResponse(MessageUtils.ERROR);
+        }
 
-        if(status == OrderStatus.APPROVED)
-            orderService.executeOrder(order.getId());
-
+        // Korak 6: Vrati poruku da je order primljen
         return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
@@ -135,15 +111,16 @@ public class BerzaService {
 
         Double toReturn;
         if(orderAction.equals(OrderAction.BUY)) {
-            cene = transakcijaService.findPriceActionBuy(bid);
-            if(cene.size() >= 3)
-                return cene.get(random.nextInt(3));
+            // TODO: Prepraviti ovo.
+//            cene = transakcijaService.findPriceActionBuy(bid);
+//            if(cene.size() >= 3)
+//                return cene.get(random.nextInt(3));
             toReturn = bid;
-        }
-        else {
-            cene = transakcijaService.findPriceActionBuy(ask);
-            if(cene.size() >= 3)
-                return cene.get(random.nextInt(3));
+        } else { // SELL
+            // TODO: Prepraviti ovo.
+//            cene = transakcijaService.findPriceActionBuy(ask);
+//            if(cene.size() >= 3)
+//                return cene.get(random.nextInt(3));
             toReturn = ask;
         }
 
@@ -166,12 +143,16 @@ public class BerzaService {
         return OrderType.MARKET_ORDER;
     }
 
-    private OrderStatus getOrderStatus(String token, double price) {
+    private OrderStatus getOrderStatus(String token, double price, String valuta) {
         UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
 
         if(role.equals(UserRole.ROLE_AGENT)) {
             UserDto user = userService.getUserByToken(token);
             Double presostaoLimit = user.getLimit() - user.getLimitUsed();
+            if(!valuta.equals("RSD")) {
+                ForexPodaciDto exchangeRate = forexPodaciService.getForexBySymbol(valuta, "RSD");
+                price *= exchangeRate.getExchangeRate();
+            }
             if(user.isNeedsSupervisorPermission() || (presostaoLimit - price < 0))
                 return OrderStatus.ON_HOLD;
         }

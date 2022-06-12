@@ -115,6 +115,7 @@ services:
       berza.berze.csv: berze.csv
       berza.inflacije.csv: inflacije.csv
       berza.user-service-url: http://korisnicki-servis:8080/api/user
+      berza.racun-service-url: http://racun-servis:8083/api/
     ports:
       - "8082:8082"
     links:
@@ -131,6 +132,11 @@ services:
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-racun:5432/postgres
       racun.user-service-url: http://korisnicki-servis:8080/api/limit-change
+      racun.user-service-url2: http://korisnicki-servis:8080/api/user
+      racun.forex-quote-url: http://berza:8082/api/forex/podaci/
+      racun.akcije-quote-url: http://berza:8082/api/akcije/podaci/id/
+      racun.futures-quote-url: http://berza:8082/api/futures/podaci/id/
+      racun.berzaById-url: http://berza:8082/api/berza/id/
     ports:
       - "8083:8083"
     links:

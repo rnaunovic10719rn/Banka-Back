@@ -11,7 +11,6 @@ import rs.edu.raf.banka.berza.enums.OrderType;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Data
@@ -22,41 +21,46 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-//    @ManyToOne
-//    private UserAccount userAccount;
     private Long userId;
+    private String username;
 
-    private Long hartijaOdVrednostiId;
-
-    private String oznakaHartije;
-
-    @Enumerated(value = EnumType.STRING)
-    private HartijaOdVrednostiType hartijaOdVrednosti;
-
-    private Integer kolicina;
+    @ManyToOne
+    private Berza berza;
 
     @Enumerated(value = EnumType.STRING)
     private OrderAction orderAction;
-    private Double ukupnaCena;
-    private Double provizija;
-    private Integer limitValue;
-    private Integer stopValue;
-
     @Enumerated(value = EnumType.STRING)
     private OrderType orderType;
-    private boolean AON;
-    private boolean margin;
-
-    //
-    private Double ask;
-    private Double bid;
-
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 
+    @Enumerated(value = EnumType.STRING)
+    private HartijaOdVrednostiType hartijaOdVrednosti;
+    private Long hartijaOdVrednostiId;
+    private String hartijaOdVrednostiSymbol;
+
+    private Integer kolicina;
+    private Integer preostalaKolicina;
+    private Integer backoff = -1;
+
+    private Integer limitValue;
+    private Integer stopValue;
+
+    private Double predvidjenaCena;
+    private Double provizija;
+
+    private boolean AON;
+    private boolean margin;
+
+    // Koriste se samo pri izracunavanju, ne perzistujemo vrednosti
+    @Transient
+    private Double ask;
+    @Transient
+    private Double bid;
+
     @ColumnDefault("false")
-    private Boolean done;
-    private Long orderManagerId;
+    private Boolean done = false;
+
     private Date lastModified;
+
 }
