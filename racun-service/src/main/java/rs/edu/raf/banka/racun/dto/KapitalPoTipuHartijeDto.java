@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KapitalPoTipuHartijeDto {
+    Long id;
     String oznakaHartije;
     String berza;
     Long kolicinaUVlasnistvu;

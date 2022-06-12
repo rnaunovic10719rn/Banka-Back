@@ -126,7 +126,7 @@ public class SredstvaKapitalService {
 
                 FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
 
-                ForexPodaciDto forexPodaciDto = this.getForex(token, "USD");
+                ForexPodaciDto forexPodaciDto = this.getForex(token,"USD");
 
                 Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
@@ -147,6 +147,7 @@ public class SredstvaKapitalService {
             if (kapitalType.equals(KapitalType.AKCIJA.toString())) {
                 AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
+                kapitalPoTipuHartijeDto.setId(akcijePodaciDto.getId());
                 kapitalPoTipuHartijeDto.setOznakaHartije(akcijePodaciDto.getTicker());
                 BerzaDto berzaDto = this.getBerza(akcijePodaciDto.getBerzaId());
                 kapitalPoTipuHartijeDto.setBerza(berzaDto.getOznakaBerze());
@@ -165,6 +166,7 @@ public class SredstvaKapitalService {
             if (kapitalType.equals(KapitalType.FUTURE_UGOVOR.toString())) {
                 FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
+                kapitalPoTipuHartijeDto.setId(futuresPodaciDto.getId());
                 kapitalPoTipuHartijeDto.setOznakaHartije(futuresPodaciDto.getSymbol());
                 kapitalPoTipuHartijeDto.setBerza("EUREX");
                 Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
