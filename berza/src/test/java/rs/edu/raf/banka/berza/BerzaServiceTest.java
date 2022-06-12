@@ -3,21 +3,24 @@ package rs.edu.raf.banka.berza;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.aspectj.lang.annotation.Before;
+import org.hibernate.service.spi.InjectService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
-import rs.edu.raf.banka.berza.enums.OrderAction;
-import rs.edu.raf.banka.berza.enums.OrderStatus;
-import rs.edu.raf.banka.berza.enums.OrderType;
+import rs.edu.raf.banka.berza.dto.UserDto;
+import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.repository.OrderRepository;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.service.impl.*;
 
@@ -28,11 +31,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class BerzaServiceTest {
 
+
     @InjectMocks
     BerzaService berzaService;
-
-    @Mock
-    OrderService orderService;
 
     @Mock
     AkcijePodaciService akcijePodaciService;
@@ -48,6 +49,24 @@ public class BerzaServiceTest {
 
     @Mock
     AkcijeRepository akcijeRepository;
+
+    @Mock
+    OrderRepository orderRepository;
+
+    @Mock
+    UserService userService;
+
+    @InjectMocks
+    OrderService orderService;
+
+    @Mock
+    PriceService priceService;
+
+    @BeforeEach
+    public void setUp() {
+        orderService = Mockito.spy(new OrderService(orderRepository, futuresUgovoriPodaciService, priceService, userService));
+        MockitoAnnotations.initMocks(this);
+    }
 
 
     @Test
@@ -69,15 +88,32 @@ public class BerzaServiceTest {
         berza.setOpenTime("09:00:00");
         berza.setCloseTime("23:00:00");
 
-        when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
-        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L,  berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
-                10.0,1.4000000000000001,OrderType.MARKET_ORDER,true,false, "usd",
-                OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
+        order.setBerza(berza);
 
-        OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                "usd", "AKCIJA",
-                100, "buy", 0, 0, true, false);
+        var user = new UserDto();
+        user.setId(17);
+        user.setRoleName(UserRole.ROLE_ADMIN.toString());
+
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.AKCIJA.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
+        when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
+        when(orderService.saveOrder(request, user.getId(), null,1L, HartijaOdVrednostiType.AKCIJA,OrderAction.BUY,
+                1000.0,7.0,OrderType.MARKET_ORDER, OrderStatus.APPROVED)).thenReturn(order);
+
+        var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M";
+        when(userService.getUserRoleByToken(token)).thenReturn(user.getRoleName());
+        when(userService.getUserByToken(token)).thenReturn(user);
+
+        OrderResponse makeOrderRes = berzaService.makeOrder(token, request);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
 
@@ -102,12 +138,22 @@ public class BerzaServiceTest {
 
         when(futuresUgovoriPodaciService.getFuturesUgovor(any())).thenReturn(futuresUgovori);
 //        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.FUTURES_UGOVOR,100,OrderAction.BUY,
-                10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false,"usd",
-                OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
+
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.FUTURES_UGOVOR.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
+        when(orderService.saveOrder(request,1L, berza,1L, HartijaOdVrednostiType.FUTURES_UGOVOR,OrderAction.BUY,
+                1000.0,2.4,OrderType.STOP_LIMIT_ORDER, OrderStatus.APPROVED)).thenReturn(order);
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                "usd", "FUTURES_UGOVOR",
-                100, "buy", 1, 1, true, false);
+                request);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
 
@@ -131,15 +177,25 @@ public class BerzaServiceTest {
         forex.setAsk(10.0);
         forex.setBid(10.0);
 
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.FOREX.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
+
         when(forexPodaciService.getForexBySymbol(any(), any())).thenReturn(forex);
 //        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.FOREX,100,OrderAction.BUY,
-                10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false, "usd lol",
-                OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
+        when(orderService.saveOrder(request, 1L, berza,1L, HartijaOdVrednostiType.FOREX,OrderAction.BUY,
+                10.0,2.4,OrderType.STOP_LIMIT_ORDER, OrderStatus.APPROVED)).thenReturn(order);
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                "usd lol", "FOREX",
-                100, "buy", 1, 1, true, false);
+                request);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
 
@@ -162,15 +218,24 @@ public class BerzaServiceTest {
         berza.setOpenTime("09:00:00");
         berza.setCloseTime("23:00:00");
 
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.AKCIJA.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
-                10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false, "usd",
-                OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
+        when(orderService.saveOrder(request, 1L, berza,1L, HartijaOdVrednostiType.AKCIJA,OrderAction.BUY,
+                10.0,2.4,OrderType.STOP_LIMIT_ORDER,OrderStatus.APPROVED)).thenReturn(order);
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                "usd", "AKCIJA",
-                100, "buy", 1, 1, true, false);
+                request);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
 
@@ -193,15 +258,25 @@ public class BerzaServiceTest {
         berza.setOpenTime("09:00:00");
         berza.setCloseTime("23:00:00");
 
+
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.AKCIJA.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
-                10.0,2.4,OrderType.LIMIT_ORDER,true,false, "usd",
-                OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
+        when(orderService.saveOrder(request, 1L, berza,1L, HartijaOdVrednostiType.AKCIJA,OrderAction.BUY,
+                10.0,2.4,OrderType.LIMIT_ORDER, OrderStatus.APPROVED)).thenReturn(order);
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                "usd", "AKCIJA",
-                100, "buy", 1, 0, true, false);
+                request);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
 
@@ -224,15 +299,24 @@ public class BerzaServiceTest {
         berza.setOpenTime("09:00:00");
         berza.setCloseTime("23:00:00");
 
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.AKCIJA.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L,  berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
-                10.0,2.4,OrderType.STOP_ORDER,true,false, "usd",
-                OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
+        when(orderService.saveOrder(request, 17L,  berza,1L, HartijaOdVrednostiType.AKCIJA,OrderAction.BUY,
+                10.0,2.4,OrderType.STOP_ORDER, OrderStatus.APPROVED)).thenReturn(order);
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
-                "usd", "AKCIJA",
-                100, "buy", 0, 1, true, false);
+                request);
         assertEquals(new OrderResponse("Order Successful").getMessage(),makeOrderRes.getMessage());
     }
 

@@ -12,6 +12,7 @@ import rs.edu.raf.banka.berza.enums.OrderType;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
 
 import java.util.ArrayList;
@@ -79,8 +80,19 @@ public class OrderServiceTest {
 
         when(orderRepository.save(order)).thenReturn(order);
 
-        assertEquals(OrderAction.SELL, orderService.saveOrder(userAccount, berza, hartijaOdVrednostiId,
-                hartijaOdVrednostiType,kolicina, orderAction,ukupnaCena,provizija,
-                orderType, isAON, isMargin, oznakaHartije, OrderStatus.APPROVED, ask, bid).getOrderAction());
+        var request = new OrderRequest();
+        request.setSymbol(oznakaHartije);
+        request.setHartijaOdVrednostiTip(hartijaOdVrednostiType.toString());
+        request.setAkcija("buy");
+        request.setKolicina(kolicina);
+        //request.setLimitValue();
+        //request.setLimitValue();
+        //request.setStopValue()
+        request.setAllOrNoneFlag(isAON);
+        request.setMarginFlag(isMargin);
+
+        assertEquals(OrderAction.SELL, orderService.saveOrder(request, userAccount, berza, hartijaOdVrednostiId,
+                hartijaOdVrednostiType, orderAction,ukupnaCena,provizija,
+                orderType, OrderStatus.APPROVED).getOrderAction());
     }
 }
