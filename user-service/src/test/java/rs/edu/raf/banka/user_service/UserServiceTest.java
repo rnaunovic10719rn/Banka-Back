@@ -63,6 +63,15 @@ class UserServiceTest {
     }
 
     @Test
+    void testSaveUser() {
+        User user = new User("UserX", "X");
+
+        given(userRepository.save(user)).willReturn(user);
+
+        assertEquals(user, userService.saveUser(user));
+    }
+
+    @Test
     void testSaveRole() {
         Role role = new Role();
 
@@ -70,6 +79,7 @@ class UserServiceTest {
 
         assertEquals(role, userService.saveRole(role));
     }
+
 
     @Test
     void testGetUserInvalid() {
