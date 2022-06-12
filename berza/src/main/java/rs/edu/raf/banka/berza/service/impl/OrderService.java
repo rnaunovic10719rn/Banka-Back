@@ -312,7 +312,7 @@ public class OrderService {
         for(Order o: orders) {
             if(!o.getOrderStatus().equals(OrderStatus.APPROVED)) {
                 log.info("Skipping order {} because it's not approved", o.getId());
-                return;
+                continue;
             }
 
             log.info("Getting prices for order {}", o.getId());
