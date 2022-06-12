@@ -1,21 +1,20 @@
 package rs.edu.raf.banka.berza.service.impl;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
-import rs.edu.raf.banka.berza.model.Transakcija;
-import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
-import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
-import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,29 +23,24 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@Slf4j
 public class OrderService {
 
-    public static Long berzaId;
+    private final Integer DEAFULT_BACKOFF = 2;
 
     private OrderRepository orderRepository;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
-    private BerzaRepository berzaRepository;
     private UserService userService;
 
-    private TransakcijaService transakcijaService;
-
     @Autowired
-    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
-                        TransakcijaService transakcijaService, BerzaRepository berzaRepository, UserService userService){
+    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, UserService userService){
         this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
-        this.transakcijaService = transakcijaService;
-        this.berzaRepository = berzaRepository;
         this.userService = userService;
     }
 
-    public Order getOrder(Long id) {
-        return orderRepository.getById(id);
+    private List<Order> getOrderNotDone() {
+        return orderRepository.findOrderByDoneFalse();
     }
 
     public List<Order> getOrders(String token) {
@@ -83,8 +77,6 @@ public class OrderService {
         order.setLastModified(new Date());
         orderRepository.save(order);
 
-        executeOrder(id);
-
         return new ApproveRejectOrderResponse(MessageUtils.ORDER_APPROVED);
     }
 
@@ -101,15 +93,17 @@ public class OrderService {
         return new ApproveRejectOrderResponse(MessageUtils.ORDER_REJECTED);
     }
 
-    public Order saveOrder(Long userAccount, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
+    public Order saveOrder(Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
                            Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija,
                            OrderType orderType, boolean isAON, boolean isMargin, String oznakaHartije,
                            OrderStatus status, Double ask, Double bid){
         Order order = new Order();
         order.setUserId(userAccount);
+        order.setBerza(berza);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
         order.setKolicina(kolicina);
+        order.setPreostalaKolicina(kolicina);
         order.setOrderAction(orderAction);
         order.setUkupnaCena(ukupnaCena);
         order.setProvizija(provizija);
@@ -125,133 +119,86 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public void finishOrder(Order order){
-        order.setDone(true);
-        order.setLastModified(new Date());
-        orderRepository.save(order);
-    }
-
     /**
      * OBRADA ORDERA
      */
 
-    @Async
-    @Transactional
-    public OrderResponse executeOrder(Long orderId) {
-        Order order = getOrder(orderId);
+    @Scheduled(cron = "*/10 * * * * *") // Every 30 seconds
+    public void executeOrder() {
+        List<Order> orders = getOrderNotDone();
 
-        if(!order.getOrderStatus().equals(OrderStatus.APPROVED))
-            return new OrderResponse(MessageUtils.ORDER_REJECTED);
+        for(Order o: orders) {
+            if(!o.getOrderStatus().equals(OrderStatus.APPROVED)) {
+                log.info("Skipping order {} because it's not approved", o.getId());
+                return;
+            }
 
-        executeTransaction(berzaId, order, order.getAsk(), order.getBid());
-        order.setDone(true);
-        return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
+            log.info("Executing order {}", o.getId());
+            executeTransaction(o);
+        }
     }
 
-    public OrderResponse executeTransaction(Long berzaId, Order order, Double ask, Double bid){
-        boolean flag = true;
-        if(berzaId != -1){
-            OrderStatusResponse orderStatus = getOrderStatus(berzaId);
-            flag = orderStatus.isBerzaOtvorena();
-        }
-        if(order.isAON()){
-            Transakcija transakcija;
-            if(flag)
-                transakcija = transactionOrder(order.getKolicina(), order, ask, bid);
-            else
-                transakcija = transactionOrderWithDelay(order.getKolicina(), order, ask, bid);
-            if(berzaId != -1)
-                addOrderToBerza(order, berzaId);
-            return new OrderResponse("OK");
-        }
-
-        return executeMiniTransactions(berzaId, order, flag, ask, bid);
-    }
-
-    /**
-     * Margin je povezan sa walletom korisnika koji ce biti detaljnije objasnjen u drugoj iteraciji
-     * s obzirom na to, bice obradjen nakon nastavka specifikacije
-     */
-    public OrderResponse executeMiniTransactions(Long berzaId, Order order, boolean flag, Double ask, Double bid){
-        Random random = new Random();
-        int kolicina = order.getKolicina();
-        int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
-
-        if(order.getOrderAction().equals(OrderAction.BUY) && !canExecuteTransactionBuy(order, bid))
-            return new OrderResponse(MessageUtils.ERROR);
-
-        if(order.getOrderAction().equals(OrderAction.SELL) && !canExecuteTransactionSell(order, ask))
-            return new OrderResponse(MessageUtils.ERROR);
-
-        while(kolicina - kolicinaZaTransakciju > 0){
-            //transakcija fixe delay
-            if(flag)
-                transactionOrder(kolicinaZaTransakciju, order, ask, bid);
-            else
-                transactionOrderWithDelay(kolicinaZaTransakciju, order, ask, bid);
-
-            kolicina -= kolicinaZaTransakciju;
-            kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
-        }
-
-        finishOrder(order);
-
-        return new OrderResponse("OK");
-    }
-
-    Transakcija transactionOrder(Integer transactionAmount, Order order, Double ask, Double bid){
-        /**
-         * MARKET_ORDER se izvrsava odmah, pa nema potrebe da cekamo
-         */
-        if(!order.getOrderType().equals(OrderType.MARKET_ORDER)) {
-            try {
-                int s = new Random().nextInt(((int)(0.24*60/order.getKolicina() * 1000)));
-                Thread.sleep(s);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+    public void executeTransaction(Order order){
+        // Korak 1: Ako je order na berzi, proveri da li je berza otvorena
+        if(order.getBerza() != null){
+            BerzaStatus orderStatus = getBerzaStatus(order.getBerza());
+            Boolean berzaOpen = orderStatus.isBerzaOtvorena();
+            // Ako berza nije otvorena, uradi backoff simulacija, tako da se order izvrsi tek posle n ciklusa
+            if(!berzaOpen) {
+                if(order.getBackoff() == -1) {
+                    order.setBackoff(DEAFULT_BACKOFF);
+                    orderRepository.save(order);
+                    return;
+                } else if(order.getBackoff() > 0) {
+                    order.setBackoff(order.getBackoff() - 1);
+                    orderRepository.save(order);
+                    return;
+                }
             }
         }
-        Transakcija transakcija = new Transakcija();
-        transakcija.setOrder(order);
-        transakcija.setCena(transactionAmount * order.getUkupnaCena());
-        transakcija.setKolicina(transactionAmount);
-        transakcija.setVremeTranskacije(new Date());
-        return transakcijaService.saveTranskacija(transakcija);
-    }
 
-    /**
-     * ukoliko je berza zatvorena prilikom ordera ili je u after-hours, korisnik ceka duze
-     */
-    public Transakcija transactionOrderWithDelay(Integer transactionAmount, Order order, Double ask, Double bid){
-        try {
-            //3s simulaciju 30 minuta
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // Korak 2: Izracunaj kolicinu tog dela ordera
+        Random random = new Random();
+        int kolicina = order.getPreostalaKolicina();
+        int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
+        // Ukoliko je order AON (All or None), izvrsi sve odjednom.
+        if (order.isAON()) {
+            kolicinaZaTransakciju = order.getKolicina();
         }
-        return transactionOrder(transactionAmount, order, ask, bid);
+
+        // Korak 3: Provera da li order moze da se izvsi (relevatno za STOP, LIMIT i STOP_LIMIT ordere)
+        if(order.getOrderAction().equals(OrderAction.BUY) && !canExecuteTransactionBuy(order))
+            return;
+        if(order.getOrderAction().equals(OrderAction.SELL) && !canExecuteTransactionSell(order))
+            return;
+
+        // Korak 4: Izvrsi order.
+        int novaPreostalaKolicina = order.getPreostalaKolicina() - kolicinaZaTransakciju;
+
+        log.info("Executing order {} {} for {} (remaining {})", order.getId(), order.getOrderAction(), kolicinaZaTransakciju, novaPreostalaKolicina);
+
+        order.setPreostalaKolicina(novaPreostalaKolicina);
+        if(novaPreostalaKolicina <= 0) {
+            order.setDone(true);
+            order.setLastModified(new Date());
+        }
+        orderRepository.save(order);
     }
 
-    public void addOrderToBerza(Order order, Long berzaId){
-        Berza berza = berzaRepository.findBerzaById(berzaId);
-        berza.getOrderi().add(order);
-        berzaRepository.save(berza);
-    }
-
-    public boolean canExecuteTransactionBuy(Order order, Double bid){
+    public boolean canExecuteTransactionBuy(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
                 if(order.getUkupnaCena() <= order.getLimitValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue() && order.getUkupnaCena() < bid){
+                if(order.getUkupnaCena() <= order.getLimitValue() && order.getUkupnaCena() < order.getBid()){
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
                 break;
             case STOP_ORDER:
-                if(order.getUkupnaCena() < bid)
+                if(order.getUkupnaCena() < order.getBid())
                     return true;
                 break;
             default:
@@ -260,19 +207,19 @@ public class OrderService {
         return false;
     }
 
-    public boolean canExecuteTransactionSell(Order order, Double ask){
+    public boolean canExecuteTransactionSell(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
                 if(order.getUkupnaCena() > order.getLimitValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue() && order.getUkupnaCena() > ask){
+                if(order.getUkupnaCena() > order.getLimitValue() && order.getUkupnaCena() > order.getAsk()){
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
             case STOP_ORDER:
-                if(order.getUkupnaCena() > ask)
+                if(order.getUkupnaCena() > order.getAsk())
                     return true;
                 break;
             default:
@@ -281,8 +228,7 @@ public class OrderService {
         return false;
     }
 
-    public OrderStatusResponse getOrderStatus(Long id){
-        Berza berza = berzaRepository.findBerzaById(id);
+    public BerzaStatus getBerzaStatus(Berza berza){
         Date date = new Date();
 
         String openTime = berza.getOpenTime();
@@ -291,15 +237,23 @@ public class OrderService {
         DateFormat dateFormat = new SimpleDateFormat("hh:mm");
         try {
             if(isOverlapping(dateFormat.parse(openTime), dateFormat.parse(closeTime), date))
-                return new OrderStatusResponse(true, MessageUtils.ORDER_APPROVED);
+                return new BerzaStatus(true, MessageUtils.ORDER_APPROVED);
 
             if(differenceInHours(dateFormat.parse(closeTime), date))
-                return new OrderStatusResponse(false, MessageUtils.STOCK_AFTERHOURS);
+                return new BerzaStatus(false, MessageUtils.STOCK_AFTERHOURS);
 
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return new OrderStatusResponse(false, MessageUtils.STOCK_CLOSED);
+        return new BerzaStatus(false, MessageUtils.STOCK_CLOSED);
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private class BerzaStatus {
+        private boolean berzaOtvorena;
+        private String poruka;
     }
 
     private boolean isOverlapping(Date start, Date end, Date timeToCheck){

@@ -42,10 +42,6 @@ public class BerzaServiceTest {
     BerzaRepository berzaRepository;
 
     @Mock
-    TransakcijaService transakcijaService;
-
-
-    @Mock
     FuturesUgovoriPodaciService futuresUgovoriPodaciService;
 
     @Mock
@@ -254,18 +250,6 @@ public class BerzaServiceTest {
         Berza berza2 = new Berza();
         when(berzaRepository.findAll()).thenReturn(List.of(new Berza[]{berza1, berza2}));
         assertEquals(2, berzaService.findAll().size());
-    }
-
-    @Test
-    void testAddOrderToBerza(){
-        Order order = new Order();
-        Long berzaId = 1L;
-        Berza berza = new Berza();
-        berza.setOrderi(new ArrayList<>());
-        when(berzaRepository.findBerzaById(berzaId)).thenReturn(berza);
-        when(berzaRepository.save(berza)).thenReturn(berza);
-        orderService.addOrderToBerza(order,berzaId);
-        assertEquals(1,berza.getOrderi().size());
     }
 
     @Test
