@@ -91,7 +91,10 @@ public class OrderServiceTest {
         request.setAllOrNoneFlag(isAON);
         request.setMarginFlag(isMargin);
 
-        assertEquals(OrderAction.SELL, orderService.saveOrder(request, userAccount, berza, hartijaOdVrednostiId,
+        var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M";
+
+
+        assertEquals(OrderAction.SELL, orderService.saveOrder(token, request, userAccount, berza, hartijaOdVrednostiId,
                 hartijaOdVrednostiType, orderAction,ukupnaCena,provizija,
                 orderType, OrderStatus.APPROVED).getOrderAction());
     }
