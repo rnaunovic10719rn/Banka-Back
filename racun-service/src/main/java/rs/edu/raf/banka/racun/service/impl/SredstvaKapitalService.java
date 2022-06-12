@@ -144,7 +144,7 @@ public class SredstvaKapitalService {
             //TODO: treba dopuniti sa opcijama i obaveznicama
             if (sredstvaKapital.getKapitalType().equals(KapitalType.NOVAC))
                 continue;
-            if (kapitalType.equals(KapitalType.AKCIJA.toString())) {
+            if (sredstvaKapital.getKapitalType().equals(KapitalType.AKCIJA) && kapitalType.equals(KapitalType.AKCIJA.toString())) {
                 AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
                 kapitalPoTipuHartijeDto.setOznakaHartije(akcijePodaciDto.getTicker());
@@ -162,7 +162,7 @@ public class SredstvaKapitalService {
                 kapitalPoTipuHartijeDto.setProfit(profit);
                 toReturn.add(kapitalPoTipuHartijeDto);
             }
-            if (kapitalType.equals(KapitalType.FUTURE_UGOVOR.toString())) {
+            if (sredstvaKapital.getKapitalType().equals(KapitalType.FUTURE_UGOVOR) && kapitalType.equals(KapitalType.FUTURE_UGOVOR.toString())) {
                 FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
                 kapitalPoTipuHartijeDto.setOznakaHartije(futuresPodaciDto.getSymbol());
