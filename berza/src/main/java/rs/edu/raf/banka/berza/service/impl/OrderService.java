@@ -196,7 +196,11 @@ public class OrderService {
     public boolean canExecuteTransactionBuy(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
-                if(order.getPredvidjenaCena() <= order.getLimitValue())
+                if(order.getAsk() < order.getLimitValue())
+                    return true;
+                break;
+            case STOP_ORDER:
+                if(order.getAsk() > order.getStopValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
@@ -204,10 +208,6 @@ public class OrderService {
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
-                break;
-            case STOP_ORDER:
-                if(order.getPredvidjenaCena() < order.getBid())
-                    return true;
                 break;
             default:
                 return true;
@@ -218,7 +218,11 @@ public class OrderService {
     public boolean canExecuteTransactionSell(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
-                if(order.getPredvidjenaCena() > order.getLimitValue())
+                if(order.getBid() > order.getLimitValue())
+                    return true;
+                break;
+            case STOP_ORDER:
+                if(order.getBid() < order.getStopValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
@@ -226,10 +230,6 @@ public class OrderService {
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
-            case STOP_ORDER:
-                if(order.getPredvidjenaCena() > order.getAsk())
-                    return true;
-                break;
             default:
                 return true;
         }
