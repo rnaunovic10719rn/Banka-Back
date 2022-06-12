@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.dto.KapitalHartijeDto;
 import rs.edu.raf.banka.racun.dto.KapitalPoTipuHartijeDto;
+import rs.edu.raf.banka.racun.dto.TransakcijeHartijeDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.dto.DateFilter;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -101,6 +102,12 @@ public class RacunController {
         return ResponseEntity.ok(kapitalPoTipuHartijeDtos);
     }
 
-
+    @GetMapping(value = "/transakcijaHartije/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getTransakcijeHartije(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        List<TransakcijeHartijeDto> transakcijeHartijeDtos = sredstvaKapitalService.getTransakcijeHartije(id);
+        if (transakcijeHartijeDtos == null)
+            return ResponseEntity.badRequest().body("bad request");
+        return ResponseEntity.ok(transakcijeHartijeDtos);
+    }
 
 }
