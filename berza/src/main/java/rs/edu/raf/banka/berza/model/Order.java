@@ -29,6 +29,8 @@ public class Order {
 
     private Long hartijaOdVrednostiId;
 
+    private String hartijaOdVrednostiSymbol;
+
     private String oznakaHartije;
 
     @Enumerated(value = EnumType.STRING)
@@ -50,8 +52,10 @@ public class Order {
     private boolean AON;
     private boolean margin;
 
-    //
+    // Koriste se samo pri izracunavanju, ne perzistujemo vrednosti
+    @Transient
     private Double ask;
+    @Transient
     private Double bid;
 
     @Enumerated(value = EnumType.STRING)

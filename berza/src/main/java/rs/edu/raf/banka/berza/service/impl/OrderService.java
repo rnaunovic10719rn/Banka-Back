@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
@@ -31,12 +32,14 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
+    private PriceService priceService;
     private UserService userService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, UserService userService){
+    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, PriceService priceService, UserService userService){
         this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
+        this.priceService = priceService;
         this.userService = userService;
     }
 
@@ -96,12 +99,13 @@ public class OrderService {
 
     public Order saveOrder(OrderRequest orderRequest, Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
                            OrderAction orderAction, Double ukupnaCena, Double provizija,
-                           OrderType orderType, OrderStatus status, Double ask, Double bid){
+                           OrderType orderType, OrderStatus status){
         Order order = new Order();
         order.setUserId(userAccount);
         order.setBerza(berza);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
+        order.setHartijaOdVrednostiSymbol(orderRequest.getSymbol());
         order.setKolicina(orderRequest.getKolicina());
         order.setPreostalaKolicina(orderRequest.getKolicina());
         order.setOrderAction(orderAction);
@@ -113,8 +117,6 @@ public class OrderService {
         order.setOznakaHartije(orderRequest.getSymbol());
         order.setLastModified(new Date());
         order.setOrderStatus(status);
-        order.setAsk(ask);
-        order.setBid(bid);
         order.setLimitValue(orderRequest.getLimitValue());
         order.setStopValue(orderRequest.getStopValue());
 
@@ -134,6 +136,11 @@ public class OrderService {
                 log.info("Skipping order {} because it's not approved", o.getId());
                 return;
             }
+
+            log.info("Getting prices for order {}", o.getId());
+            AskBidPriceDto askBidPrice = priceService.getAskBidPrice(o.getHartijaOdVrednosti(), o.getHartijaOdVrednostiSymbol());
+            o.setAsk(askBidPrice.getAsk());
+            o.setBid(askBidPrice.getBid());
 
             log.info("Executing order {}", o.getId());
             executeTransaction(o);
