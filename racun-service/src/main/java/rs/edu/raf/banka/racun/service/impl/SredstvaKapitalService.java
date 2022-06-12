@@ -155,12 +155,16 @@ public class SredstvaKapitalService {
                 kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
                 Double cena = akcijePodaciDto.getPrice();
                 kapitalPoTipuHartijeDto.setCena(cena);
+                ForexPodaciDto forexPodaciDto = this.getForex(token, berzaDto.getKodValute());
+                Double vrednostRSD = cena*kolicinaUVlasnistvu*forexPodaciDto.getExchangeRate();
+                kapitalPoTipuHartijeDto.setVrednostRSD(vrednostRSD);
                 Double vrednost = cena*kolicinaUVlasnistvu;
                 kapitalPoTipuHartijeDto.setVrednost(vrednost);
                 Double kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID());
                 kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
-                Double profit = cena - kupljenoZa;
+                Double profit = vrednost - kupljenoZa;
                 kapitalPoTipuHartijeDto.setProfit(profit);
+                kapitalPoTipuHartijeDto.setKodValute(berzaDto.getKodValute());
                 toReturn.add(kapitalPoTipuHartijeDto);
             }
             if (sredstvaKapital.getKapitalType().equals(KapitalType.FUTURE_UGOVOR) && kapitalType.equals(KapitalType.FUTURE_UGOVOR.toString())) {
@@ -173,20 +177,25 @@ public class SredstvaKapitalService {
                 kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
                 Double cena = futuresPodaciDto.getOpen();
                 kapitalPoTipuHartijeDto.setCena(cena);
+                ForexPodaciDto forexPodaciDto = this.getForex(token, "USD");
+                Double vrednostRSD = cena*kolicinaUVlasnistvu*forexPodaciDto.getExchangeRate();
+                kapitalPoTipuHartijeDto.setVrednostRSD(vrednostRSD);
                 Double vrednost = cena*kolicinaUVlasnistvu;
                 kapitalPoTipuHartijeDto.setVrednost(vrednost);
                 Double kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID());
                 kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
-                Double profit = cena - kupljenoZa;
+                Double profit = vrednost - kupljenoZa;
                 kapitalPoTipuHartijeDto.setProfit(profit);
+                kapitalPoTipuHartijeDto.setKodValute("USD");
                 toReturn.add(kapitalPoTipuHartijeDto);
             }
         }
         return toReturn;
     }
 
-    public List<TransakcijeHartijeDto> getTransakcijeHartije(Long id) {
-        List<Transakcija> transakcijaList = transakcijaRepository.findByHaritjeOdVrednostiID(id);
+    public List<TransakcijeHartijeDto> getTransakcijeHartije(Long id, String strKapitalType) {
+        KapitalType kapitalType = KapitalType.valueOf(strKapitalType.toUpperCase());
+        List<Transakcija> transakcijaList = transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalType(id, kapitalType);
         List<TransakcijeHartijeDto> toReturn = new ArrayList<>();
         for (Transakcija transakcija : transakcijaList) {
             TransakcijeHartijeDto transakcijeHartijeDto = new TransakcijeHartijeDto();

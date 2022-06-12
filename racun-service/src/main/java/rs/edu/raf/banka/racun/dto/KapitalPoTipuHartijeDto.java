@@ -13,7 +13,9 @@ public class KapitalPoTipuHartijeDto {
     String berza;
     Long kolicinaUVlasnistvu;
     Double cena;
+    Double vrednostRSD;
     Double vrednost;
     Double kupljenoZa;
     Double profit;
+    String kodValute;
 }
