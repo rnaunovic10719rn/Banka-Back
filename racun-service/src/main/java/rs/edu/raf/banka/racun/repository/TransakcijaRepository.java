@@ -35,4 +35,9 @@ public interface TransakcijaRepository extends JpaRepository<Transakcija,Long> {
     @Query("SELECT SUM(rezervisano) - SUM(rezervisanoKoristi) FROM Transakcija WHERE orderId = :orderId")
     Double getRezervisanoForOrder(Long orderId);
 
+    @Query("SELECT SUM(unitPrice*uplata) FROM Transakcija WHERE haritjeOdVrednostiID = :hartijaId")
+    Double getKupljenoZa(Long hartijaId);
+
+    List<Transakcija> findByHaritjeOdVrednostiID(Long hartijeOdVrednostiID);
+
 }

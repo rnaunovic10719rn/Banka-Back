@@ -46,6 +46,14 @@ public class BerzaService {
         return berzaRepository.findAll();
     }
 
+    public BerzaDto findBerza(Long id) {
+        Berza berza = berzaRepository.findBerzaById(id);
+        BerzaDto berzaDto = new BerzaDto();
+        berzaDto.setOznakaBerze(berza.getOznakaBerze());
+        berzaDto.setKodValute(berza.getValuta().getKodValute());
+        return berzaDto;
+    }
+
     public Berza findBerza(String oznaka){
         return berzaRepository.findBerzaByOznakaBerze(oznaka);
     }

@@ -104,6 +104,11 @@ public class AkcijePodaciService {
         return dto;
     }
 
+    public AkcijePodaciDto getAkcijaById(Long id) {
+        Akcije akcije = akcijeRepository.findAkcijeById(id);
+        return this.getAkcijaByTicker(akcije.getOznakaHartije());
+    }
+
     public List<AkcijeTimeseriesDto> getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest req) {
         ZoneId zoneId = null;
         String openHours = null;

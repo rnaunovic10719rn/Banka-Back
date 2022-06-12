@@ -45,6 +45,11 @@ public class BerzaController {
         return ResponseEntity.ok(berzaService.findAll());
     }
 
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findBerzaById(@PathVariable Long id){
+        return ResponseEntity.ok(berzaService.findBerza(id));
+    }
+
     @GetMapping(value = "/{oznaka}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> findAkcija(@PathVariable String oznaka){
         return ResponseEntity.ok(berzaService.findAkcije(oznaka));
