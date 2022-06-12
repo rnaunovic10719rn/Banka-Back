@@ -100,7 +100,12 @@ public class TransakcijaService {
 
     @Transactional
     public Transakcija dodajTransakciju(String token, TransakcijaRequest transakcijaRequest){
-        String username = userService.getUsernameByToken(token);
+        String username;
+        if(token.equals("Bearer BERZA-SERVICE")) {
+            username = transakcijaRequest.getUsername();
+        } else {
+            username = userService.getUsernameByToken(token);
+        }
 
         // KORAK 1: Uzmi objekat Racuna i Valute.
         RacunType racunType = RacunType.KES;
@@ -112,10 +117,13 @@ public class TransakcijaService {
             log.error("dodajTransakciju: failed to get racun");
             return null;
         }
-        Valuta valuta = valutaRepository.findValutaByKodValute(transakcijaRequest.getValutaOznaka());
-        if (valuta == null) {
-            log.error("dodajTransakciju: failed to get valuta {}", transakcijaRequest.getValutaOznaka());
-            return null;
+        Valuta valuta = null;
+        if(transakcijaRequest.getValutaOznaka() != null && !transakcijaRequest.getValutaOznaka().isBlank()) {
+            valuta = valutaRepository.findValutaByKodValute(transakcijaRequest.getValutaOznaka());
+            if (valuta == null) {
+                log.error("dodajTransakciju: failed to get valuta {}", transakcijaRequest.getValutaOznaka());
+                return null;
+            }
         }
 
         if(transakcijaRequest.getType() == KapitalType.NOVAC) {
@@ -208,7 +216,7 @@ public class TransakcijaService {
 
         // Racunanje i izmena limita
         // Konverzija iz ne-RSD valutu u RSD
-        if(transakcijaRequest.getType() == KapitalType.NOVAC && limitDelta != 0) {
+        if(transakcijaRequest.getType() == KapitalType.NOVAC && limitDelta != 0 && !token.equals("Bearer BERZA-SERVICE")) {
             if (!transakcijaRequest.getValutaOznaka().equalsIgnoreCase("RSD")) {
                 ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, transakcijaRequest.getValutaOznaka(), "RSD");
                 if (resp.getBody() == null) {
