@@ -213,6 +213,7 @@ public class TransakcijaService {
         t.setIsplata(transakcijaRequest.getIsplata());
         t.setRezervisano(rezervisano);
         t.setRezervisanoKoristi(rezervisanoKoristi);
+        t.setUnitPrice(transakcijaRequest.getUnitPrice());
 
         // Racunanje i izmena limita
         // Konverzija iz ne-RSD valutu u RSD

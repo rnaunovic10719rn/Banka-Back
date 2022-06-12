@@ -196,6 +196,7 @@ public class OrderService {
                 hartija.setIsplata(0.0);
                 hartija.setRezervisano(0.0);
                 hartija.setLastSegment(false);
+                hartija.setUnitPrice(order.getAsk());
                 transakcije.add(hartija);
             } else {
                 TransakcijaRequest hartija = new TransakcijaRequest();
@@ -210,6 +211,7 @@ public class OrderService {
                 hartija.setIsplata(kolicina);
                 hartija.setRezervisano(0.0);
                 hartija.setLastSegment(lastSegment);
+                hartija.setUnitPrice(order.getBid());
                 transakcije.add(hartija);
 
                 TransakcijaRequest novac = new TransakcijaRequest();
@@ -246,6 +248,7 @@ public class OrderService {
             kupovina.setIsplata(0.0);
             kupovina.setRezervisano(0.0);
             kupovina.setLastSegment(false);
+            kupovina.setUnitPrice(order.getAsk());
             transakcije.add(kupovina);
         }
 
