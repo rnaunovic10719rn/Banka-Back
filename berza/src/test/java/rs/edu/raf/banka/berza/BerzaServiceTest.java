@@ -21,8 +21,7 @@ import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.service.impl.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -72,10 +71,9 @@ public class BerzaServiceTest {
 
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
+        when(orderService.saveOrder(17L,  berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
                 10.0,1.4000000000000001,OrderType.MARKET_ORDER,true,false, "usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
-        when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
                 "usd", "AKCIJA",
@@ -104,11 +102,9 @@ public class BerzaServiceTest {
 
         when(futuresUgovoriPodaciService.getFuturesUgovor(any())).thenReturn(futuresUgovori);
 //        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.FUTURES_UGOVOR,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.FUTURES_UGOVOR,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false,"usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
-        when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
-
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
                 "usd", "FUTURES_UGOVOR",
                 100, "buy", 1, 1, true, false);
@@ -137,10 +133,9 @@ public class BerzaServiceTest {
 
         when(forexPodaciService.getForexBySymbol(any(), any())).thenReturn(forex);
 //        when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.FOREX,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.FOREX,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false, "usd lol",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
-        when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
                 "usd lol", "FOREX",
@@ -169,10 +164,9 @@ public class BerzaServiceTest {
 
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_LIMIT_ORDER,true,false, "usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
-        when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
                 "usd", "AKCIJA",
@@ -201,10 +195,9 @@ public class BerzaServiceTest {
 
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(1L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
+        when(orderService.saveOrder(1L, berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
                 10.0,2.4,OrderType.LIMIT_ORDER,true,false, "usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
-        when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
                 "usd", "AKCIJA",
@@ -233,10 +226,9 @@ public class BerzaServiceTest {
 
         when(akcijePodaciService.getAkcijaByTicker(any())).thenReturn(akcije);
         when(berzaRepository.findBerzaById(2L)).thenReturn(berza);
-        when(orderService.saveOrder(17L, 1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
+        when(orderService.saveOrder(17L,  berza,1L, HartijaOdVrednostiType.AKCIJA,100,OrderAction.BUY,
                 10.0,2.4,OrderType.STOP_ORDER,true,false, "usd",
                 OrderStatus.APPROVED, 0.0, 0.0)).thenReturn(order);
-        when(transakcijaService.findPriceActionBuy(any())).thenReturn(new ArrayList<>());
 
         OrderResponse makeOrderRes = berzaService.makeOrder("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M",
                 "usd", "AKCIJA",
@@ -283,10 +275,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 200.00;
         int limitValue = 100;
         Double ask = 50.00;
+        order.setAsk(ask);
         order.setOrderType(OrderType.LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order));
     }
 
     @Test
@@ -295,10 +288,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 200.00;
         int limitValue = 100;
         Double ask = 50.00;
+        order.setAsk(ask);
         order.setOrderType(OrderType.STOP_LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order));
     }
 
     @Test
@@ -307,10 +301,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 200.00;
         int limitValue = 100;
         Double ask = 50.00;
+        order.setAsk(ask);
         order.setOrderType(OrderType.STOP_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order));
     }
 
     @Test
@@ -319,10 +314,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 200.00;
         int limitValue = 100;
         Double ask = 50.00;
+        order.setAsk(ask);
         order.setOrderType(OrderType.MARKET_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionSell(order, ask));
+        assertTrue(orderService.canExecuteTransactionSell(order));
     }
 
     @Test
@@ -331,10 +327,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 100.00;
         int limitValue = 200;
         Double bid = 500.00;
+        order.setBid(bid);
         order.setOrderType(OrderType.LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order));
     }
 
     @Test
@@ -343,10 +340,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 100.00;
         int limitValue = 200;
         Double bid = 500.00;
+        order.setBid(bid);
         order.setOrderType(OrderType.STOP_LIMIT_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order));
     }
 
     @Test
@@ -355,10 +353,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 100.00;
         int limitValue = 200;
         Double bid = 500.00;
+        order.setBid(bid);
         order.setOrderType(OrderType.STOP_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order));
     }
 
     @Test
@@ -367,10 +366,11 @@ public class BerzaServiceTest {
         Double ukupnaCena = 100.00;
         int limitValue = 200;
         Double bid = 500.00;
+        order.setBid(bid);
         order.setOrderType(OrderType.MARKET_ORDER);
         order.setUkupnaCena(ukupnaCena);
         order.setLimitValue(limitValue);
-        assertTrue(orderService.canExecuteTransactionBuy(order, bid));
+        assertTrue(orderService.canExecuteTransactionBuy(order));
     }
 
 
@@ -390,6 +390,8 @@ public class BerzaServiceTest {
         order.setAON(true);
         Double ask = 1.00;
         Double bid = 1.00;
+        order.setAsk(ask);
+        order.setBid(bid);
 
         Long berzaId = 1L;
         Berza berza = new Berza();
@@ -397,9 +399,12 @@ public class BerzaServiceTest {
         berza.setOpenTime("00:00:00");
         berza.setCloseTime("23:00:00");
         berza.setOrderi(new ArrayList<>());
+        order.setBerza(berza);
         when(berzaRepository.findBerzaById(1L)).thenReturn(berza);
 
-        assertEquals("OK", orderService.executeTransaction(berzaId, order,ask,bid).getMessage());
+        orderService.executeTransaction(order);
+
+        assertTrue(order.getDone());
     }
 
     @Test
@@ -418,6 +423,8 @@ public class BerzaServiceTest {
         order.setAON(false);
         Double ask = 1.00;
         Double bid = 1.00;
+        order.setAsk(ask);
+        order.setBid(bid);
 
         Long berzaId = 1L;
         Berza berza = new Berza();
@@ -425,9 +432,13 @@ public class BerzaServiceTest {
         berza.setOpenTime("00:00:00");
         berza.setCloseTime("23:00:00");
         berza.setOrderi(new ArrayList<>());
+
+        order.setBerza(berza);
+
         when(berzaRepository.findBerzaById(1L)).thenReturn(berza);
 
-        assertEquals("You can't proceed this action.", orderService.executeTransaction(berzaId, order,ask,bid).getMessage());
+        orderService.executeTransaction(order);
+        assertNotEquals(true, order.getDone());
     }
 
     @Test
@@ -446,6 +457,8 @@ public class BerzaServiceTest {
         order.setAON(false);
         Double ask = 1.00;
         Double bid = 1.00;
+        order.setAsk(ask);
+        order.setBid(bid);
 
         Long berzaId = 1L;
         Berza berza = new Berza();
@@ -453,9 +466,11 @@ public class BerzaServiceTest {
         berza.setOpenTime("00:00:00");
         berza.setCloseTime("23:00:00");
         berza.setOrderi(new ArrayList<>());
+        order.setBerza(berza);
         when(berzaRepository.findBerzaById(1L)).thenReturn(berza);
 
-        assertEquals("You can't proceed this action.", orderService.executeTransaction(berzaId, order,ask,bid).getMessage());
+        orderService.executeTransaction(order);
+        assertNotEquals(true, order.getDone());
     }
 
     @Test
@@ -485,7 +500,7 @@ public class BerzaServiceTest {
         Double ask = 12.00;
         Double bid = 1.00;
         List<Double> cene = new ArrayList<>(List.of(1.0, 2.0, 3.0));
-        when(transakcijaService.findPriceActionBuy(ask)).thenReturn(cene);
+
         assertTrue(cene.contains(berzaService.getPrice(ask, bid, OrderAction.SELL)));
     }
 }

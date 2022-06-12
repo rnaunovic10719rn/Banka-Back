@@ -9,10 +9,12 @@ import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
 import rs.edu.raf.banka.berza.enums.OrderStatus;
 import rs.edu.raf.banka.berza.enums.OrderType;
+import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,9 +68,18 @@ public class OrderServiceTest {
         order.setAsk(ask);
         order.setBid(bid);
 
+        Long berzaId = 1L;
+        Berza berza = new Berza();
+        berza.setId(berzaId);
+        berza.setOpenTime("00:00:00");
+        berza.setCloseTime("23:00:00");
+        berza.setOrderi(new ArrayList<>());
+
+        order.setBerza(berza);
+
         when(orderRepository.save(order)).thenReturn(order);
 
-        assertEquals(OrderAction.SELL, orderService.saveOrder(userAccount, hartijaOdVrednostiId,
+        assertEquals(OrderAction.SELL, orderService.saveOrder(userAccount, berza, hartijaOdVrednostiId,
                 hartijaOdVrednostiType,kolicina, orderAction,ukupnaCena,provizija,
                 orderType, isAON, isMargin, oznakaHartije, OrderStatus.APPROVED, ask, bid).getOrderAction());
     }
