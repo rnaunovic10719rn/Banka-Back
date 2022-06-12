@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.dto.KapitalHartijeDto;
+import rs.edu.raf.banka.racun.dto.KapitalPoTipuHartijeDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.dto.DateFilter;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -92,14 +93,12 @@ public class RacunController {
         return ResponseEntity.ok(kapitalHartijeDtoList);
     }
 
-    @GetMapping(value = "/forex", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getForex(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(sredstvaKapitalService.getForex(token));
-    }
-
-    @GetMapping(value = "/akcija/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getakcija(@RequestHeader("Authorization") String token, @PathVariable Long id) {
-        return ResponseEntity.ok(sredstvaKapitalService.getAkcija(id));
+    @GetMapping(value = "/kapitalStanje/{kapitalType}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjePoTipu(@RequestHeader("Authorization") String token, @PathVariable String kapitalType) {
+        List<KapitalPoTipuHartijeDto> kapitalPoTipuHartijeDtos = sredstvaKapitalService.getStanjeJednogTipaHartije(token, kapitalType);
+        if (kapitalPoTipuHartijeDtos == null)
+            return ResponseEntity.badRequest().body("bad request");
+        return ResponseEntity.ok(kapitalPoTipuHartijeDtos);
     }
 
 

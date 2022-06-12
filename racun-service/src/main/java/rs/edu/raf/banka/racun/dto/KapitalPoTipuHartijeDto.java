@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class KapitalPoTipuHartijeDto {
     String oznakaHartije;
     String opisHartije;
-    String oznakaBerze;
+    Long idBerza;
     Long kolicinaUVlasnistvu;
     Double cena;
     Double vrednost;

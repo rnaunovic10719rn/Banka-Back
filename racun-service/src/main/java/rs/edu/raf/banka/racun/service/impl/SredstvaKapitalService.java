@@ -108,18 +108,10 @@ public class SredstvaKapitalService {
             //TODO: ovo treba kasnije prosiriti na opcije i obaveznice
             if (sredstvaKapital.getKapitalType().equals(KapitalType.AKCIJA)) {
 
-                ResponseEntity<AkcijePodaciDto> apdResp = HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, sredstvaKapital.getHaritjeOdVrednostiID());
-                if (apdResp.getBody() == null) {
-                    return null;
-                }
-                AkcijePodaciDto akcijePodaciDto = apdResp.getBody();
+                AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
 
                 //TODO: iz berze dohvatiti valutu za hartiju pa onda za tu valutu racunati rate, za sada se pretpostavlja da je dolar
-                ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, "USD", "RSD");
-                if (fpdResp.getBody() == null) {
-                    return null;
-                }
-                ForexPodaciDto forexPodaciDto = fpdResp.getBody();
+                ForexPodaciDto forexPodaciDto = this.getForex(token);
 
                 Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
@@ -127,18 +119,10 @@ public class SredstvaKapitalService {
 
             if (sredstvaKapital.getKapitalType().equals(KapitalType.FUTURE_UGOVOR)) {
 
-                ResponseEntity<FuturesPodaciDto> futureResp = HttpUtils.getFuturesById(FUTURES_BY_ID_URL, sredstvaKapital.getHaritjeOdVrednostiID());
-                if (futureResp.getBody() == null) {
-                    return null;
-                }
-                FuturesPodaciDto futuresPodaciDto = futureResp.getBody();
+                FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
 
                 //TODO: iz berze dohvatiti valutu za hartiju pa onda za tu valutu racunati rate, za sada se pretpostavlja da je dolar
-                ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, "USD", "RSD");
-                if (fpdResp.getBody() == null) {
-                    return null;
-                }
-                ForexPodaciDto forexPodaciDto = fpdResp.getBody();
+                ForexPodaciDto forexPodaciDto = this.getForex(token);
 
                 Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
@@ -146,6 +130,53 @@ public class SredstvaKapitalService {
         }
         toReturn.add(khdAkcija);
         toReturn.add(khdFuture);
+        return toReturn;
+    }
+
+    public List<KapitalPoTipuHartijeDto> getStanjeJednogTipaHartije(String token, String kapitalType) {
+        List<SredstvaKapital> sredstvaKapitals = sredstvaKapitalRepository.findAll();
+        List<KapitalPoTipuHartijeDto> toReturn = new ArrayList<>();
+        for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
+            //TODO: treba dopuniti sa opcijama i obaveznicama
+            if (sredstvaKapital.getKapitalType().equals(KapitalType.NOVAC))
+                continue;
+            if (kapitalType.equals(KapitalType.AKCIJA.toString())) {
+                AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
+                KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
+                kapitalPoTipuHartijeDto.setOznakaHartije(akcijePodaciDto.getTicker());
+                kapitalPoTipuHartijeDto.setOpisHartije(akcijePodaciDto.getOpisHartije());
+                kapitalPoTipuHartijeDto.setIdBerza(akcijePodaciDto.getBerzaId());
+                Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
+                kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
+                Double cena = akcijePodaciDto.getPrice();
+                kapitalPoTipuHartijeDto.setCena(cena);
+                Double vrednost = cena*kolicinaUVlasnistvu;
+                kapitalPoTipuHartijeDto.setVrednost(vrednost);
+                Double kupljenoZa = 0.0; //treba izmeniti
+                kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
+                Double profit = 0.0; //treba izmeniti
+                kapitalPoTipuHartijeDto.setProfit(profit);
+                toReturn.add(kapitalPoTipuHartijeDto);
+            }
+            if (kapitalType.equals(KapitalType.FUTURE_UGOVOR.toString())) {
+                FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
+                KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
+                kapitalPoTipuHartijeDto.setOznakaHartije(futuresPodaciDto.getSymbol());
+                //kapitalPoTipuHartijeDto.setOpisHartije(futuresPodaciDto.get);
+                //kapitalPoTipuHartijeDto.setIdBerza(futuresPodaciDto.get);
+                Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
+                kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
+                Double cena = futuresPodaciDto.getOpen();
+                kapitalPoTipuHartijeDto.setCena(cena);
+                Double vrednost = cena*kolicinaUVlasnistvu;
+                kapitalPoTipuHartijeDto.setVrednost(vrednost);
+                Double kupljenoZa = 0.0; //treba izmeniti
+                kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
+                Double profit = 0.0; //treba izmeniti
+                kapitalPoTipuHartijeDto.setProfit(profit);
+                toReturn.add(kapitalPoTipuHartijeDto);
+            }
+        }
         return toReturn;
     }
 
@@ -165,6 +196,15 @@ public class SredstvaKapitalService {
         }
         ForexPodaciDto forexPodaciDto = fpdResp.getBody();
         return forexPodaciDto;
+    }
+
+    public FuturesPodaciDto getFuture(Long id) {
+        ResponseEntity<FuturesPodaciDto> futureResp = HttpUtils.getFuturesById(FUTURES_BY_ID_URL, id);
+        if (futureResp.getBody() == null) {
+            return null;
+        }
+        FuturesPodaciDto futuresPodaciDto = futureResp.getBody();
+        return futuresPodaciDto;
     }
 
 
