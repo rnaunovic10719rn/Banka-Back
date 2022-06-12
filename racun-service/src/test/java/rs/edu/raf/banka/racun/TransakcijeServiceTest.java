@@ -88,7 +88,7 @@ public class TransakcijeServiceTest {
     private String USER_SERVICE_URL;
 
 
-    @Test
+
     void testDodavanjeTransakcije() throws NoSuchFieldException {
 
         Racun r = new Racun();
