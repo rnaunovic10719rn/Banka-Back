@@ -16,9 +16,11 @@ import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.ForexRepository;
 import rs.edu.raf.banka.berza.repository.ValutaRepository;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
+import rs.edu.raf.banka.berza.utils.DateUtils;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
@@ -82,70 +84,16 @@ public class ForexPodaciService {
         return forexPodaciDto;
     }
 
-    public ZonedDateTime getZonedDateTime() {
-        return ZonedDateTime.now().plusDays(2);
-    }
-
     public List<ForexTimeseriesDto> getForexTimeseries(ForexTimeseriesUpdateRequest req) {
-        DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00.000'Z'");
-        DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
-        ZonedDateTime zonedDateTime = getZonedDateTime();
-        String endDate = zonedDateTime.format(endFormatter);
-
-        if(req.getType().equals("intraday") && req.getInterval().equals("5min")) {
-            switch (zonedDateTime.getDayOfWeek()) {
-                case SATURDAY:
-                case SUNDAY:
-                    zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
-                    break;
-                case MONDAY:
-                    if (zonedDateTime.getHour() < 16) {
-                        zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
-                    }
-                    break;
-            }
-        } else if(req.getType().equals("intraday") && req.getInterval().equals("30min")) {
-            switch (zonedDateTime.getDayOfWeek()) {
-                case SATURDAY:
-                case SUNDAY:
-                    zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-                    break;
-                case MONDAY:
-                    zonedDateTime = zonedDateTime.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
-                    break;
-                default:
-                    zonedDateTime = zonedDateTime.minusDays(7); // 7 zbog vikenda
-            }
-        } else {
-            switch (req.getRequestType()) {
-                case "1m":
-                    zonedDateTime = zonedDateTime.minusMonths(1);
-                    break;
-                case "6m":
-                    zonedDateTime = zonedDateTime.minusMonths(6);
-                    break;
-                case "1y":
-                    zonedDateTime = zonedDateTime.minusMonths(12);
-                    break;
-                case "2y":
-                    zonedDateTime = zonedDateTime.minusMonths(24);
-                    break;
-                case "ytd":
-                    zonedDateTime = zonedDateTime.with(firstDayOfYear());
-                    break;
-            }
-        }
-
-        String startDate = zonedDateTime.format(startFormatter);
+        DateUtils.StartEndDateTime dt = DateUtils.getStartEndDateTime(req.getType(), req.getInterval(), req.getRequestType());
 
         ForexTimeseriesReadRequest readReq = new ForexTimeseriesReadRequest();
         readReq.setType(req.getType());
         readReq.setSymbolTo(req.getSymbolTo());
         readReq.setSymbolFrom(req.getSymbolFrom());
         readReq.setInterval(req.getInterval());
-        readReq.setTimeFrom(startDate);
-        readReq.setTimeTo(endDate);
+        readReq.setTimeFrom(dt.startDate);
+        readReq.setTimeTo(dt.endDate);
 
         return influxScrapperService.getForexTimeseries(readReq);
     }
