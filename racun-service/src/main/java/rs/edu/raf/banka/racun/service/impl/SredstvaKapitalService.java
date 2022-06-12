@@ -3,12 +3,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
-import rs.edu.raf.banka.racun.dto.KapitalStanjeDto;
+import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.*;
-import rs.edu.raf.banka.racun.dto.AgentSredstvaKapitalDto;
-import rs.edu.raf.banka.racun.dto.SredstvaKapitalDto;
 
 import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
@@ -32,6 +29,9 @@ public class SredstvaKapitalService {
 
     @Value("${racun.forex-quote-url}")
     private String FOREX_EXCHANGE_RATE_URL;
+
+    @Value("${racun.akcije-quote-url}")
+    private String AKCIJE_BY_ID_URL;
 
     @Autowired
     public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository,
@@ -101,41 +101,62 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 
-    public KapitalStanjeDto getSumStanje(List<SredstvaKapital> kapitali, String token)
-    {
-        var rates = new HashMap<String, Double>();
-        rates.put("RSD", 1.0);
-        HashMap<KapitalType, Double> values = new HashMap<>();
+//    public List<KapitalHartijeDto> getUkupnoStanjePoHartijama(UUID racun) {
+//        List<SredstvaKapital> sredstvaKapitals = this.getAll(racun);
+//        List<KapitalHartijeDto> toReturn = new ArrayList<>();
+//        for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
+//            if (sredstvaKapital.getHaritjeOdVrednostiID() != null) {
+//                if (sredstvaKapital.getKapitalType().equals(KapitalType.AKCIJA)) {
+//                    for (KapitalHartijeDto khd : toReturn) {
+//                        if (khd.getKapitalType().equals(KapitalType.AKCIJA)) {
+//
+//                            khd.setUkupno(khd.getUkupno());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-        for(var kapitalType: KapitalType.values())
-            values.put(kapitalType, 0.0);
-
-        for(var kapital: kapitali)
-        {
-            var valuta = kapital.getValuta().getKodValute();
-            if(!rates.containsKey(valuta))  {
-                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, valuta, "RSD");
-                if (resp.getBody() == null) {
-                    return null;
-                }
-
-                //var rate = getRSDForexRate(valuta);
-                //rates.put(valuta, rate.getExchangeRate());
-            }
-            double value = kapital.getUkupno() * rates.get(valuta);
-            values.compute(kapital.getKapitalType(), (k,v) -> v + value);
-        }
-
-        KapitalStanjeDto result = new KapitalStanjeDto();
-        result.setNovac(values.get(KapitalType.NOVAC));
-        result.setForex(values.get(KapitalType.FOREX));
-        result.setFuture(values.get(KapitalType.FUTURE_UGOVOR));
-        result.setAkcija(values.get(KapitalType.AKCIJA));
-
-        double sum = result.getNovac() + result.getAkcija() + result.getForex() + result.getFuture();
-        result.setUkupno(sum);
-        return result;
+    public ResponseEntity<AkcijePodaciDto> getAkcija(Long id) {
+        return HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, id);
     }
+
+//    public KapitalHartijeDto getSumStanje(List<SredstvaKapital> kapitali, String token)
+//    {
+//        var rates = new HashMap<String, Double>();
+//        rates.put("RSD", 1.0);
+//        HashMap<KapitalType, Double> values = new HashMap<>();
+//
+//        for(var kapitalType: KapitalType.values())
+//            values.put(kapitalType, 0.0);
+//
+//        for(var kapital: kapitali)
+//        {
+//            var valuta = kapital.getValuta().getKodValute();
+//            if(!rates.containsKey(valuta))  {
+//                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, valuta, "RSD");
+//                if (resp.getBody() == null) {
+//                    return null;
+//                }
+//
+//                //var rate = getRSDForexRate(valuta);
+//                //rates.put(valuta, rate.getExchangeRate());
+//            }
+//            double value = kapital.getUkupno() * rates.get(valuta);
+//            values.compute(kapital.getKapitalType(), (k,v) -> v + value);
+//        }
+//
+//        KapitalHartijeDto result = new KapitalHartijeDto();
+//        result.setNovac(values.get(KapitalType.NOVAC));
+//        result.setForex(values.get(KapitalType.FOREX));
+//        result.setFuture(values.get(KapitalType.FUTURE_UGOVOR));
+//        result.setAkcija(values.get(KapitalType.AKCIJA));
+//
+//        double sum = result.getNovac() + result.getAkcija() + result.getForex() + result.getFuture();
+//        result.setUkupno(sum);
+//        return result;
+//    }
 
     public List<SredstvaKapitalDto> findSredstvaKapitalSupervisor(String token) {
         String role = userService.getRoleByToken(token);

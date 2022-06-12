@@ -29,6 +29,14 @@ public class AkcijePodaciController {
         return ResponseEntity.ok(akcijePodaciService.getAkcijaByTicker(ticker));
     }
 
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeById(@PathVariable Long id){
+        if(id == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(akcijePodaciService.getAkcijaById(id));
+    }
+
     @GetMapping(value = "/timeseries/{type}/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAkcijeTimeseries(@PathVariable String type, @PathVariable String symbol){
         if(type == null || type.isBlank()) {

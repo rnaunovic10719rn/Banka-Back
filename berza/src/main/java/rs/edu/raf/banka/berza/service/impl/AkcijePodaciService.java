@@ -103,6 +103,11 @@ public class AkcijePodaciService {
         return dto;
     }
 
+    public AkcijePodaciDto getAkcijaById(Long id) {
+        Akcije akcije = akcijeRepository.findAkcijeById(id);
+        return this.getAkcijaByTicker(akcije.getOznakaHartije());
+    }
+
     public ZonedDateTime getZonedDateTime() {
         return ZonedDateTime.now().plusDays(2);
     }

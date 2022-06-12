@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.dto.DateFilter;
-import rs.edu.raf.banka.racun.dto.KapitalStanjeDto;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
@@ -87,18 +86,24 @@ public class RacunController {
         return ResponseEntity.ok(sredstvaKapitalService.findSredstvaKapitalAgent(token));
     }
 
+    @GetMapping(value = "/akcija/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeAgent(@PathVariable Long id) {
 
-    @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
-        String role = userService.getRoleByToken(token);
-        if (role.equals("ROLE_AGENT")) {
-            return ResponseEntity.badRequest().body("bad request");
-        }
-        var kapitali = sredstvaKapitalService.getAll(UUID.fromString(racun));
-        var result = sredstvaKapitalService.getSumStanje(kapitali, token);
-        return ResponseEntity.ok(result);
-
+        return sredstvaKapitalService.getAkcija(id);
     }
+
+
+//    @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
+//        String role = userService.getRoleByToken(token);
+//        if (role.equals("ROLE_AGENT")) {
+//            return ResponseEntity.badRequest().body("bad request");
+//        }
+//        var kapitali = sredstvaKapitalService.getAll(UUID.fromString(racun));
+//        var result = sredstvaKapitalService.getSumStanje(kapitali, token);
+//        return ResponseEntity.ok(result);
+//
+//    }
 
 
 }
