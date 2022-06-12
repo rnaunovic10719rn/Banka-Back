@@ -14,7 +14,7 @@ public class FutureQuery : IInfluxMeasurementHolder
     [DefaultValue("FVSJ2022")]
     public string Symbol { get; set; } = "";
 
-    public string Url => $"https://data.nasdaq.com/api/v3/datasets/EUREX/FVSJ2022.csv?api_key={Constants.NasdaqApiKey}";
+    public string Url => $"https://data.nasdaq.com/api/v3/datasets/EUREX/{Symbol}.csv?api_key={Constants.NasdaqApiKey}";
 
     public string Measurement => "futures";
 }

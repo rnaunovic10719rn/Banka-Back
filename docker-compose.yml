@@ -131,6 +131,8 @@ services:
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-racun:5432/postgres
       racun.user-service-url: http://korisnicki-servis:8080/api/limit-change
+      racun.user-service-url2: http://korisnicki-servis:8080/api/user
+      racun.forex-quote-url: http://berza:8082/api/forex/podaci/
     ports:
       - "8083:8083"
     links:

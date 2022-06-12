@@ -27,11 +27,11 @@ public abstract class HartijaOdVrednosti {
     private Berza berza;
 
     private Date lastUpdated;
-    private Double cena;
-    private Double ask;
-    private Double bid;
-    private Double promenaIznos;
-    private Long volume;
+    private Double cena = 0.0;
+    private Double ask = 0.0;
+    private Double bid = 0.0;
+    private Double promenaIznos = 0.0;
+    private Long volume = 0L;
 
     @ElementCollection
     private List<String> istorijskiPodaci;

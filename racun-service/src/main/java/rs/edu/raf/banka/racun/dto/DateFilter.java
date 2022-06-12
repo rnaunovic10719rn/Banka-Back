@@ -1,4 +1,4 @@
-package rs.edu.raf.banka.racun.model;
+package rs.edu.raf.banka.racun.dto;
 
 
 
