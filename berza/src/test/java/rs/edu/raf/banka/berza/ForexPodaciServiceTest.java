@@ -1,10 +1,8 @@
 package rs.edu.raf.banka.berza;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.request.ForexTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Forex;
@@ -13,6 +11,7 @@ import rs.edu.raf.banka.berza.repository.ForexRepository;
 import rs.edu.raf.banka.berza.repository.ValutaRepository;
 import rs.edu.raf.banka.berza.service.impl.ForexPodaciService;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
+import rs.edu.raf.banka.berza.utils.DateUtils;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -79,7 +78,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("5min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -89,7 +91,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("5min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -99,7 +104,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("5min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 15:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -109,7 +117,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -119,7 +130,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-08 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -129,7 +143,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-09 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -139,7 +156,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("30min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -149,7 +169,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("1m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -159,7 +182,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("6m");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -169,7 +195,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("1y");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -179,7 +208,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("2y");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
@@ -189,7 +221,10 @@ public class ForexPodaciServiceTest {
         readReq.setInterval("60min");
         readReq.setType("intraday");
         readReq.setRequestType("ytd");
-        when(forexPodaciService.getZonedDateTime()).thenReturn(ZonedDateTime.parse("2022-May-10 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 

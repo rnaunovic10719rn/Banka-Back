@@ -33,16 +33,4 @@ public class FuturesUgovoriPodaciController {
         return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesUgovorById(id));
     }
 
-    @GetMapping(value = "/timeseries/{type}/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAkcijeTimeseries(@PathVariable String type, @PathVariable String symbol){
-        if(type == null || type.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-        if(symbol == null || symbol.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesTimeseries(type, symbol));
-    }
-
-
 }
