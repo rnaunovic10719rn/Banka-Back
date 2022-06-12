@@ -10,6 +10,7 @@ import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.*;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
@@ -54,14 +55,12 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
-    public OrderResponse makeOrder(String token, String oznakaHartije, String hartijaTipString,
-                                       Integer kolicina, String action,
-                                       Integer limitValue, Integer stopValue, boolean isAON, boolean isMargin){
+    public OrderResponse makeOrder(String token, OrderRequest orderRequest) {
 
         // Korak 1: Odredi tip hartije od vrednosti koji se trguje, odredi da li je buy ili sell akcija, odredi koji je tip ordera
-        HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(hartijaTipString.toUpperCase()); // AKCIJA, FOREX, FUTURES_UGOVOR
-        OrderAction orderAkcija = OrderAction.valueOf(action.toUpperCase()); // BUY ili SELL
-        OrderType orderType = getOrderType(limitValue, stopValue); // MARKET, STOP, LIMIT, STOP_LIMIT
+        HartijaOdVrednostiType hartijaTip = HartijaOdVrednostiType.valueOf(orderRequest.getHartijaOdVrednostiTip().toUpperCase()); // AKCIJA, FOREX, FUTURES_UGOVOR
+        OrderAction orderAkcija = OrderAction.valueOf(orderRequest.getAkcija().toUpperCase()); // BUY ili SELL
+        OrderType orderType = getOrderType(orderRequest.getLimitValue(), orderRequest.getStopValue()); // MARKET, STOP, LIMIT, STOP_LIMIT
 
         // Korak 1a: Nije definisana akcija SELL za Forex, posto Forex uvek koristi par (prodajem EUR da bih kupio USD)
         if(hartijaTip.equals(HartijaOdVrednostiType.FOREX) && orderAkcija.equals(OrderAction.SELL)) {
@@ -76,7 +75,7 @@ public class BerzaService {
 
         // Korak 2: Preuzmi podatke o hartiji o vrednosti
         if(hartijaTip.equals(HartijaOdVrednostiType.AKCIJA)){
-            AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(oznakaHartije);
+            AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(orderRequest.getSymbol());
             if(akcije != null) {
                 hartijaId = akcije.getId();
                 berza = berzaRepository.getById(akcije.getBerzaId());
@@ -87,7 +86,7 @@ public class BerzaService {
             }
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FUTURES_UGOVOR)){
-            FuturesPodaciDto futuresUgovori = futuresUgovoriPodaciService.getFuturesUgovor(oznakaHartije);
+            FuturesPodaciDto futuresUgovori = futuresUgovoriPodaciService.getFuturesUgovor(orderRequest.getSymbol());
             if(futuresUgovori != null) {
                 hartijaId = futuresUgovori.getId();
                 ask = futuresUgovori.getHigh();
@@ -95,7 +94,7 @@ public class BerzaService {
             }
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)){
-            String split[] = oznakaHartije.split(" ");
+            String split[] = orderRequest.getSymbol().split(" ");
             ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[0], split[1]);
             if(forex != null) {
                 hartijaId = forex.getId();
@@ -109,7 +108,7 @@ public class BerzaService {
             return new OrderResponse(MessageUtils.ERROR);
 
         // Korak 3: Izracunaj ukupnu cenu i proviziju
-        Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
+        Double ukupnaCena = getPrice(ask, bid, orderAkcija) * orderRequest.getKolicina();
         Double provizija = getCommission(ukupnaCena, orderType);
 
         // Korak 4: Odredi order status, tj. da li order mora da bude approvovan ili je automatski approvovan
@@ -119,8 +118,8 @@ public class BerzaService {
         Long userId = userService.getUserByToken(token).getId();
 
         // Korak 5: Sacuvaj order u bazi podataka
-        Order order = orderService.saveOrder(userId, berza, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
-                provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
+        Order order = orderService.saveOrder(orderRequest, userId, berza, hartijaId, hartijaTip, orderAkcija, ukupnaCena,
+                provizija, orderType, status, ask, bid);
 
         // Korak 6: Vrati poruku da je order primljen
         return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);

@@ -12,6 +12,7 @@ import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
@@ -93,28 +94,29 @@ public class OrderService {
         return new ApproveRejectOrderResponse(MessageUtils.ORDER_REJECTED);
     }
 
-    public Order saveOrder(Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
-                           Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija,
-                           OrderType orderType, boolean isAON, boolean isMargin, String oznakaHartije,
-                           OrderStatus status, Double ask, Double bid){
+    public Order saveOrder(OrderRequest orderRequest, Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
+                           OrderAction orderAction, Double ukupnaCena, Double provizija,
+                           OrderType orderType, OrderStatus status, Double ask, Double bid){
         Order order = new Order();
         order.setUserId(userAccount);
         order.setBerza(berza);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
-        order.setKolicina(kolicina);
-        order.setPreostalaKolicina(kolicina);
+        order.setKolicina(orderRequest.getKolicina());
+        order.setPreostalaKolicina(orderRequest.getKolicina());
         order.setOrderAction(orderAction);
         order.setUkupnaCena(ukupnaCena);
         order.setProvizija(provizija);
         order.setOrderType(orderType);
-        order.setAON(isAON);
-        order.setMargin(isMargin);
-        order.setOznakaHartije(oznakaHartije);
+        order.setAON(orderRequest.isAllOrNoneFlag());
+        order.setMargin(orderRequest.isMarginFlag());
+        order.setOznakaHartije(orderRequest.getSymbol());
         order.setLastModified(new Date());
         order.setOrderStatus(status);
         order.setAsk(ask);
         order.setBid(bid);
+        order.setLimitValue(orderRequest.getLimitValue());
+        order.setStopValue(orderRequest.getStopValue());
 
         return orderRepository.save(order);
     }
