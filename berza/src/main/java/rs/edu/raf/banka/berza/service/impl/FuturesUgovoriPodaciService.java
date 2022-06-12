@@ -68,19 +68,9 @@ public class FuturesUgovoriPodaciService {
         return null;
     }
 
-//    public FuturesPodaciDto getFuturesUgovor(Long id) {
-//        FuturesUgovori future = futuresUgovoriRepository.findFuturesById(id);
-//
-//
-//        List<FuturesPodaciDto> res = influxScrapperService.getFuturesQoute(symbol);
-//        if(res != null && res.size() > 0) {
-//            FuturesPodaciDto futuresPodaciDto = res.get(res.size()-1);
-//            futuresPodaciDto.setId(future.getId());
-//            return futuresPodaciDto;
-//        }
-//
-//
-//        return null;
-//    }
+    public FuturesPodaciDto getFuturesUgovorById(Long id) {
+        FuturesUgovori future = futuresUgovoriRepository.findFuturesById(id);
+        return this.getFuturesUgovor(future.getOznakaHartije());
+    }
 
 }

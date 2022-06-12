@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
+import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
@@ -15,6 +16,7 @@ import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
+import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -97,75 +99,82 @@ public class TransakcijaService {
     }
 
     @Transactional
-    public Transakcija dodajTransakciju(String token, UUID brojRacuna, String opis, String kodValute, Long orderId, double uplata, double isplata, double rezervisano, Boolean lastSegment, KapitalType kapitalType, Long hartijaId){
-        String username = userService.getUsernameByToken(token);
+    public Transakcija dodajTransakciju(String token, TransakcijaRequest transakcijaRequest){
+        String username;
+        if(token.equals("Bearer BERZA-SERVICE")) {
+            username = transakcijaRequest.getUsername();
+        } else {
+            username = userService.getUsernameByToken(token);
+        }
 
         // KORAK 1: Uzmi objekat Racuna i Valute.
-        Racun racun = racunRepository.findByBrojRacuna(brojRacuna);
+        RacunType racunType = RacunType.KES;
+        if(transakcijaRequest.isMargins()) {
+            racunType = RacunType.MARGINS_RACUN;
+        }
+        Racun racun = racunRepository.findRacunByTipRacuna(racunType);
         if (racun == null) {
-            log.error("dodajTransakciju: failed to get racun {}", brojRacuna);
+            log.error("dodajTransakciju: failed to get racun");
             return null;
         }
-        Valuta valuta = valutaRepository.findValutaByKodValute(kodValute);
-        if (valuta == null) {
-            log.error("dodajTransakciju: failed to get valuta {}", kodValute);
-            return null;
-        }
-
-        if(kapitalType == KapitalType.NOVAC)
-        {
-            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValuta(racun, valuta);
-            if (sredstvaKapital == null) {
-                sredstvaKapitalService.pocetnoStanje(brojRacuna, kodValute, 0);
+        Valuta valuta = null;
+        if(transakcijaRequest.getValutaOznaka() != null && !transakcijaRequest.getValutaOznaka().isBlank()) {
+            valuta = valutaRepository.findValutaByKodValute(transakcijaRequest.getValutaOznaka());
+            if (valuta == null) {
+                log.error("dodajTransakciju: failed to get valuta {}", transakcijaRequest.getValutaOznaka());
+                return null;
             }
         }
-        else
-        {
-            SredstvaKapital sredstvaKapital  = sredstvaKapitalRepository.findByRacunAndValutaAndHaritja(racun, valuta, kapitalType, hartijaId);
+
+        if(transakcijaRequest.getType() == KapitalType.NOVAC) {
+            SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByRacunAndValuta(racun, valuta);
             if (sredstvaKapital == null) {
-                sredstvaKapitalService.pocetnoStanje(brojRacuna, kodValute, hartijaId, 0);
+                sredstvaKapitalService.pocetnoStanje(racun.getBrojRacuna(), transakcijaRequest.getValutaOznaka(), 0);
+            }
+        } else {
+            SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByRacunAndHaritja(racun, transakcijaRequest.getType(), transakcijaRequest.getHartijaId());
+            if (sredstvaKapital == null) {
+                sredstvaKapitalService.pocetnoStanje(racun.getBrojRacuna(), transakcijaRequest.getType(), transakcijaRequest.getHartijaId(), 0);
             }
         }
 
         Query query;
-        if(kapitalType == KapitalType.NOVAC)
-        {
+        if(transakcijaRequest.getType() == KapitalType.NOVAC) {
             query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
-        }
-        else
-        {
-            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and haritjeOdVrednostiID = :hartijaId and kapitalType <> rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
-            query.setParameter("hartijaId", hartijaId);
-
+            query.setParameter("valuta", valuta);
+        } else {
+            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and haritjeOdVrednostiID = :hartijaId and kapitalType = :kapitalType");
+            query.setParameter("hartijaId", transakcijaRequest.getHartijaId());
+            query.setParameter("kapitalType", transakcijaRequest.getType());
         }
         query.setParameter("racun", racun);
-        query.setParameter("valuta", valuta);
         query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
         List<SredstvaKapital> skList = query.getResultList();
         if(skList.size() != 1) {
-            log.error("dodajTransakciju: unable to find sredstvaKapital for {} and {}", racun.getBrojRacuna().toString(), kodValute);
+            log.error("dodajTransakciju: unable to find sredstvaKapital for {} and {}", racun.getBrojRacuna().toString(), transakcijaRequest.getValutaOznaka());
             return null;
         }
 
         SredstvaKapital sredstvaKapital = skList.get(0);
 
         // Izracunaj novo ukupno stanje na racunu
-        Double novoStanje = sredstvaKapital.getUkupno() + uplata - isplata;
+        Double novoStanje = sredstvaKapital.getUkupno() + transakcijaRequest.getUplata() - transakcijaRequest.getIsplata();
 
         // Izracunaj koliko se rezervisanih sredstava koristi u transakciji
         Double rezervisanoKoristi = 0.0;
         // Pokupi koliko je preostalo rezervisanih sredstava za taj order
-        Double rezervisanoForOrder = transakcijaRepository.getRezervisanoForOrder(orderId);
+        Double rezervisanoForOrder = transakcijaRepository.getRezervisanoForOrder(transakcijaRequest.getOrderId());
         if (rezervisanoForOrder != null) {
-            if(rezervisanoForOrder > isplata) {
-                rezervisanoKoristi = isplata;
+            if(rezervisanoForOrder > transakcijaRequest.getIsplata()) {
+                rezervisanoKoristi = transakcijaRequest.getIsplata();
             } else {
                 rezervisanoKoristi = rezervisanoForOrder;
             }
         }
 
         // Ukoliko je poslednji segmet, proveri da li treba izvrsiti povracaj rezervisanih sredstava, u slucaju da je ostao visak
-        if (lastSegment && rezervisanoForOrder != null && rezervisanoForOrder + rezervisano - rezervisanoKoristi > 0) {
+        Double rezervisano = transakcijaRequest.getRezervisano();
+        if (transakcijaRequest.getLastSegment() && rezervisanoForOrder != null && rezervisanoForOrder + rezervisano - rezervisanoKoristi > 0) {
             rezervisano += -1 * (rezervisanoForOrder - rezervisanoKoristi);
         }
 
@@ -174,7 +183,7 @@ public class TransakcijaService {
         Double novoRaspolozivo = novoStanje - novoRezervisano;
 
         // Izracunaj promenu limita korisnika
-        Double limitDelta = rezervisano + (isplata-rezervisanoKoristi);
+        Double limitDelta = rezervisano + (transakcijaRequest.getIsplata()-rezervisanoKoristi);
 
         // Provera da li je novo raspolozivo u plusu (ako nije, nemamo sredstva na racunu, pa treba odbiti transakciju)
         if(novoRaspolozivo < 0) {
@@ -191,20 +200,26 @@ public class TransakcijaService {
         Transakcija t = new Transakcija();
         t.setRacun(racun);
         t.setUsername(username);
-        t.setValuta(valuta);
-        t.setOrderId(orderId);
+        t.setKapitalType(transakcijaRequest.getType());
+        if(transakcijaRequest.getType() == KapitalType.NOVAC) {
+            t.setValuta(valuta);
+        } else {
+            t.setHaritjeOdVrednostiID(transakcijaRequest.getHartijaId());
+        }
+        t.setOrderId(transakcijaRequest.getOrderId());
         t.setDatumVreme(new Date());
-        t.setOpis(opis);
-        t.setUplata(uplata);
-        t.setIsplata(isplata);
+        t.setOpis(transakcijaRequest.getOpis());
+        t.setUplata(transakcijaRequest.getUplata());
+        t.setIsplata(transakcijaRequest.getIsplata());
         t.setRezervisano(rezervisano);
         t.setRezervisanoKoristi(rezervisanoKoristi);
+        t.setUnitPrice(transakcijaRequest.getUnitPrice());
 
         // Racunanje i izmena limita
         // Konverzija iz ne-RSD valutu u RSD
-        if(limitDelta != 0) {
-            if (!kodValute.equalsIgnoreCase("RSD")) {
-                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, kodValute, "RSD");
+        if(transakcijaRequest.getType() == KapitalType.NOVAC && limitDelta != 0 && !token.equals("Bearer BERZA-SERVICE")) {
+            if (!transakcijaRequest.getValutaOznaka().equalsIgnoreCase("RSD")) {
+                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, transakcijaRequest.getValutaOznaka(), "RSD");
                 if (resp.getBody() == null) {
                     return null;
                 }

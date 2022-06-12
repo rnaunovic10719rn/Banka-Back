@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.edu.raf.banka.racun.dto.KapitalHartijeDto;
+import rs.edu.raf.banka.racun.dto.KapitalPoTipuHartijeDto;
+import rs.edu.raf.banka.racun.dto.TransakcijeHartijeDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.dto.DateFilter;
-import rs.edu.raf.banka.racun.dto.KapitalStanjeDto;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
@@ -15,6 +17,7 @@ import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
 import org.modelmapper.ModelMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -41,12 +44,7 @@ public class RacunController {
         if(transakcijaRequest.getOrderId() == null && transakcijaRequest.getRezervisano() > 0) {
             return ResponseEntity.badRequest().body("bad request");
         }
-        Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest.getBrojRacuna()
-                , transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka()
-                , transakcijaRequest.getOrderId(), transakcijaRequest.getUplata()
-                , transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano()
-                , transakcijaRequest.getLastSegment()
-                , transakcijaRequest.getType(), transakcijaRequest.getHartijaId());
+        Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest);
         if (t == null) {
             return ResponseEntity.badRequest().body("bad request");
         }
@@ -73,12 +71,12 @@ public class RacunController {
 
 
     }
-    @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SredstvaKapital> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String hartijaType, @PathVariable Long hartijaId, @PathVariable String valuta) {
          /*
                TODO Porvera da li je supervizor
             */
-        return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun), valuta, KapitalType.valueOf(hartijaType), hartijaId));
+        return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun), KapitalType.valueOf(hartijaType), hartijaId));
     }
 
     @GetMapping(value = "/stanjeAgent", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -88,17 +86,28 @@ public class RacunController {
     }
 
 
-    @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {
-        String role = userService.getRoleByToken(token);
-        if (role.equals("ROLE_AGENT")) {
+    @GetMapping(value = "/kapitalStanje", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token) {
+        List<KapitalHartijeDto> kapitalHartijeDtoList = sredstvaKapitalService.getUkupnoStanjePoHartijama(token);
+        if (kapitalHartijeDtoList == null)
             return ResponseEntity.badRequest().body("bad request");
-        }
-        var kapitali = sredstvaKapitalService.getAll(UUID.fromString(racun));
-        var result = sredstvaKapitalService.getSumStanje(kapitali, token);
-        return ResponseEntity.ok(result);
-
+        return ResponseEntity.ok(kapitalHartijeDtoList);
     }
 
+    @GetMapping(value = "/kapitalStanje/{kapitalType}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjePoTipu(@RequestHeader("Authorization") String token, @PathVariable String kapitalType) {
+        List<KapitalPoTipuHartijeDto> kapitalPoTipuHartijeDtos = sredstvaKapitalService.getStanjeJednogTipaHartije(token, kapitalType);
+        if (kapitalPoTipuHartijeDtos == null)
+            return ResponseEntity.badRequest().body("bad request");
+        return ResponseEntity.ok(kapitalPoTipuHartijeDtos);
+    }
+
+    @GetMapping(value = "/transakcijaHartije/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getTransakcijeHartije(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        List<TransakcijeHartijeDto> transakcijeHartijeDtos = sredstvaKapitalService.getTransakcijeHartije(id);
+        if (transakcijeHartijeDtos == null)
+            return ResponseEntity.badRequest().body("bad request");
+        return ResponseEntity.ok(transakcijeHartijeDtos);
+    }
 
 }
