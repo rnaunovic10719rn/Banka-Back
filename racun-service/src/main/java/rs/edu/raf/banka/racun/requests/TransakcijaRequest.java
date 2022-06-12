@@ -22,5 +22,6 @@ public class TransakcijaRequest {
     private Boolean lastSegment = false;
     private KapitalType type;
     private long hartijaId;
+    private String username;
 
 }
