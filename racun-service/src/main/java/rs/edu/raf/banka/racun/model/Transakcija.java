@@ -39,4 +39,6 @@ public class Transakcija {
     private double rezervisano;
     private double rezervisanoKoristi;
 
+    private double unitPrice;
+
 }
