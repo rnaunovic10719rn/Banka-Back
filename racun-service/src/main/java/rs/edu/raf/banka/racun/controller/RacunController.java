@@ -27,15 +27,13 @@ public class RacunController {
 
     private final SredstvaKapitalService sredstvaKapitalService;
     private final TransakcijaService transakcijaService;
-    private final UserService userService;
-    private final ModelMapper modelMapper;
+
 
     @Autowired
-    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService, ModelMapper modelMapper) {
+    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService) {
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaService = transakcijaService;
-        this.userService = userService;
-        this.modelMapper = modelMapper;
+
     }
 
 
