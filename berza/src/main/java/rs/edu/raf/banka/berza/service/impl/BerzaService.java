@@ -11,13 +11,9 @@ import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.*;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -26,7 +22,6 @@ public class BerzaService {
     private BerzaRepository berzaRepository;
     private AkcijeRepository akcijeRepository;
     private OrderService orderService;
-    private TransakcijaService transakcijaService;
     private AkcijePodaciService akcijePodaciService;
     private ForexPodaciService forexPodaciService;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
@@ -35,12 +30,11 @@ public class BerzaService {
 
     @Autowired
     public BerzaService(BerzaRepository berzaRepository, AkcijeRepository akcijeRepository,
-                        TransakcijaService transakcijaService, OrderService orderService, AkcijePodaciService akcijePodaciService,
+                        OrderService orderService, AkcijePodaciService akcijePodaciService,
                         ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
                         UserService userService){
         this.berzaRepository = berzaRepository;
         this.akcijeRepository = akcijeRepository;
-        this.transakcijaService = transakcijaService;
         this.orderService = orderService;
         this.akcijePodaciService = akcijePodaciService;
         this.forexPodaciService = forexPodaciService;
@@ -76,7 +70,7 @@ public class BerzaService {
 
         // Korak 1b: Inicijalizacija potrebnih promeniljivih
         Long hartijaId = -1L;
-        Long berza = -1L;
+        Berza berza = null;
         Double ask = 0.0;
         Double bid = 0.0;
 
@@ -85,7 +79,7 @@ public class BerzaService {
             AkcijePodaciDto akcije = akcijePodaciService.getAkcijaByTicker(oznakaHartije);
             if(akcije != null) {
                 hartijaId = akcije.getId();
-                berza = akcije.getBerzaId();
+                berza = berzaRepository.getById(akcije.getBerzaId());
 
                 // NB: Ne postoje podaci o asku, bidu, uzima se trenutna cena
                 ask = akcije.getPrice();
@@ -113,8 +107,6 @@ public class BerzaService {
         // Korak 2a: Proveri ispravnost hartije od vrednosti
         if(hartijaId == -1L)
             return new OrderResponse(MessageUtils.ERROR);
-        // TODO: Refactor?
-        OrderService.berzaId = berza;
 
         // Korak 3: Izracunaj ukupnu cenu i proviziju
         Double ukupnaCena = getPrice(ask, bid, orderAkcija) * kolicina;
@@ -127,14 +119,10 @@ public class BerzaService {
         Long userId = userService.getUserByToken(token).getId();
 
         // Korak 5: Sacuvaj order u bazi podataka
-        Order order = orderService.saveOrder(userId, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
+        Order order = orderService.saveOrder(userId, berza, hartijaId, hartijaTip, kolicina, orderAkcija, ukupnaCena,
                 provizija, orderType, isAON, isMargin, oznakaHartije, status, ask, bid);
 
-        // Korak 6: Pokreni izvrsavanje ordera ako je automatski approvovan (inace ce izvrasavenje poceti tek da se approvuje)
-        if(status == OrderStatus.APPROVED)
-            orderService.executeOrder(order.getId());
-
-        // Korak 7: Vrati poruku da je order primljen
+        // Korak 6: Vrati poruku da je order primljen
         return new OrderResponse(MessageUtils.ORDER_SUCCESSFUL);
     }
 
@@ -144,14 +132,16 @@ public class BerzaService {
 
         Double toReturn;
         if(orderAction.equals(OrderAction.BUY)) {
-            cene = transakcijaService.findPriceActionBuy(bid);
-            if(cene.size() >= 3)
-                return cene.get(random.nextInt(3));
+            // TODO: Prepraviti ovo.
+//            cene = transakcijaService.findPriceActionBuy(bid);
+//            if(cene.size() >= 3)
+//                return cene.get(random.nextInt(3));
             toReturn = bid;
         } else { // SELL
-            cene = transakcijaService.findPriceActionBuy(ask);
-            if(cene.size() >= 3)
-                return cene.get(random.nextInt(3));
+            // TODO: Prepraviti ovo.
+//            cene = transakcijaService.findPriceActionBuy(ask);
+//            if(cene.size() >= 3)
+//                return cene.get(random.nextInt(3));
             toReturn = ask;
         }
 

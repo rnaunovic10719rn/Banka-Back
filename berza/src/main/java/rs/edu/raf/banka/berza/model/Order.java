@@ -35,6 +35,8 @@ public class Order {
     private HartijaOdVrednostiType hartijaOdVrednosti;
 
     private Integer kolicina;
+    private Integer preostalaKolicina;
+    private Integer backoff = -1;
 
     @Enumerated(value = EnumType.STRING)
     private OrderAction orderAction;
@@ -59,4 +61,7 @@ public class Order {
     private Boolean done = false;
     private Long orderManagerId;
     private Date lastModified;
+
+    @ManyToOne
+    private Berza berza;
 }
