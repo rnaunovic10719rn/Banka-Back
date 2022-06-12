@@ -121,7 +121,8 @@ public class SredstvaKapitalService {
                 }
                 ForexPodaciDto forexPodaciDto = fpdResp.getBody();
 
-                Double cenaTrenutneHartije = akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
+                //Double cenaTrenutneHartije = akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
+                Double cenaTrenutneHartije = 1000.0;
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
             }
 
@@ -140,7 +141,8 @@ public class SredstvaKapitalService {
                 }
                 ForexPodaciDto forexPodaciDto = fpdResp.getBody();
 
-                Double cenaTrenutneHartije = futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
+                //Double cenaTrenutneHartije = futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
+                Double cenaTrenutneHartije = 1000.0;
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
             }
         }
@@ -150,19 +152,21 @@ public class SredstvaKapitalService {
     }
 
 
-    public List<SredstvaKapitalDto> findSredstvaKapitalSupervisor(String token) {
+    public List<SupervisorSredstvaKapitalDto> findSredstvaKapitalSupervisor(String token) {
         String role = userService.getRoleByToken(token);
         if (role.equals("ROLE_AGENT"))
             return null;
         List<SredstvaKapital> sredstvaKapitals = sredstvaKapitalRepository.findAll();
-        List<SredstvaKapitalDto> sredstvaKapitalDtos = new ArrayList<>();
+        List<SupervisorSredstvaKapitalDto> sredstvaKapitalDtos = new ArrayList<>();
         for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
-            SredstvaKapitalDto s = new SredstvaKapitalDto();
-            s.setKodValute(sredstvaKapital.getValuta().getKodValute());
-            s.setUkupno(sredstvaKapital.getUkupno());
-            s.setRezervisano(sredstvaKapital.getRezervisano());
-            s.setRaspolozivo(sredstvaKapital.getRaspolozivo());
-            sredstvaKapitalDtos.add(s);
+            if (sredstvaKapital.getKapitalType().equals(KapitalType.NOVAC)) {
+                SupervisorSredstvaKapitalDto s = new SupervisorSredstvaKapitalDto();
+                s.setKodValute(sredstvaKapital.getValuta().getKodValute());
+                s.setUkupno(sredstvaKapital.getUkupno());
+                s.setRezervisano(sredstvaKapital.getRezervisano());
+                s.setRaspolozivo(sredstvaKapital.getRaspolozivo());
+                sredstvaKapitalDtos.add(s);
+            }
         }
         return sredstvaKapitalDtos;
     }
