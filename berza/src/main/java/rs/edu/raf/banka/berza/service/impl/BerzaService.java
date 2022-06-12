@@ -77,7 +77,11 @@ public class BerzaService {
         Double provizija = getCommission(ukupnaCena, orderType);
 
         // Korak 4: Odredi order status, tj. da li order mora da bude approvovan ili je automatski approvovan
-        OrderStatus status = getOrderStatus(token, ukupnaCena);
+        String valuta = "USD";
+        if(askBidPrice.getBerza() != null) {
+            valuta = askBidPrice.getBerza().getValuta().getKodValute();
+        }
+        OrderStatus status = getOrderStatus(token, ukupnaCena, valuta);
 
         // Korak 4a: Uzmi ID korisnika kako bi mogli da vezemo porudzbinu za korisnika
         Long userId = userService.getUserByToken(token).getId();
@@ -131,12 +135,16 @@ public class BerzaService {
         return OrderType.MARKET_ORDER;
     }
 
-    private OrderStatus getOrderStatus(String token, double price) {
+    private OrderStatus getOrderStatus(String token, double price, String valuta) {
         UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
 
         if(role.equals(UserRole.ROLE_AGENT)) {
             UserDto user = userService.getUserByToken(token);
             Double presostaoLimit = user.getLimit() - user.getLimitUsed();
+            if(!valuta.equals("RSD")) {
+                ForexPodaciDto exchangeRate = forexPodaciService.getForexBySymbol(valuta, "RSD");
+                price *= exchangeRate.getExchangeRate();
+            }
             if(user.isNeedsSupervisorPermission() || (presostaoLimit - price < 0))
                 return OrderStatus.ON_HOLD;
         }
