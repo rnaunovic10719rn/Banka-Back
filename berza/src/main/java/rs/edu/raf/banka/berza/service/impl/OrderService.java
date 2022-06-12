@@ -109,12 +109,11 @@ public class OrderService {
         order.setKolicina(orderRequest.getKolicina());
         order.setPreostalaKolicina(orderRequest.getKolicina());
         order.setOrderAction(orderAction);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setProvizija(provizija);
         order.setOrderType(orderType);
         order.setAON(orderRequest.isAllOrNoneFlag());
         order.setMargin(orderRequest.isMarginFlag());
-        order.setOznakaHartije(orderRequest.getSymbol());
         order.setLastModified(new Date());
         order.setOrderStatus(status);
         order.setLimitValue(orderRequest.getLimitValue());
@@ -197,17 +196,17 @@ public class OrderService {
     public boolean canExecuteTransactionBuy(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue())
+                if(order.getPredvidjenaCena() <= order.getLimitValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue() && order.getUkupnaCena() < order.getBid()){
+                if(order.getPredvidjenaCena() <= order.getLimitValue() && order.getPredvidjenaCena() < order.getBid()){
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
                 break;
             case STOP_ORDER:
-                if(order.getUkupnaCena() < order.getBid())
+                if(order.getPredvidjenaCena() < order.getBid())
                     return true;
                 break;
             default:
@@ -219,16 +218,16 @@ public class OrderService {
     public boolean canExecuteTransactionSell(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue())
+                if(order.getPredvidjenaCena() > order.getLimitValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue() && order.getUkupnaCena() > order.getAsk()){
+                if(order.getPredvidjenaCena() > order.getLimitValue() && order.getPredvidjenaCena() > order.getAsk()){
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
             case STOP_ORDER:
-                if(order.getUkupnaCena() > order.getAsk())
+                if(order.getPredvidjenaCena() > order.getAsk())
                     return true;
                 break;
             default:

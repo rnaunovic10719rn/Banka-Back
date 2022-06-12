@@ -11,7 +11,6 @@ import rs.edu.raf.banka.berza.enums.OrderType;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Data
@@ -22,33 +21,33 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-//    @ManyToOne
-//    private UserAccount userAccount;
     private Long userId;
 
-    private Long hartijaOdVrednostiId;
+    @ManyToOne
+    private Berza berza;
 
-    private String hartijaOdVrednostiSymbol;
-
-    private String oznakaHartije;
+    @Enumerated(value = EnumType.STRING)
+    private OrderAction orderAction;
+    @Enumerated(value = EnumType.STRING)
+    private OrderType orderType;
+    @Enumerated(value = EnumType.STRING)
+    private OrderStatus orderStatus;
 
     @Enumerated(value = EnumType.STRING)
     private HartijaOdVrednostiType hartijaOdVrednosti;
+    private Long hartijaOdVrednostiId;
+    private String hartijaOdVrednostiSymbol;
 
     private Integer kolicina;
     private Integer preostalaKolicina;
     private Integer backoff = -1;
 
-    @Enumerated(value = EnumType.STRING)
-    private OrderAction orderAction;
-    private Double ukupnaCena;
-    private Double provizija;
     private Integer limitValue;
     private Integer stopValue;
 
-    @Enumerated(value = EnumType.STRING)
-    private OrderType orderType;
+    private Double predvidjenaCena;
+    private Double provizija;
+
     private boolean AON;
     private boolean margin;
 
@@ -58,13 +57,9 @@ public class Order {
     @Transient
     private Double bid;
 
-    @Enumerated(value = EnumType.STRING)
-    private OrderStatus orderStatus;
-
     @ColumnDefault("false")
     private Boolean done = false;
+
     private Date lastModified;
 
-    @ManyToOne
-    private Berza berza;
 }

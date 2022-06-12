@@ -57,12 +57,12 @@ public class OrderServiceTest {
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
         order.setKolicina(kolicina);
         order.setOrderAction(orderAction);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setProvizija(provizija);
         order.setOrderType(orderType);
         order.setAON(isAON);
         order.setMargin(isMargin);
-        order.setOznakaHartije(oznakaHartije);
+        order.setHartijaOdVrednostiSymbol(oznakaHartije);
         order.setAsk(ask);
         order.setBid(bid);
 
