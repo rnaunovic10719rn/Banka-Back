@@ -9,7 +9,6 @@ import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.service.impl.BerzaService;
 import rs.edu.raf.banka.berza.service.impl.HartijaService;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
@@ -94,16 +93,6 @@ public class BerzaController {
         }
         return ResponseEntity.internalServerError().body(resp);
     }
-
-    @PostMapping(value = "/order/status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getOrderStatus(@PathVariable Long id){
-        OrderStatusResponse resp = orderService.getOrderStatus(id);
-        if(resp == null) {
-            return ResponseEntity.internalServerError().build();
-        }
-        return ResponseEntity.ok(resp);
-    }
-
 
     @GetMapping(value = "/hartijeWithSettlementDate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAkcijeTimeseries(){
