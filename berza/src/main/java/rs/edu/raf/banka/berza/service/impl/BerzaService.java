@@ -83,7 +83,7 @@ public class BerzaService {
         Long userId = userService.getUserByToken(token).getId();
 
         // Korak 5: Sacuvaj order u bazi podataka
-        Order order = orderService.saveOrder(orderRequest, userId, askBidPrice.getBerza(), askBidPrice.getHartijaId(), hartijaTip, orderAkcija, ukupnaCena,
+        Order order = orderService.saveOrder(token, orderRequest, userId, askBidPrice.getBerza(), askBidPrice.getHartijaId(), hartijaTip, orderAkcija, ukupnaCena,
                 provizija, orderType, status);
         if(order == null) {
             return new OrderResponse(MessageUtils.ERROR);

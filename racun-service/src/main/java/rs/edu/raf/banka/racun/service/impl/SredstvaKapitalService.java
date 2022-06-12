@@ -86,7 +86,6 @@ public class SredstvaKapitalService {
             return null;
         }
 
-        System.err.println("OVDE 3");
         SredstvaKapital sredstvaKapital = new SredstvaKapital();
         sredstvaKapital.setRacun(racun);
         sredstvaKapital.setUkupno(ukupno);
@@ -94,8 +93,6 @@ public class SredstvaKapitalService {
         sredstvaKapital.setRaspolozivo(ukupno);
         sredstvaKapital.setKapitalType(kapitalType);
         sredstvaKapital.setHaritjeOdVrednostiID(hartijaId);
-        System.err.println("OVDE 4");
-
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 

@@ -14,12 +14,19 @@ import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
+import rs.edu.raf.banka.berza.requests.TransakcijaKapitalType;
+import rs.edu.raf.banka.berza.requests.TransakcijaRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
+import rs.edu.raf.banka.berza.response.TransakcijaResponse;
+import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
+import rs.edu.raf.banka.berza.utils.HttpUtils;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
+import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -34,13 +41,14 @@ public class OrderService {
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
     private PriceService priceService;
     private UserService userService;
+    private TransakcijaService transakcijaService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, PriceService priceService, UserService userService){
-        this.orderRepository = orderRepository;
+    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, PriceService priceService, UserService userService, TransakcijaService transakcijaService){        this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
         this.priceService = priceService;
         this.userService = userService;
+        this.transakcijaService = transakcijaService;
     }
 
     private List<Order> getOrderNotDone() {
@@ -97,11 +105,163 @@ public class OrderService {
         return new ApproveRejectOrderResponse(MessageUtils.ORDER_REJECTED);
     }
 
-    public Order saveOrder(OrderRequest orderRequest, Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
+    private TransakcijaRequest getRezervacijaForOrder(Order order) {
+        TransakcijaRequest transakcijaRequest = new TransakcijaRequest();
+
+        if (order.getHartijaOdVrednosti() == HartijaOdVrednostiType.AKCIJA || order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FUTURES_UGOVOR) {
+            // Type (Novac ili Hartija)
+            if(order.getOrderAction() == OrderAction.BUY) {
+                transakcijaRequest.setType(TransakcijaKapitalType.NOVAC);
+            } else {
+                switch (order.getHartijaOdVrednosti()) {
+                    case AKCIJA -> transakcijaRequest.setType(TransakcijaKapitalType.AKCIJA);
+                    case FUTURES_UGOVOR -> transakcijaRequest.setType(TransakcijaKapitalType.FUTURE_UGOVOR);
+                }
+            }
+
+            // Opis i valuta
+            if(order.getHartijaOdVrednosti() == HartijaOdVrednostiType.AKCIJA) {
+                if(order.getOrderAction() == OrderAction.BUY) {
+                    transakcijaRequest.setOpis("Rezervacija za kupovinu akcije " + order.getHartijaOdVrednostiSymbol());
+                    transakcijaRequest.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                } else {
+                    transakcijaRequest.setOpis("Rezervacija za prodaju akcije " + order.getHartijaOdVrednostiSymbol());
+                    transakcijaRequest.setHartijaId(order.getHartijaOdVrednostiId());
+                }
+            } else if(order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FUTURES_UGOVOR) {
+                if(order.getOrderAction() == OrderAction.BUY) {
+                    transakcijaRequest.setOpis("Rezervacija za kupovinu futures ugovora " + order.getHartijaOdVrednostiSymbol());
+                    transakcijaRequest.setValutaOznaka("USD");
+                } else {
+                    transakcijaRequest.setOpis("Rezervacija za prodaju futures ugovora " + order.getHartijaOdVrednostiSymbol());
+                    transakcijaRequest.setHartijaId(order.getHartijaOdVrednostiId());
+                }
+            }
+
+            transakcijaRequest.setOrderId(order.getId());
+            transakcijaRequest.setUplata(0.0);
+            transakcijaRequest.setIsplata(0.0);
+
+            if(order.getOrderAction() == OrderAction.BUY) {
+                transakcijaRequest.setRezervisano(order.getPredvidjenaCena());
+            } else {
+                transakcijaRequest.setRezervisano(order.getKolicina());
+            }
+
+            transakcijaRequest.setLastSegment(false);
+
+            return transakcijaRequest;
+        } else if (order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FOREX) {
+            String[] valute = order.getHartijaOdVrednostiSymbol().split(" ");
+            transakcijaRequest.setType(TransakcijaKapitalType.NOVAC);
+            transakcijaRequest.setOpis("Rezervacija za Forex transakciju " + order.getHartijaOdVrednostiSymbol());
+            transakcijaRequest.setValutaOznaka(valute[0]);
+            transakcijaRequest.setOrderId(order.getId());
+            transakcijaRequest.setUplata(0.0);
+            transakcijaRequest.setIsplata(0.0);
+            transakcijaRequest.setRezervisano(order.getPredvidjenaCena());
+            transakcijaRequest.setLastSegment(false);
+            return transakcijaRequest;
+        }
+
+        return null;
+    }
+
+    private List<TransakcijaRequest> getTransakcijeForOrder(Order order, Integer kolicina, Boolean lastSegment) {
+        List<TransakcijaRequest> transakcije = new ArrayList<>();
+
+        if (order.getHartijaOdVrednosti() == HartijaOdVrednostiType.AKCIJA || order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FUTURES_UGOVOR) {
+            if(order.getOrderAction() == OrderAction.BUY) {
+                TransakcijaRequest novac = new TransakcijaRequest();
+                novac.setType(TransakcijaKapitalType.NOVAC);
+                novac.setOpis("Isplata sredstava za " + order.getHartijaOdVrednostiSymbol());
+                novac.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                novac.setOrderId(order.getId());
+                novac.setUplata(0.0);
+                novac.setIsplata(order.getAsk() * kolicina);
+                novac.setRezervisano(0.0);
+                novac.setLastSegment(lastSegment);
+                transakcije.add(novac);
+
+                TransakcijaRequest hartija = new TransakcijaRequest();
+                switch (order.getHartijaOdVrednosti()) {
+                    case AKCIJA -> hartija.setType(TransakcijaKapitalType.AKCIJA);
+                    case FUTURES_UGOVOR -> hartija.setType(TransakcijaKapitalType.FUTURE_UGOVOR);
+                }
+                hartija.setOpis("Uplata " + order.getHartijaOdVrednostiSymbol());
+                hartija.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                hartija.setOrderId(order.getId());
+                hartija.setHartijaId(order.getHartijaOdVrednostiId());
+                hartija.setUplata(kolicina);
+                hartija.setIsplata(0.0);
+                hartija.setRezervisano(0.0);
+                hartija.setLastSegment(false);
+                transakcije.add(hartija);
+            } else {
+                TransakcijaRequest hartija = new TransakcijaRequest();
+                switch (order.getHartijaOdVrednosti()) {
+                    case AKCIJA -> hartija.setType(TransakcijaKapitalType.AKCIJA);
+                    case FUTURES_UGOVOR -> hartija.setType(TransakcijaKapitalType.FUTURE_UGOVOR);
+                }
+                hartija.setOpis("Isplata " + order.getHartijaOdVrednostiSymbol());
+                hartija.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                hartija.setOrderId(order.getId());
+                hartija.setUplata(0.0);
+                hartija.setIsplata(kolicina);
+                hartija.setRezervisano(0.0);
+                hartija.setLastSegment(lastSegment);
+                transakcije.add(hartija);
+
+                TransakcijaRequest novac = new TransakcijaRequest();
+                novac.setType(TransakcijaKapitalType.NOVAC);
+                novac.setOpis("Uplata sredstava od prodaje za " + order.getHartijaOdVrednostiSymbol());
+                novac.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                novac.setOrderId(order.getId());
+                novac.setUplata(order.getBid() * kolicina);
+                novac.setIsplata(0.0);
+                novac.setRezervisano(0.0);
+                novac.setLastSegment(false);
+                transakcije.add(novac);
+            }
+        } else if (order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FOREX) {
+            String[] valute = order.getHartijaOdVrednostiSymbol().split(" ");
+
+            TransakcijaRequest prodaja = new TransakcijaRequest();
+            prodaja.setType(TransakcijaKapitalType.NOVAC);
+            prodaja.setOpis("Forex: prodaja " + valute[0]);
+            prodaja.setValutaOznaka(valute[0]);
+            prodaja.setOrderId(order.getId());
+            prodaja.setUplata(0.0);
+            prodaja.setIsplata(order.getAsk() * kolicina);
+            prodaja.setRezervisano(0.0);
+            prodaja.setLastSegment(lastSegment);
+            transakcije.add(prodaja);
+
+            TransakcijaRequest kupovina = new TransakcijaRequest();
+            kupovina.setType(TransakcijaKapitalType.NOVAC);
+            kupovina.setOpis("Forex: kupovina " + valute[1]);
+            kupovina.setValutaOznaka(valute[1]);
+            kupovina.setOrderId(order.getId());
+            kupovina.setUplata(kolicina);
+            kupovina.setIsplata(0.0);
+            kupovina.setRezervisano(0.0);
+            kupovina.setLastSegment(false);
+            transakcije.add(kupovina);
+        }
+
+        return transakcije;
+    }
+
+    @Transactional
+    public Order saveOrder(String token, OrderRequest orderRequest, Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
                            OrderAction orderAction, Double ukupnaCena, Double provizija,
                            OrderType orderType, OrderStatus status){
+
+        String username = userService.getUserByToken(token).getUsername();
+
         Order order = new Order();
         order.setUserId(userAccount);
+        order.setUsername(username);
         order.setBerza(berza);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
@@ -119,7 +279,23 @@ public class OrderService {
         order.setLimitValue(orderRequest.getLimitValue());
         order.setStopValue(orderRequest.getStopValue());
 
-        return orderRepository.save(order);
+        order = orderRepository.save(order);
+
+        TransakcijaRequest transakcijaRequest = getRezervacijaForOrder(order);
+        if(transakcijaRequest != null) {
+            HttpUtils.retryTemplate().execute(context -> {
+                TransakcijaResponse transakcijaResponse = transakcijaService.commitTransaction(token, transakcijaRequest);
+                if(transakcijaResponse == null) {
+                    // NB: Bitno kako bi rollbackovali order.
+                    throw new RuntimeException("failed to commit transaction");
+                }
+
+                return null;
+            });
+
+        }
+
+        return order;
     }
 
     /**
@@ -146,6 +322,7 @@ public class OrderService {
         }
     }
 
+    @Transactional
     public void executeTransaction(Order order){
         // Korak 1: Ako je order na berzi, proveri da li je berza otvorena
         if(order.getBerza() != null){
@@ -181,15 +358,32 @@ public class OrderService {
             return;
 
         // Korak 4: Izvrsi order.
+        Boolean lastSegment = false;
         int novaPreostalaKolicina = order.getPreostalaKolicina() - kolicinaZaTransakciju;
-
-        log.info("Executing order {} {} for {} (remaining {})", order.getId(), order.getOrderAction(), kolicinaZaTransakciju, novaPreostalaKolicina);
-
-        order.setPreostalaKolicina(novaPreostalaKolicina);
         if(novaPreostalaKolicina <= 0) {
+            lastSegment = true;
             order.setDone(true);
             order.setLastModified(new Date());
         }
+
+        log.info("Executing order {} {} for {} (remaining {})", order.getId(), order.getOrderAction(), kolicinaZaTransakciju, novaPreostalaKolicina);
+
+        List<TransakcijaRequest> transakcije = getTransakcijeForOrder(order, kolicinaZaTransakciju, lastSegment);
+        for(TransakcijaRequest tr: transakcije) {
+            tr.setUsername(order.getUsername());
+            HttpUtils.retryTemplate().execute(context -> {
+                TransakcijaResponse transakcijaResponse = transakcijaService.commitTransaction("Bearer BERZA-SERVICE", tr);
+                if(transakcijaResponse == null) {
+                    // NB: Bitno kako bi rollbackovali order.
+                    throw new RuntimeException("failed to commit transaction");
+                }
+
+                return null;
+            });
+        }
+
+        order.setPreostalaKolicina(novaPreostalaKolicina);
+
         orderRepository.save(order);
     }
 
