@@ -40,12 +40,7 @@ public class RacunController {
         if(transakcijaRequest.getOrderId() == null && transakcijaRequest.getRezervisano() > 0) {
             return ResponseEntity.badRequest().body("bad request");
         }
-        Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest.getBrojRacuna()
-                , transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka()
-                , transakcijaRequest.getOrderId(), transakcijaRequest.getUplata()
-                , transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano()
-                , transakcijaRequest.getLastSegment()
-                , transakcijaRequest.getType(), transakcijaRequest.getHartijaId());
+        Transakcija t = transakcijaService.dodajTransakciju(token, transakcijaRequest);
         if (t == null) {
             return ResponseEntity.badRequest().body("bad request");
         }
@@ -72,12 +67,12 @@ public class RacunController {
 
 
     }
-    @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}/{valuta}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SredstvaKapital> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String hartijaType, @PathVariable Long hartijaId, @PathVariable String valuta) {
          /*
                TODO Porvera da li je supervizor
             */
-        return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun), valuta, KapitalType.valueOf(hartijaType), hartijaId));
+        return ResponseEntity.ok(sredstvaKapitalService.get(UUID.fromString(racun), KapitalType.valueOf(hartijaType), hartijaId));
     }
 
     @GetMapping(value = "/stanjeAgent", produces = MediaType.APPLICATION_JSON_VALUE)

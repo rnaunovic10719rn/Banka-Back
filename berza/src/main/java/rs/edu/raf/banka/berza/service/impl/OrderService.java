@@ -7,11 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
@@ -30,12 +32,14 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private FuturesUgovoriPodaciService futuresUgovoriPodaciService;
+    private PriceService priceService;
     private UserService userService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, UserService userService){
+    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, PriceService priceService, UserService userService){
         this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
+        this.priceService = priceService;
         this.userService = userService;
     }
 
@@ -93,28 +97,27 @@ public class OrderService {
         return new ApproveRejectOrderResponse(MessageUtils.ORDER_REJECTED);
     }
 
-    public Order saveOrder(Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
-                           Integer kolicina, OrderAction orderAction, Double ukupnaCena, Double provizija,
-                           OrderType orderType, boolean isAON, boolean isMargin, String oznakaHartije,
-                           OrderStatus status, Double ask, Double bid){
+    public Order saveOrder(OrderRequest orderRequest, Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
+                           OrderAction orderAction, Double ukupnaCena, Double provizija,
+                           OrderType orderType, OrderStatus status){
         Order order = new Order();
         order.setUserId(userAccount);
         order.setBerza(berza);
         order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
         order.setHartijaOdVrednosti(hartijaOdVrednostiType);
-        order.setKolicina(kolicina);
-        order.setPreostalaKolicina(kolicina);
+        order.setHartijaOdVrednostiSymbol(orderRequest.getSymbol());
+        order.setKolicina(orderRequest.getKolicina());
+        order.setPreostalaKolicina(orderRequest.getKolicina());
         order.setOrderAction(orderAction);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setProvizija(provizija);
         order.setOrderType(orderType);
-        order.setAON(isAON);
-        order.setMargin(isMargin);
-        order.setOznakaHartije(oznakaHartije);
+        order.setAON(orderRequest.isAllOrNoneFlag());
+        order.setMargin(orderRequest.isMarginFlag());
         order.setLastModified(new Date());
         order.setOrderStatus(status);
-        order.setAsk(ask);
-        order.setBid(bid);
+        order.setLimitValue(orderRequest.getLimitValue());
+        order.setStopValue(orderRequest.getStopValue());
 
         return orderRepository.save(order);
     }
@@ -132,6 +135,11 @@ public class OrderService {
                 log.info("Skipping order {} because it's not approved", o.getId());
                 return;
             }
+
+            log.info("Getting prices for order {}", o.getId());
+            AskBidPriceDto askBidPrice = priceService.getAskBidPrice(o.getHartijaOdVrednosti(), o.getHartijaOdVrednostiSymbol());
+            o.setAsk(askBidPrice.getAsk());
+            o.setBid(askBidPrice.getBid());
 
             log.info("Executing order {}", o.getId());
             executeTransaction(o);
@@ -188,18 +196,18 @@ public class OrderService {
     public boolean canExecuteTransactionBuy(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue())
+                if(order.getAsk() < order.getLimitValue())
+                    return true;
+                break;
+            case STOP_ORDER:
+                if(order.getAsk() > order.getStopValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() <= order.getLimitValue() && order.getUkupnaCena() < order.getBid()){
+                if(order.getPredvidjenaCena() <= order.getLimitValue() && order.getPredvidjenaCena() < order.getBid()){
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
-                break;
-            case STOP_ORDER:
-                if(order.getUkupnaCena() < order.getBid())
-                    return true;
                 break;
             default:
                 return true;
@@ -210,18 +218,18 @@ public class OrderService {
     public boolean canExecuteTransactionSell(Order order){
         switch(order.getOrderType()){
             case LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue())
+                if(order.getBid() > order.getLimitValue())
+                    return true;
+                break;
+            case STOP_ORDER:
+                if(order.getBid() < order.getStopValue())
                     return true;
                 break;
             case STOP_LIMIT_ORDER:
-                if(order.getUkupnaCena() > order.getLimitValue() && order.getUkupnaCena() > order.getAsk()){
+                if(order.getPredvidjenaCena() > order.getLimitValue() && order.getPredvidjenaCena() > order.getAsk()){
                     order.setOrderType(OrderType.LIMIT_ORDER);
                     return true;
                 }
-            case STOP_ORDER:
-                if(order.getUkupnaCena() > order.getAsk())
-                    return true;
-                break;
             default:
                 return true;
         }
