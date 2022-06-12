@@ -52,8 +52,8 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.findByRacunAndValuta(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta));
     }
 
-    public SredstvaKapital get(UUID racun, String valuta, KapitalType hartijaType, Long hartijaId) {
-        return sredstvaKapitalRepository.findByRacunAndValutaAndHaritja(racunRepository.findByBrojRacuna(racun), valutaRepository.findValutaByKodValute(valuta),hartijaType, hartijaId);
+    public SredstvaKapital get(UUID racun, KapitalType hartijaType, Long hartijaId) {
+        return sredstvaKapitalRepository.findByRacunAndHaritja(racunRepository.findByBrojRacuna(racun), hartijaType, hartijaId);
     }
 
     public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, double ukupno) {
@@ -78,26 +78,22 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 
-    public SredstvaKapital pocetnoStanje(UUID uuidRacuna, String kodValute, Long hartijaId, double ukupno) {
+    public SredstvaKapital pocetnoStanje(UUID uuidRacuna, KapitalType kapitalType, Long hartijaId, double ukupno) {
         Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
         if(racun == null) {
             return null;
         }
 
-        Valuta valuta = valutaRepository.findValutaByKodValute(kodValute);
-        if(valuta == null) {
-            return null;
-        }
-
+        System.err.println("OVDE 3");
         SredstvaKapital sredstvaKapital = new SredstvaKapital();
-        sredstvaKapital = new SredstvaKapital();
         sredstvaKapital.setRacun(racun);
-        sredstvaKapital.setValuta(valuta);
         sredstvaKapital.setUkupno(ukupno);
         sredstvaKapital.setRezervisano(0);
         sredstvaKapital.setRaspolozivo(ukupno);
-        sredstvaKapital.setKapitalType(KapitalType.NOVAC);
+        sredstvaKapital.setKapitalType(kapitalType);
         sredstvaKapital.setHaritjeOdVrednostiID(hartijaId);
+        System.err.println("OVDE 4");
+
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 
