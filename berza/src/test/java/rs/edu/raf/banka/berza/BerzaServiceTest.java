@@ -61,7 +61,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
 
         Berza berza = new Berza();
@@ -87,7 +87,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
 
         Berza berza = new Berza();
@@ -117,7 +117,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
 
         Berza berza = new Berza();
@@ -154,7 +154,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
 
         Berza berza = new Berza();
@@ -185,7 +185,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
 
         Berza berza = new Berza();
@@ -216,7 +216,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
 
         Berza berza = new Berza();
@@ -277,7 +277,7 @@ public class BerzaServiceTest {
         Double ask = 50.00;
         order.setAsk(ask);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionSell(order));
     }
@@ -290,7 +290,7 @@ public class BerzaServiceTest {
         Double ask = 50.00;
         order.setAsk(ask);
         order.setOrderType(OrderType.STOP_LIMIT_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionSell(order));
     }
@@ -303,7 +303,7 @@ public class BerzaServiceTest {
         Double ask = 50.00;
         order.setAsk(ask);
         order.setOrderType(OrderType.STOP_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionSell(order));
     }
@@ -316,7 +316,7 @@ public class BerzaServiceTest {
         Double ask = 50.00;
         order.setAsk(ask);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionSell(order));
     }
@@ -329,7 +329,7 @@ public class BerzaServiceTest {
         Double bid = 500.00;
         order.setBid(bid);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionBuy(order));
     }
@@ -342,7 +342,7 @@ public class BerzaServiceTest {
         Double bid = 500.00;
         order.setBid(bid);
         order.setOrderType(OrderType.STOP_LIMIT_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionBuy(order));
     }
@@ -355,7 +355,7 @@ public class BerzaServiceTest {
         Double bid = 500.00;
         order.setBid(bid);
         order.setOrderType(OrderType.STOP_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionBuy(order));
     }
@@ -368,7 +368,7 @@ public class BerzaServiceTest {
         Double bid = 500.00;
         order.setBid(bid);
         order.setOrderType(OrderType.MARKET_ORDER);
-        order.setUkupnaCena(ukupnaCena);
+        order.setPredvidjenaCena(ukupnaCena);
         order.setLimitValue(limitValue);
         assertTrue(orderService.canExecuteTransactionBuy(order));
     }
@@ -385,7 +385,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
         order.setAON(true);
         Double ask = 1.00;
@@ -418,7 +418,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.BUY);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(200.0);
+        order.setPredvidjenaCena(200.0);
         order.setLimitValue(105);
         order.setAON(false);
         Double ask = 1.00;
@@ -452,7 +452,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.SELL);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
         order.setAON(false);
         Double ask = 1.00;
@@ -479,7 +479,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.SELL);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
         order.setAON(false);
         Double ask = 12.00;
@@ -494,7 +494,7 @@ public class BerzaServiceTest {
         order.setKolicina(100);
         order.setOrderAction(OrderAction.SELL);
         order.setOrderType(OrderType.LIMIT_ORDER);
-        order.setUkupnaCena(101.0);
+        order.setPredvidjenaCena(101.0);
         order.setLimitValue(105);
         order.setAON(false);
         Double ask = 12.00;
