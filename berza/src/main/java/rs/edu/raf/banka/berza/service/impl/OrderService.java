@@ -79,7 +79,6 @@ public class OrderService {
             return rejectOrder(userRole, id);
         }
 
-    //    order.setOrderManagerId();
         order.setOrderStatus(OrderStatus.APPROVED);
         order.setLastModified(new Date());
         orderRepository.save(order);
@@ -95,7 +94,6 @@ public class OrderService {
         }
 
         Order order = orderRepository.getById(id);
-        //    order.setOrderManagerId();
         order.setOrderStatus(OrderStatus.REJECTED);
         order.setLastModified(new Date());
         orderRepository.save(order);
@@ -123,7 +121,8 @@ public class OrderService {
         order.setOrderStatus(status);
         order.setAsk(ask);
         order.setBid(bid);
-        return this.orderRepository.save(order);
+
+        return orderRepository.save(order);
     }
 
     public void finishOrder(Order order){
@@ -131,6 +130,10 @@ public class OrderService {
         order.setLastModified(new Date());
         orderRepository.save(order);
     }
+
+    /**
+     * OBRADA ORDERA
+     */
 
     @Async
     @Transactional
