@@ -13,7 +13,6 @@ import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -104,66 +103,56 @@ public class SredstvaKapitalService {
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 
-//    public List<KapitalHartijeDto> getUkupnoStanjePoHartijama(UUID racun) {
-//        List<SredstvaKapital> sredstvaKapitals = this.getAll(racun);
-//        List<KapitalHartijeDto> toReturn = new ArrayList<>();
-//        for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
-//            if (sredstvaKapital.getHaritjeOdVrednostiID() != null) {
-//                if (sredstvaKapital.getKapitalType().equals(KapitalType.AKCIJA)) {
-//                    for (KapitalHartijeDto khd : toReturn) {
-//                        if (khd.getKapitalType().equals(KapitalType.AKCIJA)) {
-//
-//                            khd.setUkupno(khd.getUkupno());
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+    public List<KapitalHartijeDto> getUkupnoStanjePoHartijama(String token) {
+        List<SredstvaKapital> sredstvaKapitals = sredstvaKapitalRepository.findAll();
+        List<KapitalHartijeDto> toReturn = new ArrayList<>();
+        KapitalHartijeDto khdAkcija = new KapitalHartijeDto(KapitalType.AKCIJA, 0.0);
+        KapitalHartijeDto khdFuture = new KapitalHartijeDto(KapitalType.FUTURE_UGOVOR, 0.0);
+        for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
+            //TODO: ovo treba kasnije prosiriti na opcije i obaveznice
+            if (sredstvaKapital.getKapitalType().equals(KapitalType.AKCIJA)) {
 
+                ResponseEntity<AkcijePodaciDto> apdResp = HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, sredstvaKapital.getHaritjeOdVrednostiID());
+                if (apdResp.getBody() == null) {
+                    return null;
+                }
+                AkcijePodaciDto akcijePodaciDto = apdResp.getBody();
 
-    public ResponseEntity<FuturesPodaciDto> getFuture(Long id) {
-        return HttpUtils.getFuturesById(FUTURES_BY_ID_URL, id);
+                //TODO: iz berze dohvatiti valutu za hartiju pa onda za tu valutu racunati rate, za sada se pretpostavlja da je dolar
+                ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, "USD", "RSD");
+                if (fpdResp.getBody() == null) {
+                    return null;
+                }
+                ForexPodaciDto forexPodaciDto = fpdResp.getBody();
+
+                Double cenaTrenutneHartije = akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
+                khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
+            }
+
+            if (sredstvaKapital.getKapitalType().equals(KapitalType.FUTURE_UGOVOR)) {
+
+                ResponseEntity<FuturesPodaciDto> futureResp = HttpUtils.getFuturesById(FUTURES_BY_ID_URL, sredstvaKapital.getHaritjeOdVrednostiID());
+                if (futureResp.getBody() == null) {
+                    return null;
+                }
+                FuturesPodaciDto futuresPodaciDto = futureResp.getBody();
+
+                //TODO: iz berze dohvatiti valutu za hartiju pa onda za tu valutu racunati rate, za sada se pretpostavlja da je dolar
+                ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, "USD", "RSD");
+                if (fpdResp.getBody() == null) {
+                    return null;
+                }
+                ForexPodaciDto forexPodaciDto = fpdResp.getBody();
+
+                Double cenaTrenutneHartije = futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
+                khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
+            }
+        }
+        toReturn.add(khdAkcija);
+        toReturn.add(khdFuture);
+        return toReturn;
     }
-    public ResponseEntity<AkcijePodaciDto> getAkcija(Long id) {
-        return HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, id);
-    }
 
-//    public KapitalHartijeDto getSumStanje(List<SredstvaKapital> kapitali, String token)
-//    {
-//        var rates = new HashMap<String, Double>();
-//        rates.put("RSD", 1.0);
-//        HashMap<KapitalType, Double> values = new HashMap<>();
-//
-//        for(var kapitalType: KapitalType.values())
-//            values.put(kapitalType, 0.0);
-//
-//        for(var kapital: kapitali)
-//        {
-//            var valuta = kapital.getValuta().getKodValute();
-//            if(!rates.containsKey(valuta))  {
-//                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, valuta, "RSD");
-//                if (resp.getBody() == null) {
-//                    return null;
-//                }
-//
-//                //var rate = getRSDForexRate(valuta);
-//                //rates.put(valuta, rate.getExchangeRate());
-//            }
-//            double value = kapital.getUkupno() * rates.get(valuta);
-//            values.compute(kapital.getKapitalType(), (k,v) -> v + value);
-//        }
-//
-//        KapitalHartijeDto result = new KapitalHartijeDto();
-//        result.setNovac(values.get(KapitalType.NOVAC));
-//        result.setForex(values.get(KapitalType.FOREX));
-//        result.setFuture(values.get(KapitalType.FUTURE_UGOVOR));
-//        result.setAkcija(values.get(KapitalType.AKCIJA));
-//
-//        double sum = result.getNovac() + result.getAkcija() + result.getForex() + result.getFuture();
-//        result.setUkupno(sum);
-//        return result;
-//    }
 
     public List<SredstvaKapitalDto> findSredstvaKapitalSupervisor(String token) {
         String role = userService.getRoleByToken(token);
