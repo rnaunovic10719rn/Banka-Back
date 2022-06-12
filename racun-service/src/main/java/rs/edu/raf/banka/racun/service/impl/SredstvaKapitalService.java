@@ -121,8 +121,7 @@ public class SredstvaKapitalService {
                 }
                 ForexPodaciDto forexPodaciDto = fpdResp.getBody();
 
-                //Double cenaTrenutneHartije = akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
-                Double cenaTrenutneHartije = 1000.0;
+                Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * akcijePodaciDto.getPrice() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
             }
 
@@ -141,14 +140,31 @@ public class SredstvaKapitalService {
                 }
                 ForexPodaciDto forexPodaciDto = fpdResp.getBody();
 
-                //Double cenaTrenutneHartije = futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
-                Double cenaTrenutneHartije = 1000.0;
+                Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
                 khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
             }
         }
         toReturn.add(khdAkcija);
         toReturn.add(khdFuture);
         return toReturn;
+    }
+
+    public AkcijePodaciDto getAkcija(Long id) {
+        ResponseEntity<AkcijePodaciDto> apdResp = HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, id);
+        if (apdResp.getBody() == null) {
+            return null;
+        }
+        AkcijePodaciDto akcijePodaciDto = apdResp.getBody();
+        return akcijePodaciDto;
+    }
+
+    public ForexPodaciDto getForex(String token) {
+        ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, "USD", "RSD");
+        if (fpdResp.getBody() == null) {
+            return null;
+        }
+        ForexPodaciDto forexPodaciDto = fpdResp.getBody();
+        return forexPodaciDto;
     }
 
 

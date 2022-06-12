@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.edu.raf.banka.racun.dto.KapitalHartijeDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.dto.DateFilter;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -14,6 +15,7 @@ import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
 import org.modelmapper.ModelMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -84,8 +86,22 @@ public class RacunController {
 
     @GetMapping(value = "/kapitalStanje", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(sredstvaKapitalService.getUkupnoStanjePoHartijama(token));
+        List<KapitalHartijeDto> kapitalHartijeDtoList = sredstvaKapitalService.getUkupnoStanjePoHartijama(token);
+        if (kapitalHartijeDtoList == null)
+            return ResponseEntity.badRequest().body("bad request");
+        return ResponseEntity.ok(kapitalHartijeDtoList);
     }
+
+    @GetMapping(value = "/forex", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getForex(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(sredstvaKapitalService.getForex(token));
+    }
+
+    @GetMapping(value = "/akcija/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getakcija(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        return ResponseEntity.ok(sredstvaKapitalService.getAkcija(id));
+    }
+
 
 
 }
