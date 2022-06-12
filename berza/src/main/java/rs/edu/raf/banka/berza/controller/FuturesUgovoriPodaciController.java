@@ -28,7 +28,7 @@ public class FuturesUgovoriPodaciController {
         return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesUgovor(symbol));
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFuturesUgovor(@PathVariable Long id){
         return ResponseEntity.ok(futuresUgovoriPodaciService.getFuturesUgovorById(id));
     }

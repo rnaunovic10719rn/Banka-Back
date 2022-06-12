@@ -33,6 +33,9 @@ public class SredstvaKapitalService {
     @Value("${racun.akcije-quote-url}")
     private String AKCIJE_BY_ID_URL;
 
+    @Value("${racun.futures-quote-url}")
+    private String FUTURES_BY_ID_URL;
+
     @Autowired
     public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository,
                                   RacunRepository racunRepository,
@@ -118,6 +121,10 @@ public class SredstvaKapitalService {
 //        }
 //    }
 
+
+    public ResponseEntity<FuturesPodaciDto> getFuture(Long id) {
+        return HttpUtils.getFuturesById(FUTURES_BY_ID_URL, id);
+    }
     public ResponseEntity<AkcijePodaciDto> getAkcija(Long id) {
         return HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, id);
     }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.racun.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
+import rs.edu.raf.banka.racun.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.racun.dto.UserDto;
 import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
 
@@ -48,6 +49,17 @@ public class HttpUtils {
 
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
         return restTemplate.exchange(akcijeByIdUrl.toString(), HttpMethod.GET, entity, AkcijePodaciDto.class);
+    }
+
+    public static ResponseEntity<FuturesPodaciDto> getFuturesById(String url, Long id) {
+        URI main = URI.create(url);
+        URI futuresByIdUrl = main.resolve("./" + id);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        return restTemplate.exchange(futuresByIdUrl.toString(), HttpMethod.GET, entity, FuturesPodaciDto.class);
     }
 
     public static ResponseEntity<UserDto> getUser(String url, String token) {

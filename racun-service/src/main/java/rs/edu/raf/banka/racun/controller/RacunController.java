@@ -92,6 +92,12 @@ public class RacunController {
         return sredstvaKapitalService.getAkcija(id);
     }
 
+    @GetMapping(value = "/future/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStanjeAgentt(@PathVariable Long id) {
+
+        return sredstvaKapitalService.getFuture(id);
+    }
+
 
 //    @GetMapping(value = "/stanje/{racun}", produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity<?> getStanje(@RequestHeader("Authorization") String token, @PathVariable String racun) {

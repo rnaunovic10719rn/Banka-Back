@@ -29,7 +29,7 @@ public class AkcijePodaciController {
         return ResponseEntity.ok(akcijePodaciService.getAkcijaByTicker(ticker));
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAkcijeById(@PathVariable Long id){
         if(id == null) {
             return ResponseEntity.badRequest().build();

@@ -133,7 +133,8 @@ services:
       racun.user-service-url: http://korisnicki-servis:8080/api/limit-change
       racun.user-service-url2: http://korisnicki-servis:8080/api/user
       racun.forex-quote-url: http://berza:8082/api/forex/podaci/
-      racun.akcije-quote-url: http://berza:8082/api/akcije/podaci/
+      racun.akcije-quote-url: http://berza:8082/api/akcije/podaci/id/
+      racun.futures-quote-url: http://berza:8082/api/futures/podaci/id/
     ports:
       - "8083:8083"
     links:
