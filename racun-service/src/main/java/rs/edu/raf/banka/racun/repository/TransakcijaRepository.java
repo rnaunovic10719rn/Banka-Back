@@ -2,6 +2,7 @@ package rs.edu.raf.banka.racun.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.model.Valuta;
 
@@ -38,6 +39,6 @@ public interface TransakcijaRepository extends JpaRepository<Transakcija,Long> {
     @Query("SELECT SUM(unitPrice*uplata) FROM Transakcija WHERE haritjeOdVrednostiID = :hartijaId")
     Double getKupljenoZa(Long hartijaId);
 
-    List<Transakcija> findByHaritjeOdVrednostiID(Long hartijeOdVrednostiID);
+    List<Transakcija> findByHaritjeOdVrednostiIDAndKapitalType(Long hartijeOdVrednostiID, KapitalType kapitalType);
 
 }
