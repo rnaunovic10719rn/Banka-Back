@@ -193,8 +193,9 @@ public class SredstvaKapitalService {
         return toReturn;
     }
 
-    public List<TransakcijeHartijeDto> getTransakcijeHartije(Long id) {
-        List<Transakcija> transakcijaList = transakcijaRepository.findByHaritjeOdVrednostiID(id);
+    public List<TransakcijeHartijeDto> getTransakcijeHartije(Long id, String strKapitalType) {
+        KapitalType kapitalType = KapitalType.valueOf(strKapitalType.toUpperCase());
+        List<Transakcija> transakcijaList = transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalType(id, kapitalType);
         List<TransakcijeHartijeDto> toReturn = new ArrayList<>();
         for (Transakcija transakcija : transakcijaList) {
             TransakcijeHartijeDto transakcijeHartijeDto = new TransakcijeHartijeDto();
