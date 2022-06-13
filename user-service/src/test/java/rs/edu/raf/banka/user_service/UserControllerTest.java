@@ -45,6 +45,8 @@ public class UserControllerTest {
     String invalidJWToken = initInvalidJWT();
     CreateUserForm userMockForm = initUserMockForm();
     ResetPasswordForm resetPasswordForm = initResetPasswordForm();
+
+    ChangeLimitForm changeLimitForm = initChangeLimitForm();
     ChangePasswordForm changePasswordForm = initChangePasswordForm();
     OtpToSecretForm otpToSecretForm = initOtpToSecretForm();
     OtpQRForm otpQRForm = initOtpQRFormForm();
@@ -71,6 +73,28 @@ public class UserControllerTest {
     void testGetUsersInvalidToken() throws Exception{
         mockMvc.perform(get("/api/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken))
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void testPostLimitChange() throws Exception {
+        User user = new User(dummyName, "X");
+        when(userServiceImplementation.getUserByToken("Bearer " + validJWToken)).thenReturn(user);
+        mockMvc.perform(post("/api/limit-change").header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(changeLimitForm)))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void testPostLimitChangeInvalidToken() throws Exception {
+        User user = new User(dummyName, "X");
+        when(userServiceImplementation.getUserByToken("Bearer " + validJWToken)).thenReturn(user);
+        mockMvc.perform(post("/api/limit-change").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(changeLimitForm)))
+                .andExpect(status().is4xxClientError());
+
     }
 
     @Test
@@ -705,6 +729,12 @@ public class UserControllerTest {
         changePasswordForm.setNewPassword("mockPass");
         changePasswordForm.setEmailToken("mocken");
         return  changePasswordForm;
+    }
+
+    private ChangeLimitForm initChangeLimitForm() {
+        ChangeLimitForm changeLimitForm = new ChangeLimitForm();
+        changeLimitForm.setLimitDelta(500.0);
+        return changeLimitForm;
     }
   
 }
