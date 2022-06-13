@@ -129,7 +129,7 @@ public class SredstvaKapitalService {
                 ForexPodaciDto forexPodaciDto = this.getForex(token,"USD");
 
                 Double cenaTrenutneHartije = sredstvaKapital.getRaspolozivo() * futuresPodaciDto.getOpen() * forexPodaciDto.getExchangeRate();
-                khdAkcija.setUkupno(khdAkcija.getUkupno() + cenaTrenutneHartije);
+                khdFuture.setUkupno(khdFuture.getUkupno() + cenaTrenutneHartije);
             }
         }
         toReturn.add(khdAkcija);
@@ -160,7 +160,7 @@ public class SredstvaKapitalService {
                 kapitalPoTipuHartijeDto.setVrednostRSD(vrednostRSD);
                 Double vrednost = cena*kolicinaUVlasnistvu;
                 kapitalPoTipuHartijeDto.setVrednost(vrednost);
-                Double kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID());
+                Double kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
                 kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
                 Double profit = vrednost - kupljenoZa;
                 kapitalPoTipuHartijeDto.setProfit(profit);
@@ -182,7 +182,7 @@ public class SredstvaKapitalService {
                 kapitalPoTipuHartijeDto.setVrednostRSD(vrednostRSD);
                 Double vrednost = cena*kolicinaUVlasnistvu;
                 kapitalPoTipuHartijeDto.setVrednost(vrednost);
-                Double kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID());
+                Double kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
                 kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
                 Double profit = vrednost - kupljenoZa;
                 kapitalPoTipuHartijeDto.setProfit(profit);
