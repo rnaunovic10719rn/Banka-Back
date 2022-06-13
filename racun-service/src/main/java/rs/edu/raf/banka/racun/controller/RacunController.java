@@ -27,15 +27,13 @@ public class RacunController {
 
     private final SredstvaKapitalService sredstvaKapitalService;
     private final TransakcijaService transakcijaService;
-    private final UserService userService;
-    private final ModelMapper modelMapper;
+
 
     @Autowired
-    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, UserService userService, ModelMapper modelMapper) {
+    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService) {
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaService = transakcijaService;
-        this.userService = userService;
-        this.modelMapper = modelMapper;
+
     }
 
 
@@ -72,7 +70,7 @@ public class RacunController {
 
     }
     @GetMapping(value = "/stanje/{racun}/{hartijaType}/{hartijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SredstvaKapital> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String hartijaType, @PathVariable Long hartijaId, @PathVariable String valuta) {
+    public ResponseEntity<SredstvaKapital> getStanjeHartija(@RequestHeader("Authorization") String token, @PathVariable String racun, @PathVariable String hartijaType, @PathVariable Long hartijaId) {
          /*
                TODO Porvera da li je supervizor
             */
