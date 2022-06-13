@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+// Promeniti i kopiju u racun-service ako se desi promena
 public class ForexPodaciDto {
 
     String fromCurrency;

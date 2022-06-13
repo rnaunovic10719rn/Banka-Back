@@ -5,31 +5,54 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import rs.edu.raf.banka.racun.dto.UserDto;
+import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 @Service
 public class UserService {
 
-    public String getUserByToken(String token) {
+    @Value("${racun.user-service-url2}")
+    private String USER_SERVICE_URL2;
+
+    public UserDto getUserByToken(String token) {
+        ResponseEntity<UserDto> response = HttpUtils.getUser(USER_SERVICE_URL2, token);
+        return response.getBody();
+    }
+
+    public String getUsernameByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
 
             return decodedToken.getSubject().split(",")[0];
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new UsernameNotFoundException("bad credentials");
         }
     }
 
-    public String[] getRoleByToken(String token) {
+    public String getRoleByToken(String token) {
+        try {
+            DecodedJWT decodedToken = decodeToken(token);
+
+            return decodedToken.getSubject().split(",")[1];
+        } catch (JWTVerificationException e) {
+            // TODO find a better exception for this case
+            throw new UsernameNotFoundException("bad credentials");
+        }
+    }
+
+    public String[] getPermissionsByToken(String token) {
         try {
             DecodedJWT decodedToken = decodeToken(token);
 
             return decodedToken.getClaim("permissions").asArray(String.class);
         } catch (JWTVerificationException e) {
             // TODO find a better exception for this case
-            throw new UsernameNotFoundException("Token is invalid");
+            throw new UsernameNotFoundException("bad credentials");
         }
     }
 

@@ -91,10 +91,7 @@ public class InfluxScrapperService {
 
     public List<FuturesPodaciDto> getFuturesQoute(String symbol) {
         final HashMap<String, String> params = new HashMap<>();
-        // TODO: ispraviti ovo
         params.put("symbol", symbol);
-        params.put("timeFrom", "2022-04-05T13:34:51.966Z");
-        params.put("timeTo", "2022-04-10T13:34:51.966Z");
 
         return influxApiClient
                 .post()

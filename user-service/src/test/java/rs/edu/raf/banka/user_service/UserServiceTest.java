@@ -63,12 +63,59 @@ class UserServiceTest {
     }
 
     @Test
+    void testSaveUser() {
+        User user = new User("UserX", "X");
+
+        given(userRepository.save(user)).willReturn(user);
+
+        assertEquals(user, userService.saveUser(user));
+    }
+
+    @Test
     void testSaveRole() {
         Role role = new Role();
 
         given(roleRepository.save(role)).willReturn(role);
 
         assertEquals(role, userService.saveRole(role));
+    }
+
+    @Test
+    void testResetLimitUsedAllAgents() {
+        User user1 = new User("UserX", "X");
+        user1.setLimitUsed(500.0);
+        User user2 = new User("UserY", "Y");
+        user2.setLimitUsed(300.0);
+        User user3 = new User("UserZ", "Z");
+        user3.setLimitUsed(200.0);
+        List<User> users = new ArrayList<>();
+        users.add(user1);
+        users.add(user2);
+        users.add(user3);
+        given(userRepository.findAll()).willReturn(users);
+        given(userRepository.saveAll(users)).willReturn(users);
+        userService.resetLimitUsedAllAgents();
+        assertEquals(0.0, users.get(0).getLimitUsed());
+        assertEquals(0.0, users.get(1).getLimitUsed());
+        assertEquals(0.0, users.get(2).getLimitUsed());
+    }
+
+    @Test
+    void testResetLimitUsed() {
+        User user = new User("UserX", "X");
+        user.setLimitUsed(500.0);
+        given(userRepository.save(user)).willReturn(user);
+        userService.resetLimitUsed(user);
+        assertEquals(0.0, user.getLimitUsed());
+    }
+
+    @Test
+    void testChangeLimit() {
+        User user = new User("UserX", "X");
+        user.setRole(new Role(null, "ROLE_AGENT", new ArrayList<>()));
+        given(userRepository.save(user)).willReturn(user);
+        userService.changeLimit(user, 500.0);
+        assertEquals(500.0, user.getLimitUsed());
     }
 
     @Test
@@ -118,6 +165,20 @@ class UserServiceTest {
         user.setAktivan(true);
 
         userService.deleteUser(user);
+
+        assertEquals(true, user.isAktivan());
+    }
+
+    @Test
+    void testEnableUser() {
+        User user = new User("UserX", "X");
+
+        List<String> mockPermissions = new ArrayList<>();
+        mockPermissions.add("mock_permission");
+        user.setRole(new Role(null, "ROLE_ADMIN", mockPermissions));
+        user.setAktivan(false);
+
+        userService.enableUser(user);
 
         assertEquals(true, user.isAktivan());
     }

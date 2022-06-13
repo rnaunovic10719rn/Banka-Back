@@ -5,19 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import rs.edu.raf.banka.berza.dto.OrderDto;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.response.OrderStatusResponse;
 import rs.edu.raf.banka.berza.service.impl.BerzaService;
+import rs.edu.raf.banka.berza.service.impl.HartijaService;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
 import rs.edu.raf.banka.berza.service.impl.UserService;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/berza")
@@ -27,21 +25,29 @@ public class BerzaController {
     private final UserService userService;
     private final OrderService orderService;
     private final ModelMapper modelMapper;
+    private HartijaService hartijaService;
 
     @Autowired
     public BerzaController(BerzaService berzaService,
                            OrderService orderService,
                            UserService userService,
-                           ModelMapper modelMapper){
+                           ModelMapper modelMapper,
+                           HartijaService hartijaService){
         this.berzaService = berzaService;
         this.orderService = orderService;
         this.userService = userService;
         this.modelMapper = modelMapper;
+        this.hartijaService = hartijaService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> findAll(){
         return ResponseEntity.ok(berzaService.findAll());
+    }
+
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findBerzaById(@PathVariable Long id){
+        return ResponseEntity.ok(berzaService.findBerza(id));
     }
 
     @GetMapping(value = "/{oznaka}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,15 +60,19 @@ public class BerzaController {
                                        @PathVariable(required = false) String status,
                                        @PathVariable(required = false) Boolean done){
         List<Order> orders = orderService.getOrders(token, status, done);
-        return ResponseEntity.ok(orders.stream().map(this::convertToDto).collect(Collectors.toList()));
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getOrders(@RequestHeader("Authorization") String token){
+        List<Order> orders = orderService.getOrders(token);
+        return ResponseEntity.ok(orders);
     }
 
     @PostMapping(value = "/order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> makeOrder(@RequestHeader("Authorization") String token,
                                        @RequestBody OrderRequest orderRequest){
-        OrderResponse resp = berzaService.makeOrder(token, orderRequest.getSymbol(), orderRequest.getHartijaOdVrednostiTip(),
-                orderRequest.getKolicina(), orderRequest.getAkcija(),
-                orderRequest.getLimitValue(), orderRequest.getStopValue(), orderRequest.isAllOrNoneFlag(), orderRequest.isMarginFlag());
+        OrderResponse resp = berzaService.makeOrder(token, orderRequest);
         if(resp.getMessage().equals("Error")) {
             return ResponseEntity.internalServerError().body(resp);
         }
@@ -87,17 +97,14 @@ public class BerzaController {
         return ResponseEntity.internalServerError().body(resp);
     }
 
-    @PostMapping(value = "/order/status/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getOrderStatus(@PathVariable Long id){
-        OrderStatusResponse resp = orderService.getOrderStatus(id);
-        if(resp == null) {
-            return ResponseEntity.internalServerError().build();
-        }
-        return ResponseEntity.ok(resp);
+    @GetMapping(value = "/hartijeWithSettlementDate", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAkcijeTimeseries(){
+        return ResponseEntity.ok(hartijaService.getAllNearSettlement());
     }
 
-    private OrderDto convertToDto(Order order) {
-        return modelMapper.map(order, OrderDto.class);
+    @GetMapping(value = "/hartija/{hartijaType}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getHartija(@PathVariable String hartijaType,  @PathVariable long id){
+        return ResponseEntity.ok(hartijaService.findHartijaByIdAndType(id, hartijaType));
     }
 
 }

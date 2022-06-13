@@ -3,6 +3,7 @@ package rs.edu.raf.banka.racun.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 
 import javax.persistence.*;
 
@@ -24,6 +25,7 @@ public class SredstvaKapital {
     @JoinColumn(name = "valuta_id")
     private  Valuta valuta;
 
+    private KapitalType kapitalType = KapitalType.NOVAC;
     private Long haritjeOdVrednostiID;
 
     private double ukupno;

@@ -51,15 +51,15 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/limit-change/{id}")
+    @PostMapping("/limit-change")
     @ApiOperation("Changes agent's limit")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
-    public ResponseEntity<?> changeLimit(@PathVariable long id, @RequestBody ChangeLimitForm changeLimitForm){
-        Optional<User> user = userService.getUserById(id);
-        if(user.isEmpty())
+    public ResponseEntity<?> changeLimit(@RequestHeader("Authorization") String token, @RequestBody ChangeLimitForm changeLimitForm){
+        User user = userService.getUserByToken(token);
+        if(user == null) {
             return ResponseEntity.notFound().build();
-        User u = user.get();
-        userService.changeLimit(u, changeLimitForm.getLimit());
+        }
+        userService.changeLimit(user, changeLimitForm.getLimitDelta());
         return ResponseEntity.ok().build();
     }
 
@@ -112,7 +112,22 @@ public class UserController {
                 return ResponseEntity.badRequest().body("Can't delete admin");
             }
             return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
-        }else {return ResponseEntity.badRequest().build();}
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/user/enable/{id}")
+    @ApiOperation("Enable user with specific id")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?>enableUser(@PathVariable long id) {
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            userService.enableUser(user.get());
+            return ResponseEntity.ok().body(user.get().getUsername() + " reactivated");
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/user/edit/{id}")
@@ -249,10 +264,14 @@ public class UserController {
 
     @PostMapping("/user/getId/{token}")
     public ResponseEntity<?> getUserId(@PathVariable String token){
-        var id = userService.getUserId(token);
-        if(id == null){
-            return ResponseEntity.badRequest().body("Invalid token!");
+        try{
+            var id = userService.getUserId(token);
+            if(id == null){
+                return ResponseEntity.badRequest().body("Invalid token!");
+            }
+            return ResponseEntity.ok().body(id);
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid token format");
         }
-        return ResponseEntity.ok().body(id);
     }
 }
