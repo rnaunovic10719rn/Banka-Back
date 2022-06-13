@@ -67,6 +67,7 @@ services:
   influx-scrapper:
     image: ghcr.io/raf-si-2021/banka-influx-scrapper:latest
     build: ./InfluxScrapper
+    env_file: .env
     ports:
       - "8000:80"
     links:
@@ -109,6 +110,7 @@ services:
   berza:
     image: ghcr.io/raf-si-2021/banka-berza:latest
     build: ./berza
+    env_file: .env
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-berza:5432/postgres
       berza.influxscrapper.endpoint: http://influx-scrapper/
