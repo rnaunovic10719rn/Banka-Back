@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
 import rs.edu.raf.banka.berza.enums.OrderStatus;
@@ -13,12 +14,16 @@ import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
+import rs.edu.raf.banka.berza.response.TransakcijaResponse;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
+import rs.edu.raf.banka.berza.service.impl.UserService;
+import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,13 +35,62 @@ public class OrderServiceTest {
     @Mock
     OrderRepository orderRepository;
 
+    @Mock
+    UserService userService;
+
+    @Mock
+    TransakcijaService transakcijaService;
+
     @Test
-    void testGetOrders() {
+    void testGetOrders1() {
         Order order = new Order();
+
         order.setOrderType(OrderType.LIMIT_ORDER);
-        when(orderRepository.findAll()).thenReturn(List.of(order));
-        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M", "", null).get(0).getOrderType());
+        UserDto user = new UserDto();
+        when(userService.getUserByToken(any())).thenReturn(user);
+        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_ADMIN");
+        when(orderRepository.findOrderByUserId(any())).thenReturn(List.of(order));
+        //when(orderRepository.findAll()).thenReturn(List.of(order));
+        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
     }
+    @Test
+    void testGetOrders12() {
+        Order order = new Order();
+
+        order.setOrderType(OrderType.LIMIT_ORDER);
+        UserDto user = new UserDto();
+        when(userService.getUserByToken(any())).thenReturn(user);
+        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_ADMINn");
+        //when(orderRepository.findOrderByUserId(any())).thenReturn(List.of(order));
+        when(orderRepository.findAll()).thenReturn(List.of(order));
+        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
+    }
+
+//    @Test
+//    void testGetOrders21() {
+//        Order order = new Order();
+//
+//        order.setOrderType(OrderType.LIMIT_ORDER);
+//        UserDto user = new UserDto();
+//        when(userService.getUserByToken(any())).thenReturn(user);
+//        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_AGENT");
+//        when(orderRepository.findOrderByUserId(any())).thenReturn(List.of(order));
+////        when(orderRepository.findAll()).thenReturn(List.of(order));
+//        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
+//    }
+//
+//    @Test
+//    void testGetOrders22() {
+//        Order order = new Order();
+//
+//        order.setOrderType(OrderType.LIMIT_ORDER);
+//        UserDto user = new UserDto();
+//        when(userService.getUserByToken(any())).thenReturn(user);
+//        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_AGENT");
+//        when(orderRepository.findOrderByUserId(any())).thenReturn(List.of(order));
+////        when(orderRepository.findAll()).thenReturn(List.of(order));
+//        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
+//    }
 
     @Test
     void testSaveOrder() {
@@ -78,7 +132,7 @@ public class OrderServiceTest {
 
         order.setBerza(berza);
 
-        when(orderRepository.save(order)).thenReturn(order);
+        when(orderRepository.save(any())).thenReturn(order);
 
         var request = new OrderRequest();
         request.setSymbol(oznakaHartije);
@@ -91,8 +145,15 @@ public class OrderServiceTest {
         request.setAllOrNoneFlag(isAON);
         request.setMarginFlag(isMargin);
 
-        var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M";
+        UserDto user = new UserDto();
+        user.setUsername("username");
 
+        var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M";
+        when(userService.getUserByToken(any())).thenReturn(user);
+        //when(userService.getUserByToken(any()).getUsername()).thenReturn("username");
+
+        TransakcijaResponse tr = new TransakcijaResponse();
+        when(transakcijaService.commitTransaction(any(), any())).thenReturn(tr);
 
         assertEquals(OrderAction.SELL, orderService.saveOrder(token, request, userAccount, berza, hartijaOdVrednostiId,
                 hartijaOdVrednostiType, orderAction,ukupnaCena,provizija,
