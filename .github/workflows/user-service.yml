@@ -21,12 +21,10 @@ jobs:
       - uses: RAF-SI-2021/sonar-cloud-prep@v0.0.1
         with:
           java-version: 17
-      - name: Build docker compose
-        run: docker-compose --profile=core up -d
       - name: "[User Service] Build and analyze"
         working-directory: ./user-service
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_USER_SERVICE }}
-          WORKSPACE: GH
+          WORKSPACE: CI
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:user_service -Dsonar.projectName="Banka_User_Service" sonar:sonar -Pcoverage
