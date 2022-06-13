@@ -15,6 +15,9 @@ public class SpringConfig {
     @Value("${berza.influxscrapper.endpoint}")
     private String influxScrapperEndpoint;
 
+    @Value("${berza.alphavantage.apikey}")
+    private String influxScrapperApiKey;
+
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
@@ -28,7 +31,7 @@ public class SpringConfig {
     @Bean
     public Config alphavantageApiClient() {
         Config cfg = Config.builder()
-            .key("")
+            .key(influxScrapperApiKey)
             .timeOut(10)
             .build();
         AlphaVantage.api().init(cfg);
