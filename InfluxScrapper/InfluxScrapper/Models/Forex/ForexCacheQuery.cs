@@ -7,6 +7,6 @@ public class ForexCacheQuery : ForexQuery , InfluxCacheQuery<ForexCacheQuery>
 {
     public DateTime? TimeFrom { get; init; }
     public DateTime? TimeTo { get; init; }
-    public string ToQuery(bool singleFile = false) => InfluxDbUtilities.ConstructQuery(this, true);
+    public string ToQuery(bool singleFile = false) => InfluxDbUtilities.ConstructQuery(this, singleFile);
 
 }
