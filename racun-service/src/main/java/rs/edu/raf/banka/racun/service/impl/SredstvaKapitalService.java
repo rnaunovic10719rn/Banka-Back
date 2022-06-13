@@ -202,11 +202,12 @@ public class SredstvaKapitalService {
             transakcijeHartijeDto.setDatum(transakcija.getDatumVreme());
             if (transakcija.getUplata() > 0) {
                 transakcijeHartijeDto.setTipOrdera("Kupovina");
-                transakcijeHartijeDto.setKolicina((long) transakcija.getUplata());
-            }
-            else if (transakcija.getIsplata() > 0) {
+                transakcijeHartijeDto.setKolicina(Math.round(transakcija.getUplata()));
+            } else if (transakcija.getIsplata() > 0) {
                 transakcijeHartijeDto.setTipOrdera("Prodaja");
-                transakcijeHartijeDto.setKolicina((long) transakcija.getIsplata());
+                transakcijeHartijeDto.setKolicina(Math.round(transakcija.getIsplata()));
+            } else {
+                continue; // npr. rezervacija, nije nam bitna za ovo
             }
             transakcijeHartijeDto.setCena(transakcija.getUnitPrice());
             transakcijeHartijeDto.setUkupno(transakcija.getUnitPrice()*transakcijeHartijeDto.getKolicina());
