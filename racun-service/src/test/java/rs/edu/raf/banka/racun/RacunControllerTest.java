@@ -70,6 +70,7 @@ public class RacunControllerTest {
     @Test
     void testDodajTransakciju() throws Exception {
 
+        transakcijaRequest.setOrderId(1L);
         when(transakcijaService.dodajTransakciju(validJWToken, transakcijaRequest)).thenReturn(new Transakcija());
 
         mockMvc.perform(post("/api/racun/transakcija").header(HttpHeaders.AUTHORIZATION, validJWToken)
