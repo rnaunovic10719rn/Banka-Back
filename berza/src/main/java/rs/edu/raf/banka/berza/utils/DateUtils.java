@@ -55,6 +55,7 @@ public class DateUtils {
                     } else {
                         zonedDateTime = zonedDateTime.minusDays(1);
                     }
+                    break;
                 default:
                     zonedDateTime = zonedDateTime.minusDays(1);
             }
