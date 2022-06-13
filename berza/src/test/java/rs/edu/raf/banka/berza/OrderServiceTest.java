@@ -66,14 +66,31 @@ public class OrderServiceTest {
         assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
     }
 
-    @Test
-    void testGetOrders2() {
-        Order order = new Order();
-        order.setOrderType(OrderType.LIMIT_ORDER);
-        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_AGENT");
-        //when(orderRepository.findOrderByUserIdAndDoneAndOrderStatus(user.getId(), done, OrderStatus.valueOf(status.toUpperCase()))).thenReturn();
-        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbixST0xFX0dMX0FETUlOIiwicGVybWlzc2lvbnMiOlsiQ1JFQVRFX1VTRVIiLCJERUxFVEVfVVNFUiIsIkVESVRfVVNFUiIsIkxJU1RfVVNFUlMiLCJNQU5BR0VfQUdFTlRTIiwiTVlfRURJVCJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL2xvZ2luIn0.K1ZdSiUWFXISTJvLI5WvFCcje9vWTWKxxyJmMBTe03M", "", null).get(0).getOrderType());
-    }
+//    @Test
+//    void testGetOrders21() {
+//        Order order = new Order();
+//
+//        order.setOrderType(OrderType.LIMIT_ORDER);
+//        UserDto user = new UserDto();
+//        when(userService.getUserByToken(any())).thenReturn(user);
+//        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_AGENT");
+//        when(orderRepository.findOrderByUserId(any())).thenReturn(List.of(order));
+////        when(orderRepository.findAll()).thenReturn(List.of(order));
+//        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
+//    }
+//
+//    @Test
+//    void testGetOrders22() {
+//        Order order = new Order();
+//
+//        order.setOrderType(OrderType.LIMIT_ORDER);
+//        UserDto user = new UserDto();
+//        when(userService.getUserByToken(any())).thenReturn(user);
+//        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_AGENT");
+//        when(orderRepository.findOrderByUserId(any())).thenReturn(List.of(order));
+////        when(orderRepository.findAll()).thenReturn(List.of(order));
+//        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
+//    }
 
     @Test
     void testSaveOrder() {
