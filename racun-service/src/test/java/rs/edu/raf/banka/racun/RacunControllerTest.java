@@ -216,17 +216,17 @@ public class RacunControllerTest {
     @Test
     void testGetTransakcijeHartije() throws Exception {
         List<TransakcijeHartijeDto> transakcijeHartijeDtos = new ArrayList<>();
-        when(sredstvaKapitalService.getTransakcijeHartije(anyLong())).thenReturn(transakcijeHartijeDtos);
+        when(sredstvaKapitalService.getTransakcijeHartije(anyLong(),anyString())).thenReturn(transakcijeHartijeDtos);
 
-        mockMvc.perform(get("/api/racun/transakcijaHartije/{id}",1L).header(HttpHeaders.AUTHORIZATION,  validJWToken))
+        mockMvc.perform(get("/api/racun/transakcijaHartije/{kapitalType}/{id}",KapitalType.NOVAC.toString(),1L).header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testGetTransakcijeHartijeBad() throws Exception {
-        when(sredstvaKapitalService.getTransakcijeHartije(anyLong())).thenReturn(null);
+        when(sredstvaKapitalService.getTransakcijeHartije(anyLong(),anyString())).thenReturn(null);
 
-        mockMvc.perform(get("/api/racun/transakcijaHartije/{id}",1L).header(HttpHeaders.AUTHORIZATION,  validJWToken))
+        mockMvc.perform(get("/api/racun/transakcijaHartije/{kapitalType}/{id}",KapitalType.NOVAC.toString(),1L).header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isBadRequest());
     }
 

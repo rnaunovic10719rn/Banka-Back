@@ -132,11 +132,11 @@ public class SredstvaKapitalaServiceTest {
         transakcijeHartijeDto.setDatum(transakcija.getDatumVreme());
         transakcijeHartijeDto.setTipOrdera("Kupovina");
         transakcijeHartijeDto.setKolicina((long) transakcija.getUplata());
-        when(transakcijaRepository.findByHaritjeOdVrednostiID(1L)).thenReturn(transakcijaList);
+        when(transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalType(1L,KapitalType.NOVAC)).thenReturn(transakcijaList);
         transakcijeHartijeDto.setCena(transakcija.getUnitPrice());
         transakcijeHartijeDto.setUkupno(transakcija.getUnitPrice()*transakcijeHartijeDto.getKolicina());
         toReturn.add(transakcijeHartijeDto);
-        assertEquals(sredstvaKapitalService.getTransakcijeHartije(1L),toReturn);
+        assertEquals(sredstvaKapitalService.getTransakcijeHartije(1L,KapitalType.NOVAC.toString()),toReturn);
     }
 
 
@@ -151,11 +151,11 @@ public class SredstvaKapitalaServiceTest {
         transakcijeHartijeDto.setDatum(transakcija.getDatumVreme());
         transakcijeHartijeDto.setTipOrdera("Prodaja");
         transakcijeHartijeDto.setKolicina((long) transakcija.getIsplata());
-        when(transakcijaRepository.findByHaritjeOdVrednostiID(1L)).thenReturn(transakcijaList);
+        when(transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalType(1L,KapitalType.NOVAC)).thenReturn(transakcijaList);
         transakcijeHartijeDto.setCena(transakcija.getUnitPrice());
         transakcijeHartijeDto.setUkupno(transakcija.getUnitPrice()*transakcijeHartijeDto.getKolicina());
         toReturn.add(transakcijeHartijeDto);
-        assertEquals(sredstvaKapitalService.getTransakcijeHartije(1L),toReturn);
+        assertEquals(sredstvaKapitalService.getTransakcijeHartije(1L,KapitalType.NOVAC.toString()),toReturn);
     }
 
     @Test
