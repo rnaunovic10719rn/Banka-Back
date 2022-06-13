@@ -22,6 +22,8 @@ import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.service.impl.*;
 import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 
+import javax.persistence.EntityManager;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -63,9 +65,12 @@ public class BerzaServiceTest {
     @Mock
     TransakcijaService transakcijaService;
 
+    @Mock
+    EntityManager entityManager;
+
     @BeforeEach
     public void setUp() {
-        orderService = Mockito.spy(new OrderService(orderRepository, futuresUgovoriPodaciService, priceService, userService, transakcijaService));
+        orderService = Mockito.spy(new OrderService(orderRepository, futuresUgovoriPodaciService, priceService, userService, transakcijaService, entityManager));
         MockitoAnnotations.initMocks(this);
     }
 
