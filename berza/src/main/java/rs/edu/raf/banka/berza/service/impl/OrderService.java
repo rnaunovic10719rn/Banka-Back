@@ -22,6 +22,9 @@ import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 import rs.edu.raf.banka.berza.utils.HttpUtils;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -43,12 +46,22 @@ public class OrderService {
     private UserService userService;
     private TransakcijaService transakcijaService;
 
+    private EntityManager entityManager;
+
     @Autowired
-    public OrderService(OrderRepository orderRepository, FuturesUgovoriPodaciService futuresUgovoriPodaciService, PriceService priceService, UserService userService, TransakcijaService transakcijaService){        this.orderRepository = orderRepository;
+    public OrderService(OrderRepository orderRepository,
+                        FuturesUgovoriPodaciService futuresUgovoriPodaciService,
+                        PriceService priceService,
+                        UserService userService,
+                        TransakcijaService transakcijaService,
+                        EntityManager entityManager
+    ){
+        this.orderRepository = orderRepository;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
         this.priceService = priceService;
         this.userService = userService;
         this.transakcijaService = transakcijaService;
+        this.entityManager = entityManager;
     }
 
     private List<Order> getOrderNotDone() {
@@ -306,6 +319,7 @@ public class OrderService {
      */
 
     @Scheduled(cron = "*/10 * * * * *") // Every 30 seconds
+    @Transactional
     public void executeOrder() {
         List<Order> orders = getOrderNotDone();
 
@@ -315,18 +329,19 @@ public class OrderService {
                 continue;
             }
 
-            log.info("Getting prices for order {}", o.getId());
-            AskBidPriceDto askBidPrice = priceService.getAskBidPrice(o.getHartijaOdVrednosti(), o.getHartijaOdVrednostiSymbol());
-            o.setAsk(askBidPrice.getAsk());
-            o.setBid(askBidPrice.getBid());
-
             log.info("Executing order {}", o.getId());
             executeTransaction(o);
         }
     }
 
     @Transactional
-    public void executeTransaction(Order order){
+    public void executeTransaction(final Order o){
+        // Korak 0: Zakljucaj Order.
+        Order order = entityManager.find(Order.class, o.getId(), LockModeType.PESSIMISTIC_WRITE);
+        if(order == null) {
+            throw new RuntimeException("failed to get and lock order");
+        }
+
         // Korak 1: Ako je order na berzi, proveri da li je berza otvorena
         if(order.getBerza() != null){
             BerzaStatus orderStatus = getBerzaStatus(order.getBerza());
@@ -354,13 +369,19 @@ public class OrderService {
             kolicinaZaTransakciju = order.getKolicina();
         }
 
-        // Korak 3: Provera da li order moze da se izvsi (relevatno za STOP, LIMIT i STOP_LIMIT ordere)
+        // Korak 3: Odredi cenu za taj order
+        log.info("Getting prices for order {}", order.getId());
+        AskBidPriceDto askBidPrice = priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol());
+        order.setAsk(askBidPrice.getAsk());
+        order.setBid(askBidPrice.getBid());
+
+        // Korak 4: Provera da li order moze da se izvsi (relevatno za STOP, LIMIT i STOP_LIMIT ordere)
         if(order.getOrderAction().equals(OrderAction.BUY) && !canExecuteTransactionBuy(order))
             return;
         if(order.getOrderAction().equals(OrderAction.SELL) && !canExecuteTransactionSell(order))
             return;
 
-        // Korak 4: Izvrsi order.
+        // Korak 5: Izvrsi order.
         Boolean lastSegment = false;
         int novaPreostalaKolicina = order.getPreostalaKolicina() - kolicinaZaTransakciju;
         if(novaPreostalaKolicina <= 0) {
