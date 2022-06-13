@@ -13,6 +13,7 @@ import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.User;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DisabledIfEnvironmentVariable(named = "WORKSPACE", matches = "CI")
 public class IntegrationTest {
 
     @Autowired
