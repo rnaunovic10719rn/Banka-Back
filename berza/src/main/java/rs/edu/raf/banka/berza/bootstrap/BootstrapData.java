@@ -69,6 +69,11 @@ public class BootstrapData implements CommandLineRunner {
 
         List<Valuta> valute = new ArrayList<>();
         for(CurrencyCSV c: currencies) {
+            Optional<Valuta> valutaBerze = valutaRepository.getValutaByNazivValute(c.getDescription());
+            if(valutaBerze.isPresent()) {
+                continue;
+            }
+
             System.out.println(c);
             Valuta v = new Valuta();
             v.setKodValute(c.getIsoCode());
@@ -95,6 +100,11 @@ public class BootstrapData implements CommandLineRunner {
                 .parse();
 
         for(BerzaCSV bc : berzeCSV) {
+            Berza b = berzaRepository.findBerzaByOznakaBerze(bc.getExchangeAcronym());
+            if(b != null) {
+                continue;
+            }
+
             Berza berza = new Berza();
             berza.setDrzava(bc.getCountry());
             berza.setNaziv(bc.getExchangeName());
@@ -124,12 +134,18 @@ public class BootstrapData implements CommandLineRunner {
                 .parse();
 
         for(InflacijaCSV ic : inflacijeCSV) {
-            IstorijaInflacije istorijaInflacije = new IstorijaInflacije();
             Optional<Valuta> valutaInflacije = valutaRepository.getValutaByNazivValute(ic.getCurrency());
             if(valutaInflacije.isEmpty()) {
                 log.error("Preskocena inflacija jer nema ove valute: "+ic.getCurrency());
                 continue;
             }
+
+            Optional<IstorijaInflacije> ii = inflacijaRepository.findByValutaAndYear(valutaInflacije.get(), ic.getYear());
+            if(ii.isPresent()) {
+                continue;
+            }
+
+            IstorijaInflacije istorijaInflacije = new IstorijaInflacije();
             istorijaInflacije.setValuta(valutaInflacije.get());
             istorijaInflacije.setYear(ic.getYear());
             istorijaInflacije.setInflationRate(Double.parseDouble(ic.getInflationRate()));
