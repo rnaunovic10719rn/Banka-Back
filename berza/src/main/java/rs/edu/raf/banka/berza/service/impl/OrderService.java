@@ -220,6 +220,7 @@ public class OrderService {
                 hartija.setOpis("Isplata " + order.getHartijaOdVrednostiSymbol());
                 hartija.setValutaOznaka(getValutaForOrder(order));
                 hartija.setOrderId(order.getId());
+                hartija.setHartijaId(order.getHartijaOdVrednostiId());
                 hartija.setUplata(0.0);
                 hartija.setIsplata(kolicina);
                 hartija.setRezervisano(0.0);
