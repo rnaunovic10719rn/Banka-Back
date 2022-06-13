@@ -249,10 +249,14 @@ public class UserController {
 
     @PostMapping("/user/getId/{token}")
     public ResponseEntity<?> getUserId(@PathVariable String token){
-        var id = userService.getUserId(token);
-        if(id == null){
-            return ResponseEntity.badRequest().body("Invalid token!");
+        try{
+            var id = userService.getUserId(token);
+            if(id == null){
+                return ResponseEntity.badRequest().body("Invalid token!");
+            }
+            return ResponseEntity.ok().body(id);
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid token format");
         }
-        return ResponseEntity.ok().body(id);
     }
 }
