@@ -39,6 +39,10 @@ public class DateUtils {
         ZonedDateTime zonedDateTime = DateUtils.getZonedDateTime(zoneId);
         String endDate = zonedDateTime.format(endFormatter);
 
+        if(openHour != null && openHour.length() > 0) {
+            openHour = openHour.trim();
+        }
+
         if(type.equals("intraday") && interval.equals("5min")) {
             switch (zonedDateTime.getDayOfWeek()) {
                 case SATURDAY:
@@ -46,10 +50,14 @@ public class DateUtils {
                     zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
                     break;
                 case MONDAY:
-                    if(openHour != null && zonedDateTime.getHour() < getHourFromString(openHour) && zonedDateTime.getMinute() < getMinuteFromString(openHour)) {
+                    if(openHour != null && (zonedDateTime.getHour() < getHourFromString(openHour) || (zonedDateTime.getHour() == getHourFromString(openHour) && zonedDateTime.getMinute() < getMinuteFromString(openHour)))) {
                         zonedDateTime = zonedDateTime.with(TemporalAdjusters.previousOrSame(DayOfWeek.FRIDAY));
+                    } else {
+                        zonedDateTime = zonedDateTime.minusDays(1);
                     }
                     break;
+                default:
+                    zonedDateTime = zonedDateTime.minusDays(1);
             }
         } else if(type.equals("intraday") && interval.equals("30min")) {
             switch (zonedDateTime.getDayOfWeek()) {
