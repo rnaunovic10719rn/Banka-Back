@@ -112,7 +112,22 @@ public class UserController {
                 return ResponseEntity.badRequest().body("Can't delete admin");
             }
             return ResponseEntity.ok().body(user.get().getUsername() + " disabled");
-        }else {return ResponseEntity.badRequest().build();}
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/user/enable/{id}")
+    @ApiOperation("Enable user with specific id")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = User.class)})
+    public ResponseEntity<?>enableUser(@PathVariable long id) {
+        Optional<User> user = userService.getUserById(id);
+        if(user.isPresent()){
+            userService.enableUser(user.get());
+            return ResponseEntity.ok().body(user.get().getUsername() + " reactivated");
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/user/edit/{id}")
