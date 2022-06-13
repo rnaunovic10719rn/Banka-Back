@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
@@ -24,6 +25,7 @@ import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
+import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
@@ -33,10 +35,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
@@ -49,6 +48,9 @@ public class TransakcijeServiceTest {
 
     @InjectMocks
     TransakcijaService transakcijaService;
+
+    @Mock
+    SredstvaKapitalService sredstvaKapitalService;
 
     @Spy
     HttpUtils httpUtils;
@@ -88,7 +90,96 @@ public class TransakcijeServiceTest {
     private String USER_SERVICE_URL;
 
 
+    @Test
+    void tesTgetAll1() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_AGENT");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.findByUsername(anyString())).thenReturn(transakcijaList);
 
+        assertEquals(transakcijaService.getAll(token),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll12() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_ADMIN");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.getAll()).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll2() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_ADMIN");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.getAll(any(),any())).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token,new Date(),new Date()),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll21() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_AGENT");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.findByUsername(anyString(),any(),any())).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token,new Date(),new Date()),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll3() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_AGENT");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.findByUsername(anyString(),anyString())).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token,""),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll31() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_ADMIN");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.getAll(anyString())).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token,""),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll4() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_ADMIN");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.getAll(anyString(),any(),any())).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token,"",new Date(),new Date()),transakcijaList);
+    }
+
+    @Test
+    void tesTgetAll41() {
+        String token = initValidJWT();
+        when(userService.getRoleByToken(anyString())).thenReturn("ROLE_AGENT");
+        when(userService.getUsernameByToken(anyString())).thenReturn("mockUsername");
+        List<Transakcija> transakcijaList = new ArrayList<>();
+        when(transakcijaRepository.findByUsername(anyString(),anyString(),any(),any())).thenReturn(transakcijaList);
+
+        assertEquals(transakcijaService.getAll(token,"",new Date(),new Date()),transakcijaList);
+    }
+
+
+    @Test
     void testDodavanjeTransakcije() throws NoSuchFieldException {
 
         Racun r = new Racun();
@@ -104,10 +195,11 @@ public class TransakcijeServiceTest {
 
         Query query = mock(Query.class);
 
-        given(racunRepository.findByBrojRacuna(any())).willReturn(r);
+      //  given(racunRepository.findByBrojRacuna(any())).willReturn(r);
+        when(racunRepository.findRacunByTipRacuna(RacunType.KES)).thenReturn(r);
 
-        when(valutaRepository.findValutaByKodValute(transakcijaRequest.getValutaOznaka())).thenReturn(v);
-        given(sredstvaKapitalRepository.findByRacunAndValuta(any(), any())).willReturn(sredstvaKapital);
+      //   when(valutaRepository.findValutaByKodValute(transakcijaRequest.getValutaOznaka())).thenReturn(v);
+      //  given(sredstvaKapitalRepository.findByRacunAndValuta(any(), any())).willReturn(sredstvaKapital);
 
         given(entityManager.createQuery(anyString())).willReturn(query);
 
@@ -116,11 +208,12 @@ public class TransakcijeServiceTest {
 
         given(query.getResultList()).willReturn(skList);
 
-       // when(transakcijaRepository.save(any())).thenReturn(t);
-       // when(sredstvaKapitalRepository.save(any())).thenReturn(sredstvaKapital);
+        when(sredstvaKapitalRepository.findByRacunAndHaritja(any(), any(), anyLong())).thenReturn(sredstvaKapital);
 
-     //   assertEquals(transakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest.getBrojRacuna(), transakcijaRequest.getOpis(), transakcijaRequest.getValutaOznaka(), transakcijaRequest.getOrderId(), transakcijaRequest.getUplata(), transakcijaRequest.getIsplata(), transakcijaRequest.getRezervisano(), transakcijaRequest.getRezervisanoKoristi(), transakcijaRequest.getLastSegment()), null);
+        when(transakcijaRepository.save(any())).thenReturn(t);
+        when(sredstvaKapitalRepository.save(any())).thenReturn(sredstvaKapital);
 
+        assertEquals(transakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest),t);
     }
 
 
@@ -131,7 +224,7 @@ public class TransakcijeServiceTest {
         tr.setOpis("mockOpis");
         tr.setValutaOznaka(mockValuta);
         tr.setOrderId(1L);
-        tr.setUplata(1000);
+        tr.setUplata(10000);
         tr.setIsplata(10000);
         //tr.setRezervisanoKoristi(0);
         tr.setRezervisano(0);
