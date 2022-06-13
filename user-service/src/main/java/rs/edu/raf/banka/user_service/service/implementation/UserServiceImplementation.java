@@ -159,6 +159,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     }
 
     @Override
+    public void enableUser(User user){
+        log.info("Setting user ACTIVE {} in database", user.getUsername());
+        user.setAktivan(true);
+    }
+
+    @Override
     public User createUser(CreateUserForm createUserForm) {
         String username = createUserForm.getIme().toLowerCase()+ "." + createUserForm.getPrezime().toLowerCase();
 

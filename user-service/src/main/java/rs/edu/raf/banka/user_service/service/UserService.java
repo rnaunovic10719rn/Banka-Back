@@ -18,6 +18,7 @@ public interface UserService {
     void editUser(User user, CreateUserForm createUserForm);
     User getUserByEmail(String email);
     boolean deleteUser(User user);
+    void enableUser(User user);
     boolean resetPassword(String email);
     boolean setNewPassword(String password, String token);
     List<User> getUsers();

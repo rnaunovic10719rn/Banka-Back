@@ -158,6 +158,25 @@ public class UserControllerTest {
     }
 
     @Test
+    void testEnableAPI() throws Exception{
+        User user = new User(dummyName, "Test");
+        user.setId(2L);
+        user.setAktivan(false);
+        user.setRole(new Role(null,"ADMIN_ROLE", List.of(new String[]{"ADMIN_MOCK"})));
+
+        given(userServiceImplementation.getUserById(2L)).willReturn(Optional.of(user));
+
+        when(userServiceImplementation.deleteUser(user)).thenReturn(true);
+        doNothing().when(userServiceImplementation).enableUser(user);
+
+        mockMvc.perform(post("/api/user/enable/{id}", 2L).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userMockForm)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(dummyName + " reactivated"));
+    }
+
+    @Test
     void testInvalidDeleteAPI() throws Exception{
         given(userServiceImplementation.getUserById(2L)).willReturn(Optional.ofNullable(null));
 

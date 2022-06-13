@@ -170,6 +170,20 @@ class UserServiceTest {
     }
 
     @Test
+    void testEnableUser() {
+        User user = new User("UserX", "X");
+
+        List<String> mockPermissions = new ArrayList<>();
+        mockPermissions.add("mock_permission");
+        user.setRole(new Role(null, "ROLE_ADMIN", mockPermissions));
+        user.setAktivan(false);
+
+        userService.enableUser(user);
+
+        assertEquals(true, user.isAktivan());
+    }
+
+    @Test
     void testGetUserByEmail() {
         User user = new User("UserX", "X");
         user.setEmail("user@mock");

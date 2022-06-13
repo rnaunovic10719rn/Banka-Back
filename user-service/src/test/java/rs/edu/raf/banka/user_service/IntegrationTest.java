@@ -133,7 +133,7 @@ public class IntegrationTest {
     }
 
     @Test
-    void createAndDeleteUser() throws Exception {
+    void createAndDeleteAndReactivateUser() throws Exception {
         CreateUserForm cuf = new CreateUserForm();
         cuf.setIme("ToDelete");
         cuf.setPrezime("ToDeleteic");
@@ -160,8 +160,20 @@ public class IntegrationTest {
                 .content(""))
                 .andExpect(status().isOk());
 
-        Optional<User> deleted_user = userRepository.findByEmail("todelete.todeleteic");
-        assertThat(deleted_user).isEmpty();
+        Optional<User> deleted_user = userRepository.findByEmail("to_delete@raf.rs");
+        assertThat(deleted_user).isPresent();
+        assertThat(deleted_user.get().isAktivan()).isEqualTo(false);
+
+        url = "/api/user/enable/" + user.get().getId();
+        mockMvc.perform(post(url)
+                        .contentType("application/json")
+                        .header("Authorization", "Bearer " + token)
+                        .content(""))
+                .andExpect(status().isOk());
+
+        deleted_user = userRepository.findByEmail("to_delete@raf.rs");
+        assertThat(deleted_user).isPresent();
+        assertThat(deleted_user.get().isAktivan()).isEqualTo(true);
     }
 
     @Test
