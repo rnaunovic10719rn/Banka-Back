@@ -136,7 +136,7 @@ public class OrderService {
             if(order.getHartijaOdVrednosti() == HartijaOdVrednostiType.AKCIJA) {
                 if(order.getOrderAction() == OrderAction.BUY) {
                     transakcijaRequest.setOpis("Rezervacija za kupovinu akcije " + order.getHartijaOdVrednostiSymbol());
-                    transakcijaRequest.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                    transakcijaRequest.setValutaOznaka(getValutaForOrder(order));
                 } else {
                     transakcijaRequest.setOpis("Rezervacija za prodaju akcije " + order.getHartijaOdVrednostiSymbol());
                     transakcijaRequest.setHartijaId(order.getHartijaOdVrednostiId());
@@ -188,7 +188,7 @@ public class OrderService {
                 TransakcijaRequest novac = new TransakcijaRequest();
                 novac.setType(TransakcijaKapitalType.NOVAC);
                 novac.setOpis("Isplata sredstava za " + order.getHartijaOdVrednostiSymbol());
-                novac.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                novac.setValutaOznaka(getValutaForOrder(order));
                 novac.setOrderId(order.getId());
                 novac.setUplata(0.0);
                 novac.setIsplata(order.getAsk() * kolicina);
@@ -202,7 +202,7 @@ public class OrderService {
                     case FUTURES_UGOVOR -> hartija.setType(TransakcijaKapitalType.FUTURE_UGOVOR);
                 }
                 hartija.setOpis("Uplata " + order.getHartijaOdVrednostiSymbol());
-                hartija.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                hartija.setValutaOznaka(getValutaForOrder(order));
                 hartija.setOrderId(order.getId());
                 hartija.setHartijaId(order.getHartijaOdVrednostiId());
                 hartija.setUplata(kolicina);
@@ -218,7 +218,7 @@ public class OrderService {
                     case FUTURES_UGOVOR -> hartija.setType(TransakcijaKapitalType.FUTURE_UGOVOR);
                 }
                 hartija.setOpis("Isplata " + order.getHartijaOdVrednostiSymbol());
-                hartija.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                hartija.setValutaOznaka(getValutaForOrder(order));
                 hartija.setOrderId(order.getId());
                 hartija.setUplata(0.0);
                 hartija.setIsplata(kolicina);
@@ -230,7 +230,7 @@ public class OrderService {
                 TransakcijaRequest novac = new TransakcijaRequest();
                 novac.setType(TransakcijaKapitalType.NOVAC);
                 novac.setOpis("Uplata sredstava od prodaje za " + order.getHartijaOdVrednostiSymbol());
-                novac.setValutaOznaka(order.getBerza().getValuta().getKodValute());
+                novac.setValutaOznaka(getValutaForOrder(order));
                 novac.setOrderId(order.getId());
                 novac.setUplata(order.getBid() * kolicina);
                 novac.setIsplata(0.0);
@@ -493,5 +493,12 @@ public class OrderService {
 
     private boolean isSupervisor(String userRole) {
         return UserRole.ROLE_SUPERVISOR.equals(UserRole.valueOf(userRole));
+    }
+
+    private String getValutaForOrder(Order order) {
+        if(order.getBerza() == null || order.getBerza().getValuta() == null) {
+            return "USD";
+        }
+        return order.getBerza().getValuta().getKodValute();
     }
 }
