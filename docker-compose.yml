@@ -95,9 +95,8 @@ services:
   email-servis:
     image: ghcr.io/raf-si-2021/banka-mail-service:latest
     build: ./mail-service
+    env_file: .env
     environment:
-      spring.mail.username: "email"
-      spring.mail.password: "password"
       spring.activemq.broker-url: tcp://artemis:61616
     ports:
       - "8081:8081"
