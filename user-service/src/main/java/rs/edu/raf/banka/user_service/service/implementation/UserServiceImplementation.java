@@ -187,7 +187,12 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         log.info("Saving new user {} to the database", user.getUsername());
         String hashPW = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(hashPW);
-        return userRepository.save(user);
+        user = userRepository.save(user);
+
+        log.info("Sending email to newly created user {} ({})", user.getUsername(), user.getEmail());
+        sendAccountCreatedMail(user.getEmail(), user.getUsername(), password);
+
+        return user;
     }
 
     @Override
@@ -315,7 +320,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
 
         String token = UUID.randomUUID().toString();
         this.createPasswordResetTokenForUser(user, token);
-        this.sendMail(email, token);
+        this.sendPasswordResetMail(email, token);
 
         return true;
     }
@@ -333,7 +338,32 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         return true;
     }
 
-    public void sendMail(String email, String token) throws MessagingException {
+    // boolean je zbog mockovanja
+    public boolean sendAccountCreatedMail(String email, String username, String password) throws MessagingException {
+        String to = email;
+        String subject = "Podaci za pristup Banka platformi";
+        String content = "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<body>\n" +
+                "\n" +
+                "<h1>Banka platforma</h1>\n" +
+                "\n" +
+                "<p>Dobro došli na Banka platformu! Ovaj mejl sadrži sve neophodne podatke kako biste mogli da pristupite platformi.</p>\n" +
+                "\n" +
+                "<br/>" +
+                "\n" +
+                "<span>Username: " + username + "</span><br/>" +
+                "<span>Password: " + password + "</span>" +
+                "\n" +
+                "<p>Ukoliko imate bilo kakvih problema prilikom logovanja, obratiti se službi administracije.</p>\n" +
+                "\n" +
+                "</body>\n" +
+                "</html>";
+        jmsTemplate.convertAndSend(mailQueue , to + "###" + subject + "###" + content);
+        return true;
+    }
+
+    public void sendPasswordResetMail(String email, String token) throws MessagingException {
         String to = email;
         String url = "http://localhost:3000/changepassword/" + token;
         String link ="<a href='" + url + "'>" + url + "</a>";
