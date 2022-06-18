@@ -393,6 +393,9 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         if(prt == null){
             return false;
         }
+        if((prt.getExpiryDate() != null && prt.getExpiryDate().before(new Date())) || prt.getUsed()) {
+            return false;
+        }
 
         //Checking password
         String regex = "^(?=.*[A-Z])(?=.*[0-9]).{8,}$";
@@ -405,6 +408,11 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         user.setPassword(hashPW);
 
         this.userRepository.save(user);
+
+        // Invalidate password reset token
+        prt.setUsed(true);
+        this.passwordTokenRepository.save(prt);
+
         return true;
     }
 
