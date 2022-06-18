@@ -64,7 +64,7 @@ public class BankaApplication {
 				userService.createUserAdmin(new User("admin", "Petar", "Petrovic", "email@email.com", "1111111111111", "060123456","Admin123", null, true, false, glAdminRole));
 
 				//testni user za otp, obrisace se..?
-				userService.createUserAdmin(new User("test", "1234", "5MYDN5OMDRTEVQPCED4F5VYKZRPZ4FRY"));
+				userService.createUserAdmin(new User("test", "Test", "Test", "test@email.com", "1111111111112", "060123457","1234", "5MYDN5OMDRTEVQPCED4F5VYKZRPZ4FRY", true, true, glAdminRole));
 				userService.setRoleToUser("test", "ROLE_ADMIN");
 
 				String hashPasswordAgent1 = BCrypt.hashpw("agent1agent1", BCrypt.gensalt());
