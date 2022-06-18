@@ -39,16 +39,11 @@ import java.util.regex.Pattern;
 @Slf4j
 public class UserServiceImplementation implements UserService, UserDetailsService {
 
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final RoleRepository roleRepository;
-    @Autowired
     private final PasswordTokenRepository passwordTokenRepository;
-    @Autowired
-    JmsTemplate jmsTemplate;
-    @Autowired
-    Queue mailQueue;
+    private final JmsTemplate jmsTemplate;
+    private final Queue mailQueue;
 
     private String bearer = "Bearer ";
     private String secret = "secret";
@@ -56,10 +51,16 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     private SecureRandom rnd = new SecureRandom();
 
     @Autowired
-    public UserServiceImplementation(UserRepository userRepository, RoleRepository roleRepository, PasswordTokenRepository passwordTokenRepository){
+    public UserServiceImplementation(UserRepository userRepository,
+                                     RoleRepository roleRepository,
+                                     PasswordTokenRepository passwordTokenRepository,
+                                     JmsTemplate jmsTemplate,
+                                     Queue mailQueue){
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordTokenRepository = passwordTokenRepository;
+        this.jmsTemplate = jmsTemplate;
+        this.mailQueue = mailQueue;
     }
 
     @Override
