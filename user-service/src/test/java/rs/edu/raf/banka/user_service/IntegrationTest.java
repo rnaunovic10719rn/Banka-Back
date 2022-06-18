@@ -58,8 +58,8 @@ public class IntegrationTest {
         CreateUserForm cuf = new CreateUserForm();
         cuf.setIme("Test");
         cuf.setPrezime("Testic");
-        cuf.setEmail("test@raf.rs");
-        cuf.setJmbg("1234567980123");
+        cuf.setEmail("create.test@raf.rs");
+        cuf.setJmbg("1234560480810");
         cuf.setBrTelefon("0690000000");
         cuf.setPozicija("ROLE_ADMIN");
         cuf.setLimit(0.0);
@@ -71,9 +71,9 @@ public class IntegrationTest {
                 .content(objectMapper.writeValueAsString(cuf)))
                 .andExpect(status().isOk());
 
-        Optional<User> user = userRepository.findByEmail("test@raf.rs");
+        Optional<User> user = userRepository.findByEmail("create.test@raf.rs");
         assertThat(user.isEmpty()).isEqualTo(false);
-        assertThat(user.get().getJmbg()).isEqualTo("1234567980123");
+        assertThat(user.get().getJmbg()).isEqualTo("1234560480810");
     }
 
     @Test
@@ -110,7 +110,7 @@ public class IntegrationTest {
     @Test
     void patchUserFromToken() throws Exception {
         CreateUserForm cuf = new CreateUserForm();
-        String newJmbg = "111111111111111";
+        String newJmbg = "41654126530651";
         cuf.setIme("Test");
         cuf.setPrezime("Testic");
         cuf.setEmail("test@raf.rs");
@@ -138,7 +138,7 @@ public class IntegrationTest {
         cuf.setIme("ToDelete");
         cuf.setPrezime("ToDeleteic");
         cuf.setEmail("to_delete@raf.rs");
-        cuf.setJmbg("111111111111");
+        cuf.setJmbg("1234567890123");
         cuf.setBrTelefon("0690000000");
         cuf.setPozicija("ROLE_AGENT");
         cuf.setLimit(0.0);
