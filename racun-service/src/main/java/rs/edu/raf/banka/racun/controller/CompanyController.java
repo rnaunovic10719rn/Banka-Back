@@ -14,6 +14,7 @@ import rs.edu.raf.banka.racun.service.impl.CompanyBankAccountService;
 import rs.edu.raf.banka.racun.service.impl.CompanyContactPersonService;
 import rs.edu.raf.banka.racun.service.impl.CompanyService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -36,27 +37,28 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanies());
     }
 
-    @GetMapping(value = "/{id}/{naziv}/{maticniBroj}/{pib}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getCompany(@RequestHeader("Authorization") String token, @PathVariable(required = false) Long id,
-                                        @PathVariable(required = false) String naziv, @PathVariable(required = false) String maticniBroj,
-                                        @PathVariable(required = false) String pib) {
-        if (id != null) {
-            Optional<Company> company = companyService.getCompanyById(id);
-            if (company.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(company.get());
-        } else if (naziv != null) {
-            Company company = companyService.getCompanyByNaziv(naziv);
-            return ResponseEntity.ok(company);
-        } else if (maticniBroj != null) {
-            Company company = companyService.getCompanyByMaticniBroj(maticniBroj);
-            return ResponseEntity.ok(company);
-        } else if (pib != null) {
-            Company company = companyService.getCompanyByPib(pib);
-            return ResponseEntity.ok(company);
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyById(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        Optional<Company> company = companyService.getCompanyById(id);
+        if (company.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.badRequest().body("bad request!");
+        return ResponseEntity.ok(company.get());
+    }
+
+    @GetMapping(value = "/naziv/{naziv}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyByNaziv(@RequestHeader("Authorization") String token, @PathVariable String naziv) {
+        return ResponseEntity.ok(companyService.getCompanyByNaziv(naziv));
+    }
+
+    @GetMapping(value = "/maticniBroj/{maticniBroj}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyByMaticniBroj(@RequestHeader("Authorization") String token, @PathVariable String maticniBroj) {
+        return ResponseEntity.ok(companyService.getCompanyByMaticniBroj(maticniBroj));
+    }
+
+    @GetMapping(value = "/pib/{pib}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyByPib(@RequestHeader("Authorization") String token, @PathVariable String pib) {
+        return ResponseEntity.ok(companyService.getCompanyByPib(pib));
     }
 
     @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)

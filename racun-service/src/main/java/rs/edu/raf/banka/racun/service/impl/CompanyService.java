@@ -79,7 +79,7 @@ public class CompanyService {
         return companyRepository.findAll();
     }
 
-    public Company getCompanyByNaziv(String naziv) {
+    public List<Company> getCompanyByNaziv(String naziv) {
         return companyRepository.findByNaziv(naziv);
     }
 
