@@ -71,6 +71,12 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.editCompany(companyRequest));
     }
 
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> deleteCompany(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        companyService.deleteCompany(id);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * Contact persons
      */
