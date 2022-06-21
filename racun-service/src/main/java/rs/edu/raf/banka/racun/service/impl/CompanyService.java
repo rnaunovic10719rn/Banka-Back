@@ -79,4 +79,16 @@ public class CompanyService {
         return companyRepository.findAll();
     }
 
+    public Company getCompanyByNaziv(String naziv) {
+        return companyRepository.findByNaziv(naziv);
+    }
+
+    public Company getCompanyByMaticniBroj(String maticniBroj) {
+        return companyRepository.findByMaticniBroj(maticniBroj);
+    }
+
+    public Company getCompanyByPib(String pib) {
+        return companyRepository.findByPib(pib);
+    }
+
 }

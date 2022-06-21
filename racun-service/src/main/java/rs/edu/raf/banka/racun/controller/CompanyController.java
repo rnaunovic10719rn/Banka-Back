@@ -36,13 +36,27 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanies());
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getCompany(@RequestHeader("Authorization") String token, @PathVariable Long id) {
-        Optional<Company> company = companyService.getCompanyById(id);
-        if(company.isEmpty()) {
-            return ResponseEntity.notFound().build();
+    @GetMapping(value = "/{id}/{naziv}/{maticniBroj}/{pib}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompany(@RequestHeader("Authorization") String token, @PathVariable(required = false) Long id,
+                                        @PathVariable(required = false) String naziv, @PathVariable(required = false) String maticniBroj,
+                                        @PathVariable(required = false) String pib) {
+        if (id != null) {
+            Optional<Company> company = companyService.getCompanyById(id);
+            if (company.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(company.get());
+        } else if (naziv != null) {
+            Company company = companyService.getCompanyByNaziv(naziv);
+            return ResponseEntity.ok(company);
+        } else if (maticniBroj != null) {
+            Company company = companyService.getCompanyByMaticniBroj(maticniBroj);
+            return ResponseEntity.ok(company);
+        } else if (pib != null) {
+            Company company = companyService.getCompanyByPib(pib);
+            return ResponseEntity.ok(company);
         }
-        return ResponseEntity.ok(company.get());
+        return ResponseEntity.badRequest().body("bad request!");
     }
 
     @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
