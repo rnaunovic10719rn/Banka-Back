@@ -61,13 +61,16 @@ public class CompanyService {
         }
 
         Company company = companyOptional.get();
-        company.setNaziv(companyRequest.getNaziv());
-        company.setAdresa(companyRequest.getAdresa());
-        company.setDrzava(companyRequest.getDrzava());
-        company.setMaticniBroj(companyRequest.getMaticniBroj());
-        company.setPib(companyRequest.getPib());
-        company.setSifraDelatnosti(companyRequest.getSifraDelatnosti());
-
+        //ako su maticni broj ili pib drugaciji, u tom slucaju se posmatra kao nova kompanija i treba je tako evidentirati
+        //u sistemu, a staru samo ostaviti kakva je bila
+        if (company.getMaticniBroj() != companyRequest.getMaticniBroj() || company.getPib() != companyRequest.getPib()) {
+            this.createCompany(companyRequest);
+        } else {
+            company.setNaziv(companyRequest.getNaziv());
+            company.setAdresa(companyRequest.getAdresa());
+            company.setDrzava(companyRequest.getDrzava());
+            company.setSifraDelatnosti(companyRequest.getSifraDelatnosti());
+        }
         return companyRepository.save(company);
     }
 

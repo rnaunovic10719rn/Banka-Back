@@ -131,4 +131,9 @@ public class CompanyController {
         return ResponseEntity.ok(bankAccountService.editBankAccount(bankAccountRequest));
     }
 
+    @DeleteMapping(value = "/bankaccount/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> deleteBankAccount(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        bankAccountService.deleteBankAccount(id);
+        return ResponseEntity.ok().build();
+    }
 }
