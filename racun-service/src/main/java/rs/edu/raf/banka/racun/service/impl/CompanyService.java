@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.exceptions.InvalidCompanyException;
 import rs.edu.raf.banka.racun.model.company.Company;
+import rs.edu.raf.banka.racun.model.company.CompanyContactPerson;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.requests.CompanyRequest;
 import rs.edu.raf.banka.racun.utils.StringUtils;
@@ -92,6 +93,17 @@ public class CompanyService {
 
     public Company getCompanyByPib(String pib) {
         return companyRepository.findByPib(pib);
+    }
+
+    //delete company treba izmeniti kada se implementiraju transakcije
+    //treba obezbediti da je moguce obrisati samo kompaniju koja nema transakcije
+    //kompanija koja ima transakcije ostaje u sistemu
+    public void deleteCompany(Long id) {
+        Optional<Company> company = companyRepository.findById(id);
+        if(company.isEmpty()) {
+            throw new InvalidCompanyException("Provided company does not exist");
+        }
+        companyRepository.delete(company.get());
     }
 
 }
