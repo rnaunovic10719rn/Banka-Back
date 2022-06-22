@@ -174,7 +174,7 @@ public class UgovorService
     }
 
     public boolean modifyStavka(TransakcionaStavkaUpdateRequest request) throws Exception {
-        var stavka = stavkaRepository.getById(request.getStavkaId());
+        var stavka = getTransakcionaStavkaById(request.getStavkaId());
         if(stavka == null)
             throw new Exception("Stavka not found");
 
