@@ -8,6 +8,7 @@ import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -29,11 +30,10 @@ public class Ugovor
 
     String description;
 
-    Long documentId;
+    Long documentId = -1L;
 
 
-    @OneToMany
-    @JoinColumn(name = "ugovor_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ugovor", fetch = FetchType.LAZY, orphanRemoval = true)
     List<TransakcionaStavka> stavke;
 
     @PrePersist
