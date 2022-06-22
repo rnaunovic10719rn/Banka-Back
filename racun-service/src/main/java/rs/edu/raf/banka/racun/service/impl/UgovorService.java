@@ -3,6 +3,7 @@ package rs.edu.raf.banka.racun.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.model.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.Ugovor;
@@ -126,7 +127,7 @@ public class UgovorService
         return modified;
     }
 
-    public boolean modifyDocument(Long id, Object document) throws Exception {
+    public boolean modifyDocument(Long id, MultipartFile file) throws Exception {
         var ugovor = getById(id);
         if(ugovor == null)
             throw new Exception("Ugovor not found");
@@ -140,7 +141,7 @@ public class UgovorService
         return true;
     }
 
-    public void addStavka(TransakcionaStavkaCreateRequest request) throws Exception {
+    public TransakcionaStavka addStavka(TransakcionaStavkaCreateRequest request) throws Exception {
         var ugovor = getById(request.getUgovorId());
         if(ugovor == null)
             throw new Exception("Ugovor not found");
@@ -169,6 +170,7 @@ public class UgovorService
         stavkaRepository.save(stavka);
         ugovor.getStavke().add(stavka);
         ugovorRepository.save(ugovor);
+        return stavka;
     }
 
     public boolean modifyStavka(TransakcionaStavkaUpdateRequest request) throws Exception {
