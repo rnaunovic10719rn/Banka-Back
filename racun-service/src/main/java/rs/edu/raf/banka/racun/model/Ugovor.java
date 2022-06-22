@@ -3,6 +3,7 @@ package rs.edu.raf.banka.racun.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import rs.edu.raf.banka.racun.enums.UgovorStatus;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -20,13 +21,16 @@ public class Ugovor
 
     String company;
 
-    String status;
-
+    UgovorStatus status;
     Date created;
+    Date lastChanged;
 
-    Date last_changed;
+    String delodavniBroj;
 
     String description;
+
+    Long documentId;
+
 
     @OneToMany
     @JoinColumn(name = "ugovor_id")
@@ -39,6 +43,6 @@ public class Ugovor
 
     @PreUpdate
     protected void onUpdate() {
-        last_changed = new Date();
+        lastChanged = new Date();
     }
 }
