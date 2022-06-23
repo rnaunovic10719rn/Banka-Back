@@ -86,9 +86,6 @@ public class UgovorController
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createUgovor(@RequestHeader("Authorization") String token, @RequestBody UgovorCreateRequest request) {
-        if(request.getCompanyId() == null || request.getDescription() == null || request.getDelodavniBroj() == null)
-            return ResponseEntity.badRequest().body("bad request");
-
         try
         {
             var ugovor = ugovorService.createUgovor(request);
@@ -102,8 +99,6 @@ public class UgovorController
 
     @PutMapping(value = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyUgovor(@RequestHeader("Authorization") String token, @RequestBody UgovorUpdateRequest request) {
-        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelodavniBroj() == null)
-            return ResponseEntity.badRequest().body("bad request");
         try
         {
             var result = ugovorService.modifyUgovor(request);
@@ -117,8 +112,6 @@ public class UgovorController
 
     @PutMapping(value = "/modify/{id}/addDocument", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyUgovorDocument(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        if (file == null)
-            return ResponseEntity.badRequest().body("bad request");
         try {
             var result = ugovorService.modifyDocument(id, file);
             return ResponseEntity.ok(result);
@@ -129,10 +122,6 @@ public class UgovorController
 
     @PutMapping(value = "/modify/addStavka", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaCreateRequest request) {
-        if(request.getUgovorId() == null || request.getCenaHartije() == null || request.getHartijaId() == null
-                || request.getKolicina() == null || request.getHartijaType() == null || request.getType() == null
-                || request.getRacunId() == null || request.getValuta() == null)
-            return ResponseEntity.badRequest().body("bad request");
         try
         {
             var stavka = ugovorService.addStavka(request);
@@ -147,11 +136,6 @@ public class UgovorController
 
     @PostMapping(value = "/modify/modifyStavka", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaUpdateRequest request) {
-        if(request.getStavkaId() == null && request.getCenaHartije() == null && request.getHartijaId() == null
-                && request.getKolicina() == null && request.getHartijaType() == null && request.getType() == null
-                && request.getRacunId() == null && request.getValuta() == null)
-            return ResponseEntity.badRequest().body("bad request");
-
         try
         {
             var result = ugovorService.modifyStavka(request);

@@ -2,6 +2,7 @@ package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
@@ -95,6 +96,10 @@ public class UgovorService
     }
 
     public Ugovor createUgovor(UgovorCreateRequest request) throws Exception {
+
+        if(request.getCompanyId() == null || request.getDescription() == null || request.getDelodavniBroj() == null)
+            throw new Exception("bad request");
+
         var ugovor = new Ugovor();
         ugovor.setStatus(UgovorStatus.DRAFT);
         var company = companyRepository.findById(request.getCompanyId());
@@ -110,6 +115,10 @@ public class UgovorService
     }
 
     public boolean modifyUgovor(UgovorUpdateRequest request) throws Exception {
+
+        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelodavniBroj() == null)
+            throw new Exception("bad request");
+
         var ugovor = getById(request.getId());
         if(ugovor == null)
             throw new Exception("Ugovor not found");
@@ -143,6 +152,8 @@ public class UgovorService
     }
 
     public boolean modifyDocument(Long id, MultipartFile file) throws Exception {
+        if (file == null)
+            throw new Exception("bad request");
         var ugovor = getById(id);
         if(ugovor == null)
             throw new Exception("Ugovor not found");
@@ -157,6 +168,13 @@ public class UgovorService
     }
 
     public TransakcionaStavka addStavka(TransakcionaStavkaCreateRequest request) throws Exception {
+
+        if(request.getUgovorId() == null || request.getCenaHartije() == null || request.getHartijaId() == null
+                || request.getKolicina() == null || request.getHartijaType() == null || request.getType() == null
+                || request.getRacunId() == null || request.getValuta() == null)
+            throw new Exception("bad request");
+
+
         var ugovor = getById(request.getUgovorId());
         if(ugovor == null)
             throw new Exception("Ugovor not found");
@@ -189,6 +207,12 @@ public class UgovorService
     }
 
     public boolean modifyStavka(TransakcionaStavkaUpdateRequest request) throws Exception {
+
+        if(request.getStavkaId() == null && request.getCenaHartije() == null && request.getHartijaId() == null
+                && request.getKolicina() == null && request.getHartijaType() == null && request.getType() == null
+                && request.getRacunId() == null && request.getValuta() == null)
+            throw new Exception("bad request");
+
         var stavka = getTransakcionaStavkaById(request.getStavkaId());
         if(stavka == null)
             throw new Exception("Stavka not found");
