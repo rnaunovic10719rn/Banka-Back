@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class UgovorCreateRequest
 {
-    String company;
+    Long companyId;
 
     String delodavniBroj;
 

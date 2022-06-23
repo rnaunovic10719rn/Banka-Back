@@ -8,6 +8,7 @@ import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.model.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.Ugovor;
 import rs.edu.raf.banka.racun.repository.*;
+import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.requests.TransakcionaStavkaCreateRequest;
 import rs.edu.raf.banka.racun.requests.TransakcionaStavkaUpdateRequest;
 import rs.edu.raf.banka.racun.requests.UgovorCreateRequest;
@@ -28,13 +29,16 @@ public class UgovorService
 
     private final ValutaRepository valutaRepository;
 
+    private final CompanyRepository companyRepository;
+
     @Autowired
-    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, RacunRepository racunRepository, ValutaRepository valutaRepository)
+    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, RacunRepository racunRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository)
     {
         this.ugovorRepository = ugovorRepository;
         this.stavkaRepository = stavkaRepository;
         this.racunRepository = racunRepository;
         this.valutaRepository = valutaRepository;
+        this.companyRepository = companyRepository;
     }
 
 
@@ -69,26 +73,34 @@ public class UgovorService
         return ugovorRepository.findAllByStatus(UgovorStatus.FINALIZED);
     }
 
-    public List<Ugovor> getAllByCompany(String company)
-    {
-        return ugovorRepository.findAllByCompany(company);
+    public List<Ugovor> getAllByCompany(Long companyId) throws Exception {
+        var company = companyRepository.findById(companyId);
+        if(company.isEmpty())
+            throw new Exception("Company not found");
+        return ugovorRepository.findAllByCompany(company.get());
     }
 
-    public List<Ugovor> getAllByCompanyDraft(String company)
-    {
-        return ugovorRepository.findAllByCompanyAndStatus(company, UgovorStatus.DRAFT);
+    public List<Ugovor> getAllByCompanyDraft(Long companyId) throws Exception {
+        var company = companyRepository.findById(companyId);
+        if(company.isEmpty())
+            throw new Exception("Company not found");
+        return ugovorRepository.findAllByCompanyAndStatus(company.get(), UgovorStatus.DRAFT);
     }
 
-    public List<Ugovor> getAllByCompanyFinalized(String company)
-    {
-        return ugovorRepository.findAllByCompanyAndStatus(company, UgovorStatus.FINALIZED);
+    public List<Ugovor> getAllByCompanyFinalized(Long companyPib) throws Exception {
+        var company = companyRepository.findById(companyPib);
+        if(company.isEmpty())
+            throw new Exception("Company not found");
+        return ugovorRepository.findAllByCompanyAndStatus(company.get(), UgovorStatus.FINALIZED);
     }
 
-    public Ugovor createUgovor(UgovorCreateRequest request)
-    {
+    public Ugovor createUgovor(UgovorCreateRequest request) throws Exception {
         var ugovor = new Ugovor();
         ugovor.setStatus(UgovorStatus.DRAFT);
-        ugovor.setCompany(request.getCompany());
+        var company = companyRepository.findById(request.getCompanyId());
+        if(company.isEmpty())
+            throw new Exception("Company not found");
+        ugovor.setCompany(company.get());
         ugovor.setDescription(request.getDescription());
         ugovor.setDelodavniBroj(request.getDelodavniBroj());
         ugovor.setDocumentId(-1L);
@@ -106,9 +118,12 @@ public class UgovorService
             throw new Exception("Ugovor is finalized");
 
         var modified = false;
-        if(request.getCompany() != null)
+        if(request.getCompanyId() != null)
         {
-            ugovor.setCompany(request.getCompany());
+            var company = companyRepository.findById(request.getCompanyId());
+            if(company.isEmpty())
+                throw new Exception("Company not found");
+            ugovor.setCompany(company.get());
             modified = true;
         }
         if(request.getDescription() != null)

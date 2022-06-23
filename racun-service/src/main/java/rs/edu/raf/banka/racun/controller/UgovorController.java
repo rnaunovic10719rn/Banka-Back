@@ -4,9 +4,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import rs.edu.raf.banka.racun.model.Transakcija;
+import rs.edu.raf.banka.racun.model.Ugovor;
 import rs.edu.raf.banka.racun.requests.*;
 import rs.edu.raf.banka.racun.service.impl.UgovorService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ugovor")
@@ -46,35 +48,61 @@ public class UgovorController
     }
 
     @PostMapping(value = "/getAll/{kompanija}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllKompanija(@RequestHeader("Authorization") String token, @PathVariable String kompanija) {
-        var ugovori = ugovorService.getAllByCompany(kompanija);
-        return ResponseEntity.ok(ugovori);
+    public ResponseEntity<?> getAllKompanija(@RequestHeader("Authorization") String token, @PathVariable Long kompanija) {
+        try {
+            List<Ugovor> ugovori = ugovorService.getAllByCompany(kompanija);
+            return ResponseEntity.ok(ugovori);
+
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @PostMapping(value = "/getAllFinalized/{kompanija}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllKompanijaFinalized(@RequestHeader("Authorization") String token, @PathVariable String kompanija) {
-        var ugovori = ugovorService.getAllByCompanyFinalized(kompanija);
-        return ResponseEntity.ok(ugovori);
+    public ResponseEntity<?> getAllKompanijaFinalized(@RequestHeader("Authorization") String token, @PathVariable Long kompanija) {
+        try
+        {
+            var ugovori = ugovorService.getAllByCompanyFinalized(kompanija);
+            return ResponseEntity.ok(ugovori);
+        }
+        catch (Exception ex)
+        {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @PostMapping(value = "/getAllDraft/{kompanija}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllKompanijaDraft(@RequestHeader("Authorization") String token, @PathVariable String kompanija) {
-        var ugovori = ugovorService.getAllByCompanyDraft(kompanija);
-        return ResponseEntity.ok(ugovori);
+    public ResponseEntity<?> getAllKompanijaDraft(@RequestHeader("Authorization") String token, @PathVariable Long kompanija) {
+        try
+        {
+            var ugovori = ugovorService.getAllByCompanyDraft(kompanija);
+            return ResponseEntity.ok(ugovori);
+        }
+        catch (Exception ex)
+        {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createUgovor(@RequestHeader("Authorization") String token, @RequestBody UgovorCreateRequest request) {
-        if(request.getCompany() == null || request.getDescription() == null || request.getDelodavniBroj() == null)
+        if(request.getCompanyId() == null || request.getDescription() == null || request.getDelodavniBroj() == null)
             return ResponseEntity.badRequest().body("bad request");
 
-        var ugovor = ugovorService.createUgovor(request);
-        return ResponseEntity.ok(ugovor);
+        try
+        {
+            var ugovor = ugovorService.createUgovor(request);
+            return ResponseEntity.ok(ugovor);
+        }
+        catch (Exception ex)
+        {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @PostMapping(value = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyUgovor(@RequestHeader("Authorization") String token, @RequestBody UgovorUpdateRequest request) {
-        if(request.getCompany() == null && request.getDescription() == null && request.getDelodavniBroj() == null)
+        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelodavniBroj() == null)
             return ResponseEntity.badRequest().body("bad request");
         try
         {

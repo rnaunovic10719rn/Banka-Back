@@ -7,7 +7,7 @@ public class UgovorUpdateRequest
 {
     Long id;
 
-    String company;
+    Long companyId;
 
     String delodavniBroj;
 

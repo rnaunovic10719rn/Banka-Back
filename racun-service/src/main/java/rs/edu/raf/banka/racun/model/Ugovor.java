@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
+import rs.edu.raf.banka.racun.model.company.Company;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -20,7 +21,9 @@ public class Ugovor
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    String company;
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    Company company;
 
     UgovorStatus status;
     Date created;
