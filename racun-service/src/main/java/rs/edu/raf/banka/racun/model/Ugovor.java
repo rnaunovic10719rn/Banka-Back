@@ -25,7 +25,7 @@ public class Ugovor
     @JoinColumn(name = "company_id")
     Company company;
 
-    UgovorStatus status;
+    UgovorStatus status = UgovorStatus.DRAFT;
     Date created;
     Date lastChanged;
 

@@ -25,7 +25,7 @@ public class TransakcionaStavka {
 
     TransakcionaStavkaType type;
 
-    long hartijaId;
+    Long hartijaId;
 
     HartijaOdVrednostiType hartijaType;
 
@@ -37,8 +37,8 @@ public class TransakcionaStavka {
     @JoinColumn(name = "valuta_id")
     Valuta valuta;
 
-    int kolicina;
+    Integer kolicina;
 
-    double cenaHartije;
+    Double cenaHartije;
 
 }
