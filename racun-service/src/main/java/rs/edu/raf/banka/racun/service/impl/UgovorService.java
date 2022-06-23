@@ -2,7 +2,6 @@ package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
@@ -26,18 +25,15 @@ public class UgovorService
 
     private final TransakcionaStavkaRepository stavkaRepository;
 
-    private final RacunRepository racunRepository;
-
     private final ValutaRepository valutaRepository;
 
     private final CompanyRepository companyRepository;
 
     @Autowired
-    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, RacunRepository racunRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository)
+    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository)
     {
         this.ugovorRepository = ugovorRepository;
         this.stavkaRepository = stavkaRepository;
-        this.racunRepository = racunRepository;
         this.valutaRepository = valutaRepository;
         this.companyRepository = companyRepository;
     }
@@ -171,7 +167,7 @@ public class UgovorService
 
         if(request.getUgovorId() == null || request.getCenaHartije() == null || request.getHartijaId() == null
                 || request.getKolicina() == null || request.getHartijaType() == null || request.getType() == null
-                || request.getRacunId() == null || request.getValuta() == null)
+                || request.getRacunType() == null || request.getValuta() == null)
             throw new Exception("bad request");
 
 
@@ -195,10 +191,7 @@ public class UgovorService
             throw new Exception("Valuta not found");
         stavka.setValuta(valuta);
 
-        var racun = racunRepository.findById(request.getRacunId());
-        if(racun.isEmpty())
-            throw new Exception("Racun not found");
-        stavka.setRacun(racun.get());
+        stavka.setRacunType(request.getRacunType());
 
         stavkaRepository.save(stavka);
         ugovor.getStavke().add(stavka);
@@ -210,7 +203,7 @@ public class UgovorService
 
         if(request.getStavkaId() == null && request.getCenaHartije() == null && request.getHartijaId() == null
                 && request.getKolicina() == null && request.getHartijaType() == null && request.getType() == null
-                && request.getRacunId() == null && request.getValuta() == null)
+                && request.getRacunType() == null && request.getValuta() == null)
             throw new Exception("bad request");
 
         var stavka = getTransakcionaStavkaById(request.getStavkaId());
@@ -266,12 +259,9 @@ public class UgovorService
             modified = true;
         }
 
-        if(request.getRacunId() != null)
+        if(request.getRacunType() != null)
         {
-            var racun = racunRepository.findById(request.getRacunId());
-            if(racun.isEmpty())
-                throw new Exception("Racun not found");
-            stavka.setRacun(racun.get());
+            stavka.setRacunType(request.getRacunType());
             modified = true;
         }
 
