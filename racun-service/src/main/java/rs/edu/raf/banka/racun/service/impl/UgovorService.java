@@ -147,7 +147,7 @@ public class UgovorService
         return modified;
     }
 
-    public boolean modifyDocument(Long id, MultipartFile file) throws Exception {
+    public boolean finalizeUgovor(Long id, MultipartFile file) throws Exception {
         if (file == null)
             throw new Exception("bad request");
         var ugovor = getById(id);
@@ -159,6 +159,8 @@ public class UgovorService
         //TODO: document save logic
         Long documentID = -1L;
         ugovor.setDocumentId(documentID);
+
+        ugovor.setStatus(UgovorStatus.FINALIZED);
         ugovorRepository.save(ugovor);
         return true;
     }
@@ -293,14 +295,6 @@ public class UgovorService
         ugovorRepository.save(ugovor);
         stavkaRepository.delete(stavka);
         return true;
-    }
-
-    public void finalizeUgovor(Ugovor ugovor) throws Exception {
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
-            throw new Exception("Ugovor is finalized");
-
-        ugovor.setStatus(UgovorStatus.FINALIZED);
-        ugovorRepository.save(ugovor);
     }
 
 }

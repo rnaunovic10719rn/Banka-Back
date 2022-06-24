@@ -1,5 +1,6 @@
 package rs.edu.raf.banka.racun.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +17,12 @@ public class UgovorController
 {
     private final UgovorService ugovorService;
 
+    @Autowired
     public UgovorController(UgovorService ugovorService) {
         this.ugovorService = ugovorService;
     }
 
-    @GetMapping(value = "/get/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getUgovor(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         var ugovor = ugovorService.getById(id);
         if(ugovor == null)
@@ -29,25 +31,25 @@ public class UgovorController
         return ResponseEntity.ok(ugovor);
     }
 
-    @GetMapping(value = "/get/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAll(@RequestHeader("Authorization") String token) {
         var ugovori = ugovorService.getAll();
         return ResponseEntity.ok(ugovori);
     }
 
-    @GetMapping(value = "/get/finalized/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/finalized/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFinalized(@RequestHeader("Authorization") String token) {
         var ugovori = ugovorService.getAllFinalized();
         return ResponseEntity.ok(ugovori);
     }
 
-    @GetMapping(value = "/get/draft/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/draft/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllDraft(@RequestHeader("Authorization") String token) {
         var ugovori = ugovorService.getAllDraft();
         return ResponseEntity.ok(ugovori);
     }
 
-    @GetMapping(value = "/get/company/{kompanijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/company/{kompanijaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllKompanija(@RequestHeader("Authorization") String token, @PathVariable Long kompanijaId) {
         try {
             List<Ugovor> ugovori = ugovorService.getAllByCompany(kompanijaId);
@@ -58,7 +60,7 @@ public class UgovorController
         }
     }
 
-    @GetMapping(value = "/get/company/{kompanijaId}/finalized", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/company/{kompanijaId}/finalized", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllKompanijaFinalized(@RequestHeader("Authorization") String token, @PathVariable Long kompanijaId) {
         try
         {
@@ -71,7 +73,7 @@ public class UgovorController
         }
     }
 
-    @GetMapping(value = "/get/company/{kompanijaId}/draft", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/company/{kompanijaId}/draft", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllKompanijaDraft(@RequestHeader("Authorization") String token, @PathVariable Long kompanijaId) {
         try
         {
@@ -84,7 +86,7 @@ public class UgovorController
         }
     }
 
-    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createUgovor(@RequestHeader("Authorization") String token, @RequestBody UgovorCreateRequest request) {
         try
         {
@@ -97,7 +99,7 @@ public class UgovorController
         }
     }
 
-    @PutMapping(value = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyUgovor(@RequestHeader("Authorization") String token, @RequestBody UgovorUpdateRequest request) {
         try
         {
@@ -110,17 +112,17 @@ public class UgovorController
         }
     }
 
-    @PutMapping(value = "/modify/{id}/addDocument", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/finalize/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyUgovorDocument(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestParam("file") MultipartFile file) {
         try {
-            var result = ugovorService.modifyDocument(id, file);
+            var result = ugovorService.finalizeUgovor(id, file);
             return ResponseEntity.ok(result);
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 
-    @PutMapping(value = "/modify/addStavka", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaCreateRequest request) {
         try
         {
@@ -134,7 +136,7 @@ public class UgovorController
 
     }
 
-    @PostMapping(value = "/modify/modifyStavka", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaUpdateRequest request) {
         try
         {
@@ -147,7 +149,7 @@ public class UgovorController
         }
     }
 
-    @DeleteMapping(value = "/modify/removeStavka/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/stavka/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> removeStavka(@RequestHeader("Authorization") String token, @PathVariable Long stavkaId) {
         try
         {
