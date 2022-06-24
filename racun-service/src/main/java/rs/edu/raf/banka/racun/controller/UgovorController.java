@@ -5,7 +5,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import rs.edu.raf.banka.racun.model.Ugovor;
+import rs.edu.raf.banka.racun.model.contract.Ugovor;
 import rs.edu.raf.banka.racun.requests.*;
 import rs.edu.raf.banka.racun.service.impl.UgovorService;
 

@@ -1,4 +1,4 @@
-package rs.edu.raf.banka.racun.model;
+package rs.edu.raf.banka.racun.model.contract;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,6 @@ import rs.edu.raf.banka.racun.model.company.Company;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Data

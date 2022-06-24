@@ -1,10 +1,8 @@
-package rs.edu.raf.banka.racun.repository;
+package rs.edu.raf.banka.racun.repository.contract;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
-import rs.edu.raf.banka.racun.model.TransakcionaStavka;
-import rs.edu.raf.banka.racun.model.Ugovor;
+import rs.edu.raf.banka.racun.model.contract.Ugovor;
 import rs.edu.raf.banka.racun.model.company.Company;
 
 import java.util.List;

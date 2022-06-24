@@ -2,8 +2,6 @@ package rs.edu.raf.banka.racun;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -11,8 +9,6 @@ import org.mockito.*;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.Racun;
@@ -23,7 +19,6 @@ import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
-import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
@@ -31,10 +26,7 @@ import rs.edu.raf.banka.racun.service.impl.UserService;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.Query;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
