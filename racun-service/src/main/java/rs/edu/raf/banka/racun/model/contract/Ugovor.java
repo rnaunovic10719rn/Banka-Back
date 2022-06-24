@@ -34,6 +34,8 @@ public class Ugovor
 
     Long documentId = -1L;
 
+    Long agentId = -1L;
+
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "ugovor", fetch = FetchType.LAZY, orphanRemoval = true)
     List<TransakcionaStavka> stavke;
