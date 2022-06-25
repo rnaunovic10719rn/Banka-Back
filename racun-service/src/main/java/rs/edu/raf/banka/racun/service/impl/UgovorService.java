@@ -77,7 +77,8 @@ public class UgovorService
     private boolean isUserSupervisor(UserDto user)
     {
         return user.getRoleName().equals("ROLE_SUPERVISOR")
-                || user.getRoleName().equals("ROLE_ADMIN");
+                || user.getRoleName().equals("ROLE_ADMIN")
+                || user.getRoleName().equals("ROLE_GL_ADMIN");
     }
 
     private boolean isUserAgent(UserDto user)
