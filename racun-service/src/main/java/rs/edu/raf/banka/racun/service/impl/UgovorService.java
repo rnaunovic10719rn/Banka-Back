@@ -96,15 +96,6 @@ public class UgovorService
         throw new Exception("No permissions");
     }
 
-    private UserDto checkUserCanCreateUgovor(String token) throws Exception {
-
-        var user = getUserByToken(token);
-        if(isUserSupervisor(user) || isUserAgent(user))
-            return user;
-
-        throw new Exception("No permissions");
-    }
-
     public Ugovor getUgovorById(Long id, String token) throws Exception {
         var ugovor = getById(id);
         if(ugovor == null)
@@ -181,7 +172,7 @@ public class UgovorService
 
     public Ugovor createUgovor(UgovorCreateRequest request, String token) throws Exception {
 
-        var user = checkUserCanCreateUgovor(token);
+        var user = getUserByToken(token);
         if(request.getCompanyId() == null || request.getDescription() == null || request.getDelovodniBroj() == null)
             throw new Exception("bad request");
 
