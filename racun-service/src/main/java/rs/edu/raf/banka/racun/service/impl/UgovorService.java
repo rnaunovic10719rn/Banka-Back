@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.dto.UserDto;
+import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.model.contract.ContractDocument;
 import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
@@ -14,11 +15,9 @@ import rs.edu.raf.banka.racun.repository.*;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.repository.contract.TransakcionaStavkaRepository;
 import rs.edu.raf.banka.racun.repository.contract.UgovorRepository;
-import rs.edu.raf.banka.racun.requests.TransakcionaStavkaCreateRequest;
-import rs.edu.raf.banka.racun.requests.TransakcionaStavkaUpdateRequest;
-import rs.edu.raf.banka.racun.requests.UgovorCreateRequest;
-import rs.edu.raf.banka.racun.requests.UgovorUpdateRequest;
+import rs.edu.raf.banka.racun.requests.*;
 
+import javax.transaction.Transaction;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,8 +38,12 @@ public class UgovorService
 
     private final ContractDocumentService contractDocumentService;
 
+    private final TransakcijaService transakcijaService;
+
+    private final RacunRepository racunRepository;
+
     @Autowired
-    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository, UserService userService, ContractDocumentService contractDocumentService)
+    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository, UserService userService, ContractDocumentService contractDocumentService, TransakcijaService transakcijaService, RacunRepository racunRepository)
     {
         this.ugovorRepository = ugovorRepository;
         this.stavkaRepository = stavkaRepository;
@@ -48,6 +51,8 @@ public class UgovorService
         this.companyRepository = companyRepository;
         this.userService = userService;
         this.contractDocumentService = contractDocumentService;
+        this.transakcijaService = transakcijaService;
+        this.racunRepository = racunRepository;
     }
 
 
@@ -269,6 +274,13 @@ public class UgovorService
             throw new Exception("Ugovor is finalized");
 
         String documentId = contractDocumentService.saveDocument(ugovor, document);
+
+        for(var stavka: ugovor.getStavke())
+        {
+            var finalizeRequest = finalizeStavkaTransaction(stavka, token);
+            submitTransaction(finalizeRequest, token);
+        }
+
         ugovor.setDocumentId(documentId);
         ugovor.setStatus(UgovorStatus.FINALIZED);
         ugovor = ugovorRepository.save(ugovor);
@@ -327,6 +339,10 @@ public class UgovorService
 
         stavka.setRacunType(request.getRacunType());
 
+        var createRequest = createStavkaTransaction(stavka, token);
+        if(!submitTransaction(createRequest, token))
+            throw new Exception("Transaction error");
+
         stavkaRepository.save(stavka);
         ugovor.getStavke().add(stavka);
         ugovorRepository.save(ugovor);
@@ -349,6 +365,8 @@ public class UgovorService
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
+
+        var originalStavka = stavka.copy();
 
         var modified = false;
 
@@ -400,6 +418,17 @@ public class UgovorService
 
         if(modified)
         {
+            var deleteRequest = deleteStavkaTransaction(originalStavka, token);
+            if(!submitTransaction(deleteRequest, token))
+                throw new Exception("Transaction error");
+            var createRequest = createStavkaTransaction(stavka, token);
+            if(!submitTransaction(createRequest, token)) // Nema dovoljno stanja
+            {
+                var restoreRequest = createStavkaTransaction(originalStavka, token);
+                submitTransaction(restoreRequest, token);
+                throw new Exception("Transaction error");
+            }
+
             //TODO: Check if stavka modification triggers ugovor modification
             ugovor.setLastChanged(new Date());
             stavkaRepository.save(stavka);
@@ -423,11 +452,57 @@ public class UgovorService
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
 
+        var deleteRequest = deleteStavkaTransaction(stavka, token);
+        if(!submitTransaction(deleteRequest, token))
+            throw new Exception("Transaction error");
+
         //TODO: Check if removing stavka updates ugovor stavke
         ugovor.getStavke().remove(stavka);
         ugovorRepository.save(ugovor);
         stavkaRepository.delete(stavka);
         return true;
+    }
+
+    private boolean submitTransaction(TransakcijaRequest transakcijaRequest, String token)
+    {
+        return transakcijaService.dodajTransakciju(token, transakcijaRequest) != null;
+    }
+
+    private TransakcijaRequest baseRequest(TransakcionaStavka stavka, String token) throws Exception {
+        var racun = racunRepository.findRacunByTipRacuna(stavka.getRacunType());
+        if(racun == null)
+            throw new Exception("Racun not found");
+        var request = new TransakcijaRequest();
+        request.setBrojRacuna(racun.getBrojRacuna());
+        request.setHartijaId(stavka.getHartijaId());
+        request.setType(stavka.getHartijaType().toKapitalType());
+        request.setValutaOznaka(stavka.getValuta().getOznakaValute());
+        request.setMargins(stavka.getRacunType() == RacunType.MARGINS_RACUN);
+        request.setUnitPrice(stavka.getCenaHartije());
+        request.setUsername(userService.getUsernameByToken(token));
+        request.setUplata(0.0);
+        request.setIsplata(0.0);
+        request.setRezervisano(0.0);
+        request.setOrderId(null); //TODO: Generate order id
+        return request;
+    }
+
+    private TransakcijaRequest createStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
+        var request = baseRequest(stavka, token);
+        request.setRezervisano(stavka.getKolicina());
+        return request;
+    }
+
+    private TransakcijaRequest deleteStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
+        var request = baseRequest(stavka, token);
+        request.setRezervisano(-stavka.getKolicina());
+        return request;
+    }
+
+    private TransakcijaRequest finalizeStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
+        var request = baseRequest(stavka, token);
+        request.setIsplata(stavka.getKolicina());
+        return request;
     }
 
 }
