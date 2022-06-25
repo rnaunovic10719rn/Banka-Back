@@ -85,14 +85,12 @@ public class UgovorService
         return user.getRoleName().equals("ROLE_AGENT");
     }
 
-    private void checkPermissions(Ugovor ugovor, String token) throws Exception {
+    private UserDto checkPermissions(Ugovor ugovor, String token) throws Exception {
 
         var user = getUserByToken(token);
 
-        if(isUserSupervisor(user))
-            return;
-        if(isUserAgent(user) && ugovor.getUserId() == user.getId())
-            return;
+        if(isUserSupervisor(user) || (isUserAgent(user) && ugovor.getUserId() == user.getId()))
+            return user;
 
         throw new Exception("No permissions");
     }
@@ -287,12 +285,13 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkPermissions(ugovor, token);
+        var user = checkPermissions(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
 
         var stavka = new TransakcionaStavka();
+        stavka.setUserId(user.getId());
         stavka.setCenaHartije(request.getCenaHartije());
         stavka.setHartijaId(request.getHartijaId());
         stavka.setHartijaType(request.getHartijaType());
