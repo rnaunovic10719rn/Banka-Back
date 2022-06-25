@@ -48,6 +48,18 @@ services:
       - db-racun:/var/lib/postgresql/data
     profiles: [ "all", "core" ]
 
+  db-mongo:
+    image: mongo:4.2.21
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: raf
+      MONGO_INITDB_ROOT_PASSWORD: 12345678
+      MONGO_INITDB_DATABASE: raf
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    profiles: [ "all", "core" ]
+
   db-influx:
     image: influxdb:2.1.1
     environment:
@@ -138,6 +150,7 @@ services:
       racun.akcije-quote-url: http://berza:8082/api/akcije/podaci/id/
       racun.futures-quote-url: http://berza:8082/api/futures/podaci/id/
       racun.berzaById-url: http://berza:8082/api/berza/id/
+      spring.data.mongodb.host: db-mongo
     ports:
       - "8083:8083"
     links:
@@ -150,5 +163,6 @@ volumes:
   db-user:
   db-berza:
   db-racun:
+  mongo-data:
   influx-data:
   influx-config:
