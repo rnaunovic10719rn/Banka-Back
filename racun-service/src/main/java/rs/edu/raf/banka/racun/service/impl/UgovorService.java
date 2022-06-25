@@ -270,13 +270,16 @@ public class UgovorService
         return ugovor;
     }
 
-    public Binary getContractDocument(Long id) throws Exception {
+    public Binary getContractDocument(Long id, String token) throws Exception {
         if(id == null)
             throw new Exception("Invalid contract ID");
 
         var ugovor = getById(id);
         if(ugovor == null)
             throw new Exception("Ugovor not found");
+
+        checkUserCanAccessUgovor(ugovor, token);
+
         if(ugovor.getStatus() != UgovorStatus.FINALIZED || ugovor.getDocumentId() == null || ugovor.getDocumentId().isBlank())
             throw new Exception("Contract not found");
 

@@ -126,7 +126,7 @@ public class UgovorController {
 
     @GetMapping(value = "/document/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody byte[] getContractDocument(@RequestHeader("Authorization") String token, @PathVariable Long id) throws Exception {
-        var result = ugovorService.getContractDocument(id);
+        var result = ugovorService.getContractDocument(id, token);
         return result.getData();
     }
 
