@@ -26,5 +26,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_MAIL_SERVICE }}
+          EMAIL_USERNAME: "test" # random username for tests to pass
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rs.edu.raf.banka:mailservice -Dsonar.projectName="Banka_Mail_Service" sonar:sonar -Pcoverage
 

@@ -42,7 +42,7 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
       - name: Build docker compose
-        run: docker-compose --profile=influxdb up -d
+        run: touch .env && docker-compose --profile=influxdb up -d
       - name: Install SonarCloud scanner
         working-directory: "./InfluxScrapper"
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
