@@ -218,7 +218,7 @@ public class UgovorService
 
     public Ugovor modifyUgovor(UgovorUpdateRequest request, String token) throws Exception {
 
-        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelovodniBro() == null)
+        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelovodniBroj() == null)
             throw new Exception("bad request");
 
         var ugovor = getById(request.getId());
@@ -244,9 +244,9 @@ public class UgovorService
             ugovor.setDescription(request.getDescription());
             modified = true;
         }
-        if(request.getDelovodniBro() != null)
+        if(request.getDelovodniBroj() != null)
         {
-            ugovor.setDelovodniBroj(request.getDelovodniBro());
+            ugovor.setDelovodniBroj(request.getDelovodniBroj());
             modified = true;
         }
 
