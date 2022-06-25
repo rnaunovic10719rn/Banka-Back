@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
 import rs.edu.raf.banka.racun.requests.*;
 import rs.edu.raf.banka.racun.service.impl.UgovorService;
@@ -53,13 +54,31 @@ public class UgovorController {
 
     @GetMapping(value = "/company/{kompanijaId}/finalized", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllKompanijaFinalized(@RequestHeader("Authorization") String token, @PathVariable Long kompanijaId) throws Exception {
-        var ugovori = ugovorService.getAllByCompanyFinalized(kompanijaId, token);
+        var ugovori = ugovorService.getAllByCompanyAndUgovorStatus(kompanijaId, token, UgovorStatus.FINALIZED);
         return ResponseEntity.ok(ugovori);
     }
 
     @GetMapping(value = "/company/{kompanijaId}/draft", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllKompanijaDraft(@RequestHeader("Authorization") String token, @PathVariable Long kompanijaId) throws Exception {
-        var ugovori = ugovorService.getAllByCompanyDraft(kompanijaId, token);
+        var ugovori = ugovorService.getAllByCompanyAndUgovorStatus(kompanijaId, token, UgovorStatus.DRAFT);
+        return ResponseEntity.ok(ugovori);
+    }
+
+    @GetMapping(value = "/delovodnibroj/{delovodniBroj}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllBrUgovora(@RequestHeader("Authorization") String token, @PathVariable String delovodniBroj) throws Exception {
+        List<Ugovor> ugovori = ugovorService.getAllByDelovodniBroj(delovodniBroj, token);
+        return ResponseEntity.ok(ugovori);
+    }
+
+    @GetMapping(value = "/delovodnibroj/{delovodniBroj}/finalized", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllBrUgovoraFinalized(@RequestHeader("Authorization") String token, @PathVariable String delovodniBroj) throws Exception {
+        var ugovori  = ugovorService.getAllByDelovodniBrojAndUgovorStatus(delovodniBroj, token, UgovorStatus.FINALIZED);
+        return ResponseEntity.ok(ugovori);
+    }
+
+    @GetMapping(value = "/delovodnibroj/{delovodniBroj}/draft", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllBrUgovoraDraft(@RequestHeader("Authorization") String token, @PathVariable String delovodniBroj) throws Exception {
+        var ugovori = ugovorService.getAllByDelovodniBrojAndUgovorStatus(delovodniBroj, token, UgovorStatus.DRAFT);
         return ResponseEntity.ok(ugovori);
     }
 

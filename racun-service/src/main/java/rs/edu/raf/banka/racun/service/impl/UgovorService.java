@@ -165,27 +165,33 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllByCompanyDraft(Long companyId, String token) throws Exception {
+    public List<Ugovor> getAllByCompanyAndUgovorStatus(Long companyId, String token, UgovorStatus status) throws Exception {
         var company = companyRepository.findById(companyId);
         if(company.isEmpty())
             throw new Exception("Company not found");
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
-            return ugovorRepository.findAllByCompanyAndStatus(company.get(), UgovorStatus.DRAFT);
+            return ugovorRepository.findAllByCompanyAndStatus(company.get(), status);
         if(isUserAgent(user))
-            return ugovorRepository.findAllByCompanyAndStatusAndUserId(company.get(), UgovorStatus.DRAFT, user.getId());
+            return ugovorRepository.findAllByCompanyAndStatusAndUserId(company.get(), status, user.getId());
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllByCompanyFinalized(Long companyPib, String token) throws Exception {
-        var company = companyRepository.findById(companyPib);
-        if(company.isEmpty())
-            throw new Exception("Company not found");
+    public List<Ugovor> getAllByDelovodniBroj(String delovodniBroj, String token) throws Exception {
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
-            return ugovorRepository.findAllByCompanyAndStatus(company.get(), UgovorStatus.FINALIZED);
+            return ugovorRepository.findAllByDelovodniBroj(delovodniBroj);
         if(isUserAgent(user))
-            return ugovorRepository.findAllByCompanyAndStatusAndUserId(company.get(), UgovorStatus.FINALIZED, user.getId());
+            return ugovorRepository.findAllByDelovodniBrojAndUserId(delovodniBroj, user.getId());
+        return new ArrayList<>();
+    }
+
+    public List<Ugovor> getAllByDelovodniBrojAndUgovorStatus(String delovodniBroj, String token, UgovorStatus status) throws Exception {
+        var user = getUserByToken(token);
+        if(isUserSupervisor(user))
+            return ugovorRepository.findAllByDelovodniBrojAndStatus(delovodniBroj, status);
+        if(isUserAgent(user))
+            return ugovorRepository.findAllByDelovodniBrojAndStatusAndUserId(delovodniBroj, status, user.getId());
         return new ArrayList<>();
     }
 
