@@ -28,11 +28,11 @@ public class Ugovor
     Date created;
     Date lastChanged;
 
-    String delodavniBroj;
+    String delovodniBroj;
 
     String description;
 
-    Long documentId = -1L;
+    String documentId = "";
 
     Long agentId = -1L;
 

@@ -9,7 +9,7 @@ public class UgovorUpdateRequest
 
     Long companyId;
 
-    String delodavniBroj;
+    String delovodniBro;
 
     String description;
 
