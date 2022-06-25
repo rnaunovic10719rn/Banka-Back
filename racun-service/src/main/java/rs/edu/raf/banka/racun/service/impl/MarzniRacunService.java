@@ -41,9 +41,9 @@ public class MarzniRacunService {
         mRacun.setValuta(valuta);
         mRacun.setHartijaId(hartijaId);
         mRacun.setHartijaOdVrednostiType(hartijaOdVrednostiType);
-        mRacun.setUlozenaSredstva(0);
-        mRacun.setPozajmljenaSredstva(0);
-        mRacun.setMaintenanceMargin(0);
+        mRacun.setUlozenaSredstva(0.0);
+        mRacun.setPozajmljenaSredstva(0.0);
+        mRacun.setMaintenanceMargin(0.0);
         //Mozda ne treba da se setuje na false uopste jer smo stavili u modelu default false anotaciju
         mRacun.setMarginCall(false);
         return marzniRacunRepository.save(mRacun);
