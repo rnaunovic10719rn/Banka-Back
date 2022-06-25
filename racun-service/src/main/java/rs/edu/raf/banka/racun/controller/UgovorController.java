@@ -141,6 +141,17 @@ public class UgovorController {
 
     }
 
+    @GetMapping(value = "/stavka/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getStavka(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        try {
+            var stavka = ugovorService.getTransakcionaStavkaById(id, token);
+            return ResponseEntity.ok(stavka);
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+
+    }
+
     @PutMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> modifyStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaUpdateRequest request) {
         try {

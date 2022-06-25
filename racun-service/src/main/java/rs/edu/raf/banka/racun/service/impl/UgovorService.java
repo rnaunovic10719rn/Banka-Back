@@ -59,13 +59,22 @@ public class UgovorService
         return ugovor.get();
     }
 
-    public TransakcionaStavka getTransakcionaStavkaById(Long id)
-    {
-        var ugovor = stavkaRepository.findById(id);
-        if(!ugovor.isPresent())
-            return null;
-        return ugovor.get();
+    private TransakcionaStavka getTransakcionaStavkaById(Long id) throws Exception {
+        var stavka = stavkaRepository.findById(id);
+        if(!stavka.isPresent())
+            throw new Exception("Transakciona stavka not found");
+        return stavka.get();
     }
+
+    public TransakcionaStavka getTransakcionaStavkaById(Long id, String token) throws Exception {
+        var stavka =getTransakcionaStavkaById(id);
+        var ugovor = stavka.getUgovor();
+        if(ugovor == null)
+            throw new Exception("Ugovor not found");
+        checkUserCanAccessUgovor(ugovor, token);
+        return stavka;
+    }
+
 
     private UserDto getUserByToken(String token) throws Exception {
         var user = userService.getUserByToken(token);
@@ -86,7 +95,7 @@ public class UgovorService
         return user.getRoleName().equals("ROLE_AGENT");
     }
 
-    private UserDto checkUserCanChangeUgovor(Ugovor ugovor, String token) throws Exception {
+    private UserDto checkUserCanAccessUgovor(Ugovor ugovor, String token) throws Exception {
 
         var user = getUserByToken(token);
 
@@ -110,7 +119,7 @@ public class UgovorService
         var ugovor = getById(id);
         if(ugovor == null)
             throw new Exception("Ugovor not found");
-        checkUserCanChangeUgovor(ugovor, token);
+        checkUserCanAccessUgovor(ugovor, token);
         return ugovor;
     }
 
@@ -210,7 +219,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkUserCanChangeUgovor(ugovor, token);
+        checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -288,7 +297,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        var user = checkUserCanChangeUgovor(ugovor, token);
+        var user = checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -323,14 +332,11 @@ public class UgovorService
             throw new Exception("bad request");
 
         var stavka = getTransakcionaStavkaById(request.getStavkaId());
-        if(stavka == null)
-            throw new Exception("Stavka not found");
-
         var ugovor = stavka.getUgovor();
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkUserCanChangeUgovor(ugovor, token);
+        checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -403,7 +409,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkUserCanChangeUgovor(ugovor, token);
+        checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
