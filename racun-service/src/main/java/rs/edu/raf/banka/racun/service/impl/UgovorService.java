@@ -91,7 +91,7 @@ public class UgovorService
 
         if(isUserSupervisor(user))
             return;
-        if(isUserAgent(user) && ugovor.getAgentId() == user.getId())
+        if(isUserAgent(user) && ugovor.getUserId() == user.getId())
             return;
 
         throw new Exception("No permissions");
@@ -119,7 +119,7 @@ public class UgovorService
         if(isUserSupervisor(user))
             return ugovorRepository.findAll();
         if(isUserAgent(user))
-            return ugovorRepository.findAllByAgentId(user.getId());
+            return ugovorRepository.findAllByUserId(user.getId());
         return new ArrayList<>();
     }
 
@@ -129,7 +129,7 @@ public class UgovorService
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByStatus(UgovorStatus.DRAFT);
         if(isUserAgent(user))
-            return ugovorRepository.findAllByStatusAndAgentId(UgovorStatus.DRAFT, user.getId());
+            return ugovorRepository.findAllByStatusAndUserId(UgovorStatus.DRAFT, user.getId());
         return new ArrayList<>();
     }
 
@@ -139,7 +139,7 @@ public class UgovorService
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByStatus(UgovorStatus.FINALIZED);
         if(isUserAgent(user))
-            return ugovorRepository.findAllByStatusAndAgentId(UgovorStatus.FINALIZED, user.getId());
+            return ugovorRepository.findAllByStatusAndUserId(UgovorStatus.FINALIZED, user.getId());
         return new ArrayList<>();
     }
 
@@ -152,7 +152,7 @@ public class UgovorService
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByCompany(company.get());
         if(isUserAgent(user))
-            return ugovorRepository.findAllByCompanyAndAgentId(company.get(), user.getId());
+            return ugovorRepository.findAllByCompanyAndUserId(company.get(), user.getId());
         return new ArrayList<>();
     }
 
@@ -164,7 +164,7 @@ public class UgovorService
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByCompanyAndStatus(company.get(), UgovorStatus.DRAFT);
         if(isUserAgent(user))
-            return ugovorRepository.findAllByCompanyAndStatusAndAgentId(company.get(), UgovorStatus.DRAFT, user.getId());
+            return ugovorRepository.findAllByCompanyAndStatusAndUserId(company.get(), UgovorStatus.DRAFT, user.getId());
         return new ArrayList<>();
     }
 
@@ -176,7 +176,7 @@ public class UgovorService
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByCompanyAndStatus(company.get(), UgovorStatus.FINALIZED);
         if(isUserAgent(user))
-            return ugovorRepository.findAllByCompanyAndStatusAndAgentId(company.get(), UgovorStatus.FINALIZED, user.getId());
+            return ugovorRepository.findAllByCompanyAndStatusAndUserId(company.get(), UgovorStatus.FINALIZED, user.getId());
         return new ArrayList<>();
     }
 

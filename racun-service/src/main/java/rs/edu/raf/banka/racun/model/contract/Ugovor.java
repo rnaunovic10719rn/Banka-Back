@@ -34,7 +34,7 @@ public class Ugovor
 
     String documentId = "";
 
-    Long agentId = -1L;
+    Long userId = -1L;
 
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "ugovor", fetch = FetchType.LAZY, orphanRemoval = true)
