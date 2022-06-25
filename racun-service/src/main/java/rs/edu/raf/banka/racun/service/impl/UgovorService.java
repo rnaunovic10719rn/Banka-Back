@@ -96,6 +96,16 @@ public class UgovorService
         throw new Exception("No permissions");
     }
 
+    private UserDto checkUserCanFinalizeUgovor(Ugovor ugovor, String token) throws Exception {
+
+        var user = getUserByToken(token);
+
+        if(isUserSupervisor(user))
+            return user;
+
+        throw new Exception("No permissions");
+    }
+
     public Ugovor getUgovorById(Long id, String token) throws Exception {
         var ugovor = getById(id);
         if(ugovor == null)
@@ -238,7 +248,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkUserCanChangeUgovor(ugovor, token);
+        checkUserCanFinalizeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
