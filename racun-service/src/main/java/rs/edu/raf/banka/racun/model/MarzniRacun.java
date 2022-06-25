@@ -27,10 +27,10 @@ public class MarzniRacun {
     private long hartijaId;
     private HartijaOdVrednostiType hartijaOdVrednostiType;
 
-    private double ulozenaSredstva;
-    private double pozajmljenaSredstva;
+    private Double ulozenaSredstva;
+    private Double pozajmljenaSredstva;
 
-    private double maintenanceMargin;
+    private Double maintenanceMargin;
     @Column(name = "marginCall", columnDefinition = "boolean default false")
-    private boolean marginCall;
+    private Boolean marginCall;
 }
