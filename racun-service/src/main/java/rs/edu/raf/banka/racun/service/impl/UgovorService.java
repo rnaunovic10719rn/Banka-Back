@@ -86,7 +86,7 @@ public class UgovorService
         return user.getRoleName().equals("ROLE_AGENT");
     }
 
-    private UserDto checkPermissions(Ugovor ugovor, String token) throws Exception {
+    private UserDto checkUserCanChangeUgovor(Ugovor ugovor, String token) throws Exception {
 
         var user = getUserByToken(token);
 
@@ -96,7 +96,7 @@ public class UgovorService
         throw new Exception("No permissions");
     }
 
-    private void checkPermissions(String token) throws Exception {
+    private void checkUserCanCreateUgovor(String token) throws Exception {
 
         var user = getUserByToken(token);
         if(isUserSupervisor(user) || isUserAgent(user))
@@ -109,7 +109,7 @@ public class UgovorService
         var ugovor = getById(id);
         if(ugovor == null)
             throw new Exception("Ugovor not found");
-        checkPermissions(ugovor, token);
+        checkUserCanChangeUgovor(ugovor, token);
         return ugovor;
     }
 
@@ -181,7 +181,7 @@ public class UgovorService
 
     public Ugovor createUgovor(UgovorCreateRequest request, String token) throws Exception {
 
-        checkPermissions(token);
+        checkUserCanCreateUgovor(token);
         if(request.getCompanyId() == null || request.getDescription() == null || request.getDelovodniBroj() == null)
             throw new Exception("bad request");
 
@@ -208,7 +208,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkPermissions(ugovor, token);
+        checkUserCanChangeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -246,7 +246,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkPermissions(ugovor, token);
+        checkUserCanChangeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -286,7 +286,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        var user = checkPermissions(ugovor, token);
+        var user = checkUserCanChangeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -328,7 +328,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkPermissions(ugovor, token);
+        checkUserCanChangeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
@@ -401,7 +401,7 @@ public class UgovorService
         if(ugovor == null)
             throw new Exception("Ugovor not found");
 
-        checkPermissions(ugovor, token);
+        checkUserCanChangeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
