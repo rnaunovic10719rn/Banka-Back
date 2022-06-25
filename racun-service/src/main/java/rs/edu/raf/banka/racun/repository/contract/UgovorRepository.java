@@ -11,5 +11,5 @@ public interface UgovorRepository extends JpaRepository<Ugovor, Long> {
     List<Ugovor> findAllByCompany(Company company);
     List<Ugovor> findAllByCompanyAndStatus(Company company, UgovorStatus status);
     List<Ugovor> findAllByStatus(UgovorStatus status);
-    Ugovor findByDelodavniBroj(String delodavniBroj);
+    Ugovor findByDelovodniBroj(String delovodniBroj);
 }

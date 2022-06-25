@@ -122,6 +122,12 @@ public class UgovorController
         }
     }
 
+    @GetMapping(value = "/document/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody byte[] getContractDocument(@RequestHeader("Authorization") String token, @PathVariable Long id) throws Exception {
+        var result = ugovorService.getContractDocument(id);
+        return result.getData();
+    }
+
     @PostMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaCreateRequest request) {
         try

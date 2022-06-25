@@ -1,10 +1,12 @@
 package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
+import rs.edu.raf.banka.racun.model.contract.ContractDocument;
 import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
 import rs.edu.raf.banka.racun.repository.*;
@@ -31,13 +33,16 @@ public class UgovorService
 
     private final CompanyRepository companyRepository;
 
+    private final ContractDocumentService contractDocumentService;
+
     @Autowired
-    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository)
+    public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository, ContractDocumentService contractDocumentService)
     {
         this.ugovorRepository = ugovorRepository;
         this.stavkaRepository = stavkaRepository;
         this.valutaRepository = valutaRepository;
         this.companyRepository = companyRepository;
+        this.contractDocumentService = contractDocumentService;
     }
 
 
@@ -94,8 +99,7 @@ public class UgovorService
     }
 
     public Ugovor createUgovor(UgovorCreateRequest request) throws Exception {
-
-        if(request.getCompanyId() == null || request.getDescription() == null || request.getDelodavniBroj() == null)
+        if(request.getCompanyId() == null || request.getDescription() == null || request.getDelovodniBroj() == null)
             throw new Exception("bad request");
 
         var ugovor = new Ugovor();
@@ -105,14 +109,14 @@ public class UgovorService
             throw new Exception("Company not found");
         ugovor.setCompany(company.get());
         ugovor.setDescription(request.getDescription());
-        ugovor.setDelodavniBroj(request.getDelodavniBroj());
-        ugovor.setDocumentId(-1L);
+        ugovor.setDelovodniBroj(request.getDelovodniBroj());
+        ugovor.setDocumentId("");
 
         ugovorRepository.save(ugovor);
         return ugovor;
     }
 
-    public boolean modifyUgovor(UgovorUpdateRequest request) throws Exception {
+    public Ugovor modifyUgovor(UgovorUpdateRequest request) throws Exception {
 
         if(request.getCompanyId() == null && request.getDescription() == null && request.getDelodavniBroj() == null)
             throw new Exception("bad request");
@@ -140,16 +144,17 @@ public class UgovorService
         }
         if(request.getDelodavniBroj() != null)
         {
-            ugovor.setDelodavniBroj(request.getDelodavniBroj());
+            ugovor.setDelovodniBroj(request.getDelodavniBroj());
             modified = true;
         }
 
         if(modified)
-            ugovorRepository.save(ugovor);
-        return modified;
+            ugovor = ugovorRepository.save(ugovor);
+
+        return ugovor;
     }
 
-    public boolean finalizeUgovor(Long id, MultipartFile file) throws Exception {
+    public Ugovor finalizeUgovor(Long id, MultipartFile file) throws Exception {
         if (file == null)
             throw new Exception("bad request");
         var ugovor = getById(id);
@@ -158,13 +163,27 @@ public class UgovorService
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
             throw new Exception("Ugovor is finalized");
 
-        //TODO: document save logic
-        Long documentID = -1L;
-        ugovor.setDocumentId(documentID);
-
+        String documentId = contractDocumentService.saveDocument(ugovor, file);
+        ugovor.setDocumentId(documentId);
         ugovor.setStatus(UgovorStatus.FINALIZED);
-        ugovorRepository.save(ugovor);
-        return true;
+        ugovor = ugovorRepository.save(ugovor);
+
+        return ugovor;
+    }
+
+    public Binary getContractDocument(Long id) throws Exception {
+        if(id == null)
+            throw new Exception("Invalid contract ID");
+
+        var ugovor = getById(id);
+        if(ugovor == null)
+            throw new Exception("Ugovor not found");
+        if(ugovor.getStatus() != UgovorStatus.FINALIZED || ugovor.getDocumentId() == null || ugovor.getDocumentId().isBlank())
+            throw new Exception("Contract not found");
+
+        ContractDocument contractDocument = contractDocumentService.getDocument(ugovor.getDocumentId());
+
+        return contractDocument.getDocument();
     }
 
     public TransakcionaStavka addStavka(TransakcionaStavkaCreateRequest request) throws Exception {
