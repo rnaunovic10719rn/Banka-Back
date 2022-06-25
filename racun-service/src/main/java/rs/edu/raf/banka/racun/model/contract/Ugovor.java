@@ -28,12 +28,11 @@ public class Ugovor
     Date created;
     Date lastChanged;
 
-    String delodavniBroj;
+    String delovodniBroj;
 
     String description;
 
-    Long documentId = -1L;
-
+    String documentId = "";
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "ugovor", fetch = FetchType.LAZY, orphanRemoval = true)
     List<TransakcionaStavka> stavke;

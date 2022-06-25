@@ -7,7 +7,7 @@ public class UgovorCreateRequest
 {
     Long companyId;
 
-    String delodavniBroj;
+    String delovodniBroj;
 
     String description;
 
