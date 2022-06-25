@@ -118,7 +118,7 @@ public class UgovorService
 
     public Ugovor modifyUgovor(UgovorUpdateRequest request) throws Exception {
 
-        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelodavniBroj() == null)
+        if(request.getCompanyId() == null && request.getDescription() == null && request.getDelovodniBroj() == null)
             throw new Exception("bad request");
 
         var ugovor = getById(request.getId());
@@ -142,9 +142,9 @@ public class UgovorService
             ugovor.setDescription(request.getDescription());
             modified = true;
         }
-        if(request.getDelodavniBroj() != null)
+        if(request.getDelovodniBroj() != null)
         {
-            ugovor.setDelovodniBroj(request.getDelodavniBroj());
+            ugovor.setDelovodniBroj(request.getDelovodniBroj());
             modified = true;
         }
 
