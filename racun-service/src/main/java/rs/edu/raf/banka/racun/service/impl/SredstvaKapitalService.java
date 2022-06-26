@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.dto.*;
+import rs.edu.raf.banka.racun.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.racun.enums.KapitalType;
+import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.*;
 
 import rs.edu.raf.banka.racun.repository.RacunRepository;
@@ -283,5 +285,30 @@ public class SredstvaKapitalService {
             return agentSredstvaKapitalDto;
         }
            return null;
+    }
+
+    public SredstvaKapital pocetnoStanjeMarzniRacun(UUID uuidRacuna, KapitalType kapitalType, Long hartijaId){
+        Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
+        if(racun == null) {
+            return null;
+        }
+
+        Valuta valuta = valutaRepository.findValutaByKodValute("USD");
+        if(valuta == null) {
+            return null;
+        }
+
+        SredstvaKapital mRacun = new SredstvaKapital();
+        mRacun.setRacun(racun);
+        mRacun.setValuta(valuta);
+        mRacun.setHaritjeOdVrednostiID(hartijaId);
+        mRacun.setKapitalType(kapitalType);
+        mRacun.setUlozenaSredstva(0.0);
+        mRacun.setPozajmljenaSredstva(0.0);
+        mRacun.setMaintenanceMargin(0.0);
+        //Mozda ne treba da se setuje na false uopste jer smo stavili u modelu default false anotaciju
+        mRacun.setMarginCall(false);
+
+        return sredstvaKapitalRepository.save(mRacun);
     }
 }

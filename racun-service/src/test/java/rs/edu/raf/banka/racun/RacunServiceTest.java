@@ -37,7 +37,7 @@ class RacunServiceTest {
         given(racunRepository.save(any())).willReturn(r);
         given(sredstvaKapitalService.pocetnoStanje(any(), anyString(), anyDouble())).willReturn(any());
 
-        assertNotEquals(racunService.createRacun(),null);
+        assertNotEquals(racunService.createKesRacun(),null);
     }
 
 

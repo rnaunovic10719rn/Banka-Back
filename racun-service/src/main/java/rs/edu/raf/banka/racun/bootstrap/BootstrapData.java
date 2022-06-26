@@ -83,7 +83,8 @@ public class BootstrapData implements CommandLineRunner {
             }
             valutaRepository.saveAll(valute);
 
-            racunService.createRacun();
+            racunService.createKesRacun();
+            racunService.createMarginRacun();
         }
 
 
