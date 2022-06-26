@@ -1,31 +1,22 @@
 package rs.edu.raf.banka.berza;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import org.aspectj.lang.annotation.Before;
-import org.hibernate.service.spi.InjectService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import rs.edu.raf.banka.berza.dto.*;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
-import rs.edu.raf.banka.berza.requests.OrderRequest;
-import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.service.impl.*;
 import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 
 import javax.persistence.EntityManager;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
