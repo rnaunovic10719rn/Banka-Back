@@ -571,6 +571,9 @@ public class UgovorService
             transakcijaRequest.setIsplata(stavka.getKolicinaPotrazna());
         } else {
             transakcijaRequest.setUplata(stavka.getKolicinaDugovna());
+            if(stavka.getKapitalTypePotrazni().equals(KapitalType.NOVAC) && !stavka.getKapitalTypeDugovni().equals(KapitalType.NOVAC)) {
+                transakcijaRequest.setUnitPrice(stavka.getKolicinaPotrazna() / stavka.getKolicinaDugovna());
+            }
         }
         return transakcijaRequest;
     }
