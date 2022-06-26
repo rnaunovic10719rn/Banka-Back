@@ -1,13 +1,11 @@
 package rs.edu.raf.banka.berza;
 
 import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
-import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverviewResponse;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Akcije;
@@ -18,7 +16,6 @@ import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
 import rs.edu.raf.banka.berza.service.remote.AlphaVantageService;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 import rs.edu.raf.banka.berza.utils.DateUtils;
-import rs.edu.raf.banka.berza.utils.HttpUtils;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
