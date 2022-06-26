@@ -15,11 +15,11 @@ import rs.edu.raf.banka.racun.utils.HttpUtils;
 @Service
 public class UserService {
 
-    @Value("${racun.user-service-url2}")
-    private String USER_SERVICE_URL2;
+    @Value("${racun.user-service-baseurl}")
+    private String USER_SERVICE_BASE_URL;
 
     public UserDto getUserByToken(String token) {
-        ResponseEntity<UserDto> response = HttpUtils.getUser(USER_SERVICE_URL2, token);
+        ResponseEntity<UserDto> response = HttpUtils.getUser(USER_SERVICE_BASE_URL, token);
         UserDto userDto = response.getBody();
         if(userDto == null) {
             return null;
