@@ -12,6 +12,7 @@ import rs.edu.raf.banka.racun.dto.DateFilter;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
+import rs.edu.raf.banka.racun.requests.ValutaService;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
@@ -27,15 +28,20 @@ public class RacunController {
 
     private final SredstvaKapitalService sredstvaKapitalService;
     private final TransakcijaService transakcijaService;
+    private final ValutaService valutaService;
 
 
     @Autowired
-    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService) {
+    public RacunController(SredstvaKapitalService sredstvaKapitalService, TransakcijaService transakcijaService, ValutaService valutaService) {
         this.sredstvaKapitalService = sredstvaKapitalService;
         this.transakcijaService = transakcijaService;
-
+        this.valutaService = valutaService;
     }
 
+    @GetMapping(value = "/valute", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getValute() {
+        return ResponseEntity.ok(valutaService.getValute());
+    }
 
     @PostMapping(value = "/transakcija", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> dodajTransakciju(@RequestHeader("Authorization") String token, @RequestBody TransakcijaRequest transakcijaRequest) {
