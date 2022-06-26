@@ -39,6 +39,5 @@ public class SredstvaKapital {
     private Double pozajmljenaSredstva;
 
     private Double maintenanceMargin;
-    @Column(name = "marginCall", columnDefinition = "boolean default false")
-    private Boolean marginCall;
+    private Boolean marginCall = false;
 }

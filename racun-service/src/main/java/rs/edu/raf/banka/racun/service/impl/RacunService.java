@@ -41,7 +41,7 @@ public class RacunService {
         racun.setBrojRacuna(UUID.randomUUID());
         racun.setTipRacuna(RacunType.MARGINS_RACUN);
         racunRepository.save(racun);
-        sredstvaKapitalService.pocetnoStanjeMarzniRacun(racun.getBrojRacuna(), KapitalType.AKCIJA, null);
+        sredstvaKapitalService.pocetnoStanjeMarzniRacun(racun.getBrojRacuna(), KapitalType.NOVAC, -1L);
 
         return racun;
     }

@@ -84,7 +84,8 @@ public class BootstrapData implements CommandLineRunner {
             valutaRepository.saveAll(valute);
 
             racunService.createKesRacun();
-            racunService.createMarginRacun();
+            // TODO: Ukljuciti ovo nakon sto margins racun bude ispravno integrisan sa sredstvima i kapitalom.
+//            racunService.createMarginRacun();
         }
 
 
