@@ -287,13 +287,13 @@ public class SredstvaKapitalService {
            return null;
     }
 
-    public SredstvaKapital createMarzniRacun(UUID uuidRacuna, String kodValute, Long hartijaId){
+    public SredstvaKapital pocetnoStanjeMarzniRacun(UUID uuidRacuna, KapitalType kapitalType, Long hartijaId){
         Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
         if(racun == null) {
             return null;
         }
 
-        Valuta valuta = valutaRepository.findValutaByKodValute(kodValute);
+        Valuta valuta = valutaRepository.findValutaByKodValute("USD");
         if(valuta == null) {
             return null;
         }
@@ -302,6 +302,7 @@ public class SredstvaKapitalService {
         mRacun.setRacun(racun);
         mRacun.setValuta(valuta);
         mRacun.setHaritjeOdVrednostiID(hartijaId);
+        mRacun.setKapitalType(kapitalType);
         mRacun.setUlozenaSredstva(0.0);
         mRacun.setPozajmljenaSredstva(0.0);
         mRacun.setMaintenanceMargin(0.0);
