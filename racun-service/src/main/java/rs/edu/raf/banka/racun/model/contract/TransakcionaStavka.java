@@ -31,6 +31,8 @@ public class TransakcionaStavka {
 
     HartijaOdVrednostiType hartijaType;
 
+    Long userId = -1L;
+
     RacunType racunType;
 
     @ManyToOne
