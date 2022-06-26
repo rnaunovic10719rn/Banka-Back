@@ -43,4 +43,8 @@ public class TransakcionaStavka {
 
     Double cenaHartije;
 
+    public TransakcionaStavka copy() {
+        return new TransakcionaStavka(id, ugovor, type, hartijaId, hartijaType, userId, racunType, valuta, kolicina, cenaHartije);
+    }
+
 }
