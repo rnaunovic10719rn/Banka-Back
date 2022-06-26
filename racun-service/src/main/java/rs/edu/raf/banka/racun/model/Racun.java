@@ -1,20 +1,17 @@
 package rs.edu.raf.banka.racun.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import rs.edu.raf.banka.racun.enums.RacunType;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Racun {
 
     @Id
@@ -24,4 +21,14 @@ public class Racun {
     private UUID brojRacuna;
     private RacunType tipRacuna;
 
+    @ManyToOne
+    @JoinColumn(name = "valuta_id")
+    private Valuta valuta;
+
+    private Double ulozenaSredstva;
+    private Double pozajmljenaSredstva;
+
+    private Double maintenanceMargin;
+    @Column(name = "marginCall", columnDefinition = "boolean default false")
+    private Boolean marginCall;
 }
