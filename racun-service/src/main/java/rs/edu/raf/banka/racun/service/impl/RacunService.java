@@ -37,25 +37,4 @@ public class RacunService {
         return racun;
     }
 
-    public Racun createMarzniRacun(UUID uuidRacuna, String kodValute){
-
-        Valuta valuta = valutaRepository.findValutaByKodValute(kodValute);
-        if(valuta == null) {
-            return null;
-        }
-
-        Racun mRacun = new Racun();
-        mRacun.setBrojRacuna(uuidRacuna);
-        mRacun.setTipRacuna(RacunType.MARGINS_RACUN);
-        mRacun.setValuta(valuta);
-        mRacun.setUlozenaSredstva(0.0);
-        mRacun.setPozajmljenaSredstva(0.0);
-        mRacun.setMaintenanceMargin(0.0);
-        //Mozda ne treba da se setuje na false uopste jer smo stavili u modelu default false anotaciju
-        mRacun.setMarginCall(false);
-
-        return racunRepository.save(mRacun);
-    }
-
-
 }

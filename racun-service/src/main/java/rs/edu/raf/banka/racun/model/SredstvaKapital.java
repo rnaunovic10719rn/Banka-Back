@@ -34,4 +34,11 @@ public class SredstvaKapital {
 
     @Version
     private Integer version = 0;
+
+    private Double ulozenaSredstva;
+    private Double pozajmljenaSredstva;
+
+    private Double maintenanceMargin;
+    @Column(name = "marginCall", columnDefinition = "boolean default false")
+    private Boolean marginCall;
 }

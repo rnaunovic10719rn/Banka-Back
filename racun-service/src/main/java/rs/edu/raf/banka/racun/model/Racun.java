@@ -21,14 +21,4 @@ public class Racun {
     private UUID brojRacuna;
     private RacunType tipRacuna;
 
-    @ManyToOne
-    @JoinColumn(name = "valuta_id")
-    private Valuta valuta;
-
-    private Double ulozenaSredstva;
-    private Double pozajmljenaSredstva;
-
-    private Double maintenanceMargin;
-    @Column(name = "marginCall", columnDefinition = "boolean default false")
-    private Boolean marginCall;
 }
