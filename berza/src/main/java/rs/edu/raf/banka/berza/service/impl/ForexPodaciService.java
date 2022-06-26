@@ -2,12 +2,7 @@ package rs.edu.raf.banka.berza.service.impl;
 
 import com.crazzyghost.alphavantage.Config;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.*;
@@ -18,15 +13,8 @@ import rs.edu.raf.banka.berza.repository.ValutaRepository;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 import rs.edu.raf.banka.berza.utils.DateUtils;
 
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
-import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 
 @Service
 public class ForexPodaciService {

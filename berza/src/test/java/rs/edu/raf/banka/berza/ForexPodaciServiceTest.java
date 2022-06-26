@@ -228,4 +228,19 @@ public class ForexPodaciServiceTest {
         assertNotNull(forexPodaciService.getForexTimeseries(readReq));
     }
 
+    @Test
+    void testGetOdabraniParoviForexNull() {
+        ForexPodaciDto dto = new ForexPodaciDto();
+        List<ForexPodaciDto> dtoList = new ArrayList<>();
+        dtoList.add(dto);
+        Valuta valuta = new Valuta();
+        valuta.setOznakaValute("EUR");
+        Forex forex = new Forex();
+        forex.setId(1L);
+        when(forexRepository.findForexByBaseCurrencyAndQuoteCurrency(any(), any())).thenReturn(null);
+        when(valutaRepository.findByOznakaValute(any())).thenReturn(valuta);
+        when(influxScrapperService.getForexQuote(any(), any())).thenReturn(dtoList);
+        assertNull(forexPodaciService.getOdabraniParovi().get(0).getId());
+    }
+
 }
