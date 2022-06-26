@@ -3,21 +3,11 @@ package rs.edu.raf.banka.berza.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.berza.dto.FuturesTimeseriesDto;
-import rs.edu.raf.banka.berza.dto.request.FuturesTimeseriesReadRequest;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
-import rs.edu.raf.banka.berza.utils.DateUtils;
-
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
-import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 
 @Service
 public class FuturesUgovoriPodaciService {

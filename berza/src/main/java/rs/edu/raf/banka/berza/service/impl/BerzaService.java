@@ -133,7 +133,7 @@ public class BerzaService {
         return Math.min(0.24 * price, 12);
     }
 
-    private OrderType getOrderType(Integer limitValue, Integer stopValue) {
+    public OrderType getOrderType(Integer limitValue, Integer stopValue) {
         if(limitValue > 0 && stopValue > 0)
             return OrderType.STOP_LIMIT_ORDER;
         else if(limitValue > 0)
@@ -143,7 +143,7 @@ public class BerzaService {
         return OrderType.MARKET_ORDER;
     }
 
-    private OrderStatus getOrderStatus(String token, double price, String valuta) {
+    public OrderStatus getOrderStatus(String token, double price, String valuta) {
         UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
 
         if(role.equals(UserRole.ROLE_AGENT)) {

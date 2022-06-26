@@ -6,7 +6,6 @@ import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.ForexRepository;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.repository.HartijaRepository;
-import rs.edu.raf.banka.berza.utils.HttpUtils;
 
 import java.util.List;
 
