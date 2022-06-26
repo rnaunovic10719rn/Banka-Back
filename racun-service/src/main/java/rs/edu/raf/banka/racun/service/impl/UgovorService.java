@@ -76,7 +76,7 @@ public class UgovorService
 
     private TransakcionaStavka getTransakcionaStavkaById(Long id) throws Exception {
         var stavka = stavkaRepository.findById(id);
-        if(!stavka.isPresent())
+        if(stavka.isEmpty())
             throw new Exception("Transakciona stavka not found");
         return stavka.get();
     }
@@ -367,7 +367,7 @@ public class UgovorService
         return stavkaRepository.save(stavka);
     }
 
-    public boolean modifyStavka(TransakcionaStavkaRequest request, String token) throws Exception {
+    public TransakcionaStavka modifyStavka(TransakcionaStavkaRequest request, String token) throws Exception {
         if(request.getStavkaId() == null ||
                 request.getUgovorId() != null ||
                 request.getKapitalTypePotrazni() == null ||
@@ -434,22 +434,19 @@ public class UgovorService
             }
 
             ugovor.setLastChanged(new Date());
-            stavkaRepository.save(stavka);
+            stavka = stavkaRepository.save(stavka);
             ugovorRepository.save(ugovor);
         }
 
-        return modified;
+        return stavka;
     }
 
-    public boolean removeStavka(Long id, String token) throws Exception {
-        var stavka = getTransakcionaStavkaById(id);
-        if(stavka == null)
-            throw new Exception("Transakciona stavka not found");
-
-        //TODO: Test if stavka.ugovor is properly connected
-        var ugovor = stavka.getUgovor();
-        if(ugovor == null)
+    public TransakcionaStavka removeStavka(Long id, String token) throws Exception {
+        TransakcionaStavka stavka = getTransakcionaStavkaById(id);
+        Ugovor ugovor = stavka.getUgovor();
+        if(ugovor == null) {
             throw new Exception("Ugovor not found");
+        }
 
         checkUserCanAccessUgovor(ugovor, token);
 
@@ -457,14 +454,15 @@ public class UgovorService
             throw new Exception("Ugovor is finalized");
 
         var deleteRequest = deleteStavkaTransaction(stavka, token);
-        if(!submitTransaction(deleteRequest, token))
+        if(!submitTransaction(deleteRequest, token)) {
             throw new Exception("Transaction error");
+        }
 
-        //TODO: Check if removing stavka updates ugovor stavke
-        ugovor.getStavke().remove(stavka);
+        ugovor.setLastChanged(new Date());
         ugovorRepository.save(ugovor);
         stavkaRepository.delete(stavka);
-        return true;
+
+        return stavka;
     }
 
     private void validateAndCompleteRequest(TransakcionaStavkaRequest createRequest) throws Exception {
@@ -555,17 +553,20 @@ public class UgovorService
     private TransakcijaRequest createStavkaTransaction(TransakcionaStavka stavka, String token) {
         TransakcijaRequest transakcijaRequest = baseRequest(stavka, token, true);
         transakcijaRequest.setRezervisano(stavka.getKolicinaPotrazna());
+        transakcijaRequest.setOpis("Rezervacija za ugovor " + stavka.getUgovor().getDelovodniBroj());
         return transakcijaRequest;
     }
 
     private TransakcijaRequest deleteStavkaTransaction(TransakcionaStavka stavka, String token) {
         TransakcijaRequest transakcijaRequest = baseRequest(stavka, token, true);
-        transakcijaRequest.setRezervisano(stavka.getKolicinaPotrazna());
+        transakcijaRequest.setRezervisano(-stavka.getKolicinaPotrazna());
+        transakcijaRequest.setOpis("Izmena ugovora " + stavka.getUgovor().getDelovodniBroj());
         return transakcijaRequest;
     }
 
     private TransakcijaRequest finalizeStavkaTransaction(TransakcionaStavka stavka, String token, boolean isPotrazna) {
         TransakcijaRequest transakcijaRequest = baseRequest(stavka, token, isPotrazna);
+        transakcijaRequest.setOpis("Realizacija ugovora " + stavka.getUgovor().getDelovodniBroj());
         if(isPotrazna) {
             transakcijaRequest.setIsplata(stavka.getKolicinaPotrazna());
         } else {
