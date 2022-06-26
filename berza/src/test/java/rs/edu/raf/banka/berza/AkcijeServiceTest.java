@@ -1,5 +1,7 @@
 package rs.edu.raf.banka.berza;
 
+import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
+import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverviewResponse;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +13,7 @@ import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
+import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
 import rs.edu.raf.banka.berza.service.remote.AlphaVantageService;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
@@ -43,6 +46,9 @@ public class AkcijeServiceTest {
 
     @Mock
     AlphaVantageService alphaVantageService;
+
+    @Mock
+    BerzaRepository berzaRepository;
 
     @Test
     void testGetOdabraneAkcijeNull() {
@@ -283,6 +289,88 @@ public class AkcijeServiceTest {
         Long id = 1L;
         when(akcijeRepository.findAkcijeById(id)).thenReturn(akcije);
         assertEquals("MojOpis", akcijePodaciService.getByID(id).getOpisHartije());
+    }
+
+    @Test
+    void testGetAkcijaById(){
+        Akcije akcije = new Akcije();
+        akcije.setOpisHartije("MojOpis");
+        Long id = 1L;
+
+        Berza berza = new Berza();
+        berza.setId(1L);
+
+        AkcijePodaciDto dto = new AkcijePodaciDto();
+        List<AkcijePodaciDto> dtoList = new ArrayList<>();
+        dtoList.add(dto);
+
+        CompanyOverview co = new CompanyOverview();
+        when(akcijeRepository.findAkcijeById(id)).thenReturn(akcije);
+        when(alphaVantageService.getCompanyOverview(any())).thenReturn(co);
+        when(berzaRepository.findBerzaByOznakaBerze(any())).thenReturn(berza);
+        when(influxScrapperService.getStocksQuote(any())).thenReturn(dtoList);
+        assertNull(akcijePodaciService.getAkcijaById(id).getOpisHartije());
+    }
+
+    @Test
+    void testGetAkcijaByIdDtoListNull(){
+        Akcije akcije = new Akcije();
+        akcije.setOpisHartije("MojOpis");
+        Long id = 1L;
+
+        Berza berza = new Berza();
+        berza.setId(1L);
+
+        AkcijePodaciDto dto = new AkcijePodaciDto();
+        List<AkcijePodaciDto> dtoList = new ArrayList<>();
+        //dtoList.add(dto);
+
+        CompanyOverview co = new CompanyOverview();
+        when(akcijeRepository.findAkcijeById(id)).thenReturn(akcije);
+        when(alphaVantageService.getCompanyOverview(any())).thenReturn(co);
+        when(berzaRepository.findBerzaByOznakaBerze(any())).thenReturn(berza);
+        when(influxScrapperService.getStocksQuote(any())).thenReturn(dtoList);
+        assertNull(akcijePodaciService.getAkcijaById(id));
+    }
+
+    @Test
+    void testGetOdabraneAkcijeAAPLDTOnullCutom() {
+        Berza berza = new Berza();
+        berza.setId(1L);
+        String ticker = "AAPL" ;
+        Akcije akcija = new Akcije();
+        akcija.setBerza(berza);
+        akcija.setId(1L);
+        akcija.setOpisHartije(ticker);
+        akcija.setOutstandingShares(10L);
+        akcija.setLastUpdated(new Date());
+        when(akcijeRepository.findAkcijeByOznakaHartije(ticker)).thenReturn(akcija);
+        when(influxScrapperService.getStocksQuote(any())).thenReturn(null);
+        assertEquals(5, akcijePodaciService.getOdabraneAkcije().size());
+    }
+
+    @Test
+    void testgetAkcijeTimeseriesAkcijaNotNull() {
+        AkcijeTimeseriesUpdateRequest readReq = new AkcijeTimeseriesUpdateRequest();
+        readReq.setInterval("60min");
+        readReq.setType("intraday");
+        readReq.setRequestType("ytd");
+
+        Berza berza = new Berza();
+        berza.setId(1L);
+        berza.setVremenskaZona("GMT");
+        berza.setOpenTime("09:00:00");
+
+        Akcije akcija = new Akcije();
+        akcija.setOznakaHartije("Moja oznaka");
+        akcija.setBerza(berza);
+        when(akcijeRepository.findAkcijeByOznakaHartije(any())).thenReturn(akcija);
+
+        try (MockedStatic<DateUtils> utilities = Mockito.mockStatic(DateUtils.class)) {
+            utilities.when(DateUtils::getZonedDateTime).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+            utilities.when(() -> DateUtils.getZonedDateTime(any())).thenReturn(ZonedDateTime.parse("2022-May-07 23:35:05", DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))));
+        }
+        assertNotNull(akcijePodaciService.getAkcijeTimeseries(readReq));
     }
 
 }
