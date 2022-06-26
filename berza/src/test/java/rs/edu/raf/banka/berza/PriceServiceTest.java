@@ -29,6 +29,9 @@ public class PriceServiceTest {
     AkcijePodaciService akcijePodaciService;
 
     @Mock
+    BerzaRepository berzaRepository;
+
+    @Mock
     ForexPodaciService forexPodaciService;
 
     @Mock
