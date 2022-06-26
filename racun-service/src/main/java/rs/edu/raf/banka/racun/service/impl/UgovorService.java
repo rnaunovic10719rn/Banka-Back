@@ -272,7 +272,7 @@ public class UgovorService
         checkUserCanFinalizeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
-            throw new Exception("Ugovor is finalized");g
+            throw new Exception("Ugovor is finalized");
 
         String documentId = contractDocumentService.saveDocument(ugovor, document);
 
@@ -472,13 +472,13 @@ public class UgovorService
         return transakcijaService.dodajTransakciju(token, transakcijaRequest) != null;
     }
 
-    private TransakcijaRequest baseRequest(TransakcionaStavka stavka, String token, TransakcionaStavkaType type) throws Exception {
+    private TransakcijaRequest baseRequest(TransakcionaStavka stavka, String token, boolean novac) throws Exception {
         var racun = racunRepository.findRacunByTipRacuna(stavka.getRacunType());
         if(racun == null)
             throw new Exception("Racun not found");
         var request = new TransakcijaRequest();
         request.setBrojRacuna(racun.getBrojRacuna());
-        if(type == TransakcionaStavkaType.SELL)
+        if(!novac)
         {
             request.setType(stavka.getHartijaType().toKapitalType());
             request.setHartijaId(stavka.getHartijaId());
@@ -500,11 +500,11 @@ public class UgovorService
 
     private TransakcijaRequest createStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
         if(stavka.getType() == TransakcionaStavkaType.BUY) {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.BUY);
+            var request = baseRequest(stavka, token, true);
             request.setRezervisano(stavka.getKolicina() * stavka.getCenaHartije());
             return request;
         }else {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.SELL);
+            var request = baseRequest(stavka, token, false);
             request.setRezervisano(stavka.getKolicina());
             return request;
         }
@@ -512,11 +512,11 @@ public class UgovorService
 
     private TransakcijaRequest deleteStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
         if(stavka.getType() == TransakcionaStavkaType.BUY) {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.BUY);
+            var request = baseRequest(stavka, token, true);
             request.setRezervisano(-stavka.getKolicina()  * stavka.getCenaHartije());
             return request;
         }else {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.SELL);
+            var request = baseRequest(stavka, token, false);
             request.setRezervisano(-stavka.getKolicina());
             return request;
         }
@@ -525,13 +525,13 @@ public class UgovorService
     private TransakcijaRequest finalizeStavkaTransactionIsplata(TransakcionaStavka stavka, String token) throws Exception {
         if(stavka.getType() == TransakcionaStavkaType.BUY)
         {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.BUY);
+            var request = baseRequest(stavka, token, true);
             request.setIsplata(stavka.getKolicina() * stavka.getCenaHartije());
             return request;
         }
         else
         {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.SELL);
+            var request = baseRequest(stavka, token, false);
             request.setUplata(stavka.getKolicina());
             return request;
         }
@@ -540,13 +540,13 @@ public class UgovorService
     private TransakcijaRequest finalizeStavkaTransactionUplata(TransakcionaStavka stavka, String token) throws Exception {
         if(stavka.getType() == TransakcionaStavkaType.BUY)
         {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.SELL);
+            var request = baseRequest(stavka, token, false);
             request.setUplata(stavka.getKolicina());
             return request;
         }
         else
         {
-            var request = baseRequest(stavka, token, TransakcionaStavkaType.BUY);
+            var request = baseRequest(stavka, token, true);
             request.setIsplata(stavka.getKolicina() * stavka.getCenaHartije());
             return request;
         }
