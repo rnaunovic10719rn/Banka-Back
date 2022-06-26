@@ -20,7 +20,12 @@ public class UserService {
 
     public UserDto getUserByToken(String token) {
         ResponseEntity<UserDto> response = HttpUtils.getUser(USER_SERVICE_URL2, token);
-        return response.getBody();
+        UserDto userDto = response.getBody();
+        if(userDto == null) {
+            return null;
+        }
+        userDto.setRoleName(getRoleByToken(token));
+        return userDto;
     }
 
     public String getUsernameByToken(String token) {
