@@ -278,11 +278,7 @@ public class UgovorService
 
         for(var stavka: ugovor.getStavke())
         {
-            var finalizeRequestIsplata = finalizeStavkaTransactionIsplata(stavka, token);
-            submitTransaction(finalizeRequestIsplata, token);
-
-            var finalizeRequestUplata = finalizeStavkaTransactionUplata(stavka, token);
-            submitTransaction(finalizeRequestUplata, token);
+            finalizeTranactions(token, stavka);
         }
 
         ugovor.setDocumentId(documentId);
@@ -290,6 +286,14 @@ public class UgovorService
         ugovor = ugovorRepository.save(ugovor);
 
         return ugovor;
+    }
+
+    private void finalizeTranactions(String token, TransakcionaStavka stavka) throws Exception {
+        var finalizeRequestIsplata = finalizeStavkaTransactionIsplata(stavka, token);
+        submitTransaction(finalizeRequestIsplata, token);
+
+        var finalizeRequestUplata = finalizeStavkaTransactionUplata(stavka, token);
+        submitTransaction(finalizeRequestUplata, token);
     }
 
     public Binary getContractDocument(Long id, String token) throws Exception {
