@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import rs.edu.raf.banka.racun.enums.KapitalType;
-import rs.edu.raf.banka.racun.enums.RacunType;
 
 import javax.persistence.*;
 
@@ -31,6 +30,7 @@ public class TransakcionaStavka {
 
     KapitalType kapitalTypePotrazni;
     Long kapitalPotrazniId;
+    String kapitalPotrazniOznaka;
     Double kolicinaPotrazna;
 
     /**
@@ -39,6 +39,7 @@ public class TransakcionaStavka {
 
     KapitalType kapitalTypeDugovni;
     Long kapitalDugovniId;
+    String kapitalDugovniOznaka;
     Double kolicinaDugovna;
 
     public TransakcionaStavka(TransakcionaStavka stavka) {
@@ -46,9 +47,11 @@ public class TransakcionaStavka {
         this.userId = stavka.userId;
         this.kapitalTypePotrazni = stavka.kapitalTypePotrazni;
         this.kapitalPotrazniId = stavka.kapitalPotrazniId;
+        this.kapitalPotrazniOznaka = stavka.kapitalPotrazniOznaka;
         this.kolicinaPotrazna = stavka.kolicinaPotrazna;
         this.kapitalTypeDugovni = stavka.kapitalTypeDugovni;
         this.kapitalDugovniId = stavka.kapitalDugovniId;
+        this.kapitalDugovniOznaka = stavka.kapitalDugovniOznaka;
         this.kolicinaDugovna = stavka.kolicinaDugovna;
     }
 }

@@ -353,10 +353,12 @@ public class UgovorService
 
         stavka.setKapitalTypePotrazni(request.getKapitalTypePotrazni());
         stavka.setKapitalPotrazniId(request.getKapitalPotrazniId());
+        stavka.setKapitalPotrazniOznaka(request.getKapitalOznakaPotrazni());
         stavka.setKolicinaPotrazna(request.getKolicinaPotrazna());
 
         stavka.setKapitalTypeDugovni(request.getKapitalTypeDugovni());
         stavka.setKapitalDugovniId(request.getKapitalDugovniId());
+        stavka.setKapitalDugovniOznaka(request.getKapitalOznakaDugovni());
         stavka.setKolicinaDugovna(request.getKolicinaDugovna());
 
         TransakcijaRequest createRequest = createStavkaTransaction(stavka, token);
@@ -403,6 +405,7 @@ public class UgovorService
         }
         if(request.getKapitalOznakaPotrazni() != null && !originalStavka.getKapitalPotrazniId().equals(request.getKapitalPotrazniId())) {
             stavka.setKapitalPotrazniId(request.getKapitalPotrazniId());
+            stavka.setKapitalPotrazniOznaka(request.getKapitalOznakaPotrazni());
             modified = true;
         }
         if(request.getKolicinaPotrazna() != null && !originalStavka.getKolicinaPotrazna().equals(request.getKolicinaPotrazna())) {
@@ -415,6 +418,7 @@ public class UgovorService
         }
         if(request.getKapitalOznakaDugovni() != null && !originalStavka.getKapitalDugovniId().equals(request.getKapitalDugovniId())) {
             stavka.setKapitalDugovniId(request.getKapitalDugovniId());
+            stavka.setKapitalDugovniOznaka(request.getKapitalOznakaDugovni());
             modified = true;
         }
         if(request.getKolicinaDugovna() != null && !originalStavka.getKolicinaDugovna().equals(request.getKolicinaDugovna())) {
