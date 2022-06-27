@@ -95,8 +95,14 @@ public class UgovorController {
     }
 
     @PostMapping(value = "/finalize/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> modifyUgovorDocument(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<?> finalizeUgovor(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
         var result = ugovorService.finalizeUgovor(id, file, token);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping(value = "/reject/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> rejectUgovor(@RequestHeader("Authorization") String token, @PathVariable Long id) throws Exception {
+        var result = ugovorService.rejectUgovor(id, token);
         return ResponseEntity.ok(result);
     }
 

@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.dto.UserDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
-import rs.edu.raf.banka.racun.enums.RacunType;
-import rs.edu.raf.banka.racun.enums.TransakcionaStavkaType;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.contract.ContractDocument;
@@ -294,13 +292,38 @@ public class UgovorService
         return ugovor;
     }
 
-    private void finalizeTranactions(String token, List<TransakcionaStavka> stavke) throws Exception {
+    private void finalizeTranactions(String token, List<TransakcionaStavka> stavke) {
         for(var stavka: stavke) {
             TransakcijaRequest finalizeRequestPotrazna = finalizeStavkaTransaction(stavka, token, true);
             submitTransaction(finalizeRequestPotrazna, token);
 
             TransakcijaRequest finalizeRequestDugovna = finalizeStavkaTransaction(stavka, token, false);
             submitTransaction(finalizeRequestDugovna, token);
+        }
+    }
+
+    public Ugovor rejectUgovor(Long id, String token) throws Exception {
+        Ugovor ugovor = getById(id);
+        if(ugovor == null)
+            throw new Exception("Ugovor not found");
+
+        checkUserCanAccessUgovor(ugovor, token);
+
+        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+            throw new Exception("Ugovor is finalized");
+
+        rejectTransactions(token, ugovor.getStavke());
+
+        ugovor.setStatus(UgovorStatus.REJECTED);
+        ugovor = ugovorRepository.save(ugovor);
+
+        return ugovor;
+    }
+
+    private void rejectTransactions(String token, List<TransakcionaStavka> stavke) {
+        for(var stavka: stavke) {
+            TransakcijaRequest deleteTransakcija = deleteStavkaTransaction(stavka, token);
+            submitTransaction(deleteTransakcija, token);
         }
     }
 
