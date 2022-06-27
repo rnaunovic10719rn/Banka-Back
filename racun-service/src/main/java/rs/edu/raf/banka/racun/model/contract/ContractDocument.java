@@ -17,7 +17,7 @@ public class ContractDocument {
     @Id
     private String id;
 
-    private Ugovor contract;
+    private Long ugovorId;
 
     private Binary document;
 

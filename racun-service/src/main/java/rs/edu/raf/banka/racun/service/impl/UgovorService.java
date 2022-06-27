@@ -3,6 +3,9 @@ package rs.edu.raf.banka.racun.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.dto.UserDto;
@@ -10,6 +13,7 @@ import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.enums.TransakcionaStavkaType;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
+import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.contract.ContractDocument;
 import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
@@ -18,6 +22,9 @@ import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.repository.contract.TransakcionaStavkaRepository;
 import rs.edu.raf.banka.racun.repository.contract.UgovorRepository;
 import rs.edu.raf.banka.racun.requests.*;
+import rs.edu.raf.banka.racun.response.AskBidPriceResponse;
+import rs.edu.raf.banka.racun.utils.HttpUtils;
+import rs.edu.raf.banka.racun.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +50,9 @@ public class UgovorService
 
     private final RacunRepository racunRepository;
 
+    @Value("${racun.berza-service-baseurl}")
+    private String BERZA_SERVICE_BASE_URL;
+
     @Autowired
     public UgovorService(UgovorRepository ugovorRepository, TransakcionaStavkaRepository stavkaRepository, ValutaRepository valutaRepository, CompanyRepository companyRepository, UserService userService, ContractDocumentService contractDocumentService, TransakcijaService transakcijaService, RacunRepository racunRepository)
     {
@@ -57,8 +67,7 @@ public class UgovorService
     }
 
 
-    public Ugovor getById(Long id)
-    {
+    public Ugovor getById(Long id) {
         var ugovor = ugovorRepository.findById(id);
         if(!ugovor.isPresent())
             return null;
@@ -67,7 +76,7 @@ public class UgovorService
 
     private TransakcionaStavka getTransakcionaStavkaById(Long id) throws Exception {
         var stavka = stavkaRepository.findById(id);
-        if(!stavka.isPresent())
+        if(stavka.isEmpty())
             throw new Exception("Transakciona stavka not found");
         return stavka.get();
     }
@@ -287,11 +296,11 @@ public class UgovorService
 
     private void finalizeTranactions(String token, List<TransakcionaStavka> stavke) throws Exception {
         for(var stavka: stavke) {
-            var finalizeRequestIsplata = finalizeStavkaTransactionIsplata(stavka, token);
-            submitTransaction(finalizeRequestIsplata, token);
+            TransakcijaRequest finalizeRequestPotrazna = finalizeStavkaTransaction(stavka, token, true);
+            submitTransaction(finalizeRequestPotrazna, token);
 
-            var finalizeRequestUplata = finalizeStavkaTransactionUplata(stavka, token);
-            submitTransaction(finalizeRequestUplata, token);
+            TransakcijaRequest finalizeRequestDugovna = finalizeStavkaTransaction(stavka, token, false);
+            submitTransaction(finalizeRequestDugovna, token);
         }
     }
 
@@ -313,146 +322,131 @@ public class UgovorService
         return contractDocument.getDocument();
     }
 
-    public TransakcionaStavka addStavka(TransakcionaStavkaCreateRequest request, String token) throws Exception {
-
-        if(request.getUgovorId() == null || request.getCenaHartije() == null || request.getHartijaId() == null
-                || request.getKolicina() == null || request.getHartijaType() == null || request.getType() == null
-                || request.getRacunType() == null || request.getValuta() == null)
+    public TransakcionaStavka addStavka(TransakcionaStavkaRequest request, String token) throws Exception {
+        if(request.getUgovorId() == null ||
+                request.getStavkaId() != null ||
+                request.getKapitalTypePotrazni() == null ||
+                request.getKapitalTypeDugovni() == null ||
+                StringUtils.emptyString(request.getKapitalOznakaPotrazni()) ||
+                StringUtils.emptyString(request.getKapitalOznakaDugovni()) ||
+                request.getKolicinaPotrazna() == null ||
+                request.getKolicinaDugovna() == null) {
             throw new Exception("bad request");
+        }
 
-
-        var ugovor = getById(request.getUgovorId());
-        if(ugovor == null)
+        Ugovor ugovor = getById(request.getUgovorId());
+        if(ugovor == null) {
             throw new Exception("Ugovor not found");
+        }
 
-        var user = checkUserCanAccessUgovor(ugovor, token);
+        UserDto user = checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+        if(ugovor.getStatus() == UgovorStatus.FINALIZED) {
             throw new Exception("Ugovor is finalized");
+        }
 
-        var stavka = new TransakcionaStavka();
+        validateAndCompleteRequest(request);
+
+        TransakcionaStavka stavka = new TransakcionaStavka();
+        stavka.setUgovor(ugovor);
         stavka.setUserId(user.getId());
-        stavka.setCenaHartije(request.getCenaHartije());
-        stavka.setHartijaId(request.getHartijaId());
-        stavka.setHartijaType(request.getHartijaType());
-        stavka.setType(request.getType());
-        stavka.setKolicina(request.getKolicina());
-        stavka.setCenaHartije(request.getCenaHartije());
 
-        var valuta = valutaRepository.findValutaByKodValute(request.getValuta());
-        if(valuta == null)
-            throw new Exception("Valuta not found");
-        stavka.setValuta(valuta);
+        stavka.setKapitalTypePotrazni(request.getKapitalTypePotrazni());
+        stavka.setKapitalPotrazniId(request.getKapitalPotrazniId());
+        stavka.setKolicinaPotrazna(request.getKolicinaPotrazna());
 
-        stavka.setRacunType(request.getRacunType());
+        stavka.setKapitalTypeDugovni(request.getKapitalTypeDugovni());
+        stavka.setKapitalDugovniId(request.getKapitalDugovniId());
+        stavka.setKolicinaDugovna(request.getKolicinaDugovna());
 
-        var createRequest = createStavkaTransaction(stavka, token);
-        if(!submitTransaction(createRequest, token))
+        TransakcijaRequest createRequest = createStavkaTransaction(stavka, token);
+        if(!submitTransaction(createRequest, token)) {
             throw new Exception("Transaction error");
+        }
 
-        stavkaRepository.save(stavka);
-        ugovor.getStavke().add(stavka);
-        ugovorRepository.save(ugovor);
-        return stavka;
+        return stavkaRepository.save(stavka);
     }
 
-    public boolean modifyStavka(TransakcionaStavkaUpdateRequest request, String token) throws Exception {
-
-        if(request.getStavkaId() == null && request.getCenaHartije() == null && request.getHartijaId() == null
-                && request.getKolicina() == null && request.getHartijaType() == null && request.getType() == null
-                && request.getRacunType() == null && request.getValuta() == null)
+    public TransakcionaStavka modifyStavka(TransakcionaStavkaRequest request, String token) throws Exception {
+        if(request.getStavkaId() == null ||
+                request.getUgovorId() != null ||
+                request.getKapitalTypePotrazni() == null ||
+                request.getKapitalTypeDugovni() == null ||
+                StringUtils.emptyString(request.getKapitalOznakaPotrazni()) ||
+                StringUtils.emptyString(request.getKapitalOznakaDugovni()) ||
+                request.getKolicinaPotrazna() == null ||
+                request.getKolicinaDugovna() == null) {
             throw new Exception("bad request");
+        }
 
-        var stavka = getTransakcionaStavkaById(request.getStavkaId());
-        var ugovor = stavka.getUgovor();
-        if(ugovor == null)
+        TransakcionaStavka stavka = getTransakcionaStavkaById(request.getStavkaId());
+        Ugovor ugovor = stavka.getUgovor();
+        if(ugovor == null) {
             throw new Exception("Ugovor not found");
+        }
 
         checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+        if(ugovor.getStatus() == UgovorStatus.FINALIZED) {
             throw new Exception("Ugovor is finalized");
+        }
 
-        var originalStavka = stavka.copy();
+        validateAndCompleteRequest(request);
 
-        var modified = false;
+        var originalStavka = new TransakcionaStavka(stavka);
 
-        if(request.getCenaHartije() != null)
-        {
-            stavka.setCenaHartije(request.getCenaHartije());
+        boolean modified = false;
+
+        if(request.getKapitalTypePotrazni() != null && !originalStavka.getKapitalTypePotrazni().equals(request.getKapitalTypePotrazni())) {
+            stavka.setKapitalTypePotrazni(request.getKapitalTypePotrazni());
             modified = true;
         }
-        if(request.getHartijaId() != null)
-        {
-            stavka.setHartijaId(request.getHartijaId());
+        if(request.getKapitalOznakaPotrazni() != null && !originalStavka.getKapitalPotrazniId().equals(request.getKapitalPotrazniId())) {
+            stavka.setKapitalPotrazniId(request.getKapitalPotrazniId());
             modified = true;
         }
-        if(request.getHartijaType() != null)
-        {
-            stavka.setHartijaType(request.getHartijaType());
+        if(request.getKolicinaPotrazna() != null && !originalStavka.getKolicinaPotrazna().equals(request.getKolicinaPotrazna())) {
+            stavka.setKolicinaPotrazna(request.getKolicinaPotrazna());
             modified = true;
         }
-        if(request.getType() != null)
-        {
-            stavka.setType(request.getType());
+        if(request.getKapitalTypeDugovni() != null && !originalStavka.getKapitalTypeDugovni().equals(request.getKapitalTypeDugovni())) {
+            stavka.setKapitalTypeDugovni(request.getKapitalTypeDugovni());
             modified = true;
         }
-        if(request.getKolicina() != null)
-        {
-            stavka.setKolicina(request.getKolicina());
+        if(request.getKapitalOznakaDugovni() != null && !originalStavka.getKapitalDugovniId().equals(request.getKapitalDugovniId())) {
+            stavka.setKapitalDugovniId(request.getKapitalDugovniId());
             modified = true;
         }
-        if(request.getCenaHartije() != null)
-        {
-            stavka.setCenaHartije(request.getCenaHartije());
+        if(request.getKolicinaDugovna() != null && !originalStavka.getKolicinaDugovna().equals(request.getKolicinaDugovna())) {
+            stavka.setKolicinaDugovna(request.getKolicinaDugovna());
             modified = true;
         }
 
-        if(request.getValuta() != null)
-        {
-            var valuta = valutaRepository.findValutaByKodValute(request.getValuta());
-            if(valuta == null)
-                throw new Exception("Valuta not found");
-            stavka.setValuta(valuta);
-            modified = true;
-        }
-
-        if(request.getRacunType() != null)
-        {
-            stavka.setRacunType(request.getRacunType());
-            modified = true;
-        }
-
-        if(modified)
-        {
-            var deleteRequest = deleteStavkaTransaction(originalStavka, token);
+        if(modified) {
+            TransakcijaRequest deleteRequest = deleteStavkaTransaction(originalStavka, token);
             if(!submitTransaction(deleteRequest, token))
                 throw new Exception("Transaction error");
             var createRequest = createStavkaTransaction(stavka, token);
-            if(!submitTransaction(createRequest, token)) // Nema dovoljno stanja
-            {
+            if(!submitTransaction(createRequest, token)) {
                 var restoreRequest = createStavkaTransaction(originalStavka, token);
                 submitTransaction(restoreRequest, token);
                 throw new Exception("Transaction error");
             }
 
-            //TODO: Check if stavka modification triggers ugovor modification
             ugovor.setLastChanged(new Date());
-            stavkaRepository.save(stavka);
+            stavka = stavkaRepository.save(stavka);
             ugovorRepository.save(ugovor);
         }
-        return modified;
+
+        return stavka;
     }
 
-    public boolean removeStavka(Long id, String token) throws Exception {
-        var stavka = getTransakcionaStavkaById(id);
-        if(stavka == null)
-            throw new Exception("Transakciona stavka not found");
-
-        //TODO: Test if stavka.ugovor is properly connected
-        var ugovor = stavka.getUgovor();
-        if(ugovor == null)
+    public TransakcionaStavka removeStavka(Long id, String token) throws Exception {
+        TransakcionaStavka stavka = getTransakcionaStavkaById(id);
+        Ugovor ugovor = stavka.getUgovor();
+        if(ugovor == null) {
             throw new Exception("Ugovor not found");
+        }
 
         checkUserCanAccessUgovor(ugovor, token);
 
@@ -460,99 +454,128 @@ public class UgovorService
             throw new Exception("Ugovor is finalized");
 
         var deleteRequest = deleteStavkaTransaction(stavka, token);
-        if(!submitTransaction(deleteRequest, token))
+        if(!submitTransaction(deleteRequest, token)) {
             throw new Exception("Transaction error");
+        }
 
-        //TODO: Check if removing stavka updates ugovor stavke
-        ugovor.getStavke().remove(stavka);
+        ugovor.setLastChanged(new Date());
         ugovorRepository.save(ugovor);
         stavkaRepository.delete(stavka);
-        return true;
+
+        return stavka;
     }
 
-    private boolean submitTransaction(TransakcijaRequest transakcijaRequest, String token)
-    {
+    private void validateAndCompleteRequest(TransakcionaStavkaRequest createRequest) throws Exception {
+        // Potrazna
+        if(createRequest.getKapitalTypePotrazni().equals(KapitalType.NOVAC)) {
+            // Provera valute
+            Valuta valuta = valutaRepository.findValutaByKodValute(createRequest.getKapitalOznakaPotrazni());
+            if(valuta == null) {
+                throw new Exception("Currency not found");
+            }
+            createRequest.setKapitalPotrazniId(valuta.getId());
+        } else {
+            AskBidPriceResponse askBidPriceResponse = getAskBidPrice(createRequest.getKapitalTypePotrazni(), createRequest.getKapitalOznakaPotrazni());
+            if(askBidPriceResponse == null) {
+                throw new Exception("Security not found");
+            }
+            createRequest.setKapitalPotrazniId(askBidPriceResponse.getHartijaId());
+        }
+
+        // Dugovna
+        if(createRequest.getKapitalTypeDugovni().equals(KapitalType.NOVAC)) {
+            // Provera valute
+            Valuta valuta = valutaRepository.findValutaByKodValute(createRequest.getKapitalOznakaDugovni());
+            if(valuta == null) {
+                throw new Exception("Currency not found");
+            }
+            createRequest.setKapitalDugovniId(valuta.getId());
+        } else {
+            AskBidPriceResponse askBidPriceResponse = getAskBidPrice(createRequest.getKapitalTypeDugovni(), createRequest.getKapitalOznakaDugovni());
+            if(askBidPriceResponse == null) {
+                throw new Exception("Security not found");
+            }
+            createRequest.setKapitalDugovniId(askBidPriceResponse.getHartijaId());
+        }
+    }
+
+    private AskBidPriceResponse getAskBidPrice(KapitalType kapitalType, String symbol) {
+        String type = "";
+        switch (kapitalType) {
+            case AKCIJA -> type = "AKCIJA";
+            case FOREX -> type = "FOREX";
+            case FUTURE_UGOVOR -> type = "FUTURES_UGOVOR";
+        }
+        ResponseEntity<AskBidPriceResponse> resp = HttpUtils.getAskBidPrice(BERZA_SERVICE_BASE_URL, type, symbol);
+        if(!resp.getStatusCode().equals(HttpStatus.OK)) {
+            return null;
+        }
+        return resp.getBody();
+    }
+
+    private boolean submitTransaction(TransakcijaRequest transakcijaRequest, String token) {
         return transakcijaService.dodajTransakciju(token, transakcijaRequest) != null;
     }
 
-    private TransakcijaRequest baseRequest(TransakcionaStavka stavka, String token, boolean novac) throws Exception {
-        var racun = racunRepository.findRacunByTipRacuna(stavka.getRacunType());
-        if(racun == null)
-            throw new Exception("Racun not found");
+    private TransakcijaRequest baseRequest(TransakcionaStavka stavka, String token, boolean isPotrazna) {
         var request = new TransakcijaRequest();
-        request.setBrojRacuna(racun.getBrojRacuna());
-        if(!novac)
-        {
-            request.setType(stavka.getHartijaType().toKapitalType());
-            request.setHartijaId(stavka.getHartijaId());
-            request.setUnitPrice(stavka.getCenaHartije());
+        if(isPotrazna) {
+            request.setType(stavka.getKapitalTypePotrazni());
+            if(stavka.getKapitalTypePotrazni() != KapitalType.NOVAC) {
+                request.setHartijaId(stavka.getKapitalPotrazniId());
+                request.setUnitPrice(0.0);
+            } else {
+                Valuta valuta = valutaRepository.getById(stavka.getKapitalPotrazniId());
+                request.setValutaOznaka(valuta.getKodValute());
+            }
+        } else { // Ako nije potrazna, onda je dugovna strana
+            request.setType(stavka.getKapitalTypeDugovni());
+            if(stavka.getKapitalTypeDugovni() != KapitalType.NOVAC) {
+                request.setHartijaId(stavka.getKapitalDugovniId());
+                request.setUnitPrice(0.0);
+            } else {
+                Valuta valuta = valutaRepository.getById(stavka.getKapitalDugovniId());
+                request.setValutaOznaka(valuta.getKodValute());
+            }
         }
-        else
-        {
-            request.setType(KapitalType.NOVAC);
-        }
-        request.setValutaOznaka(stavka.getValuta().getOznakaValute());
-        request.setMargins(stavka.getRacunType() == RacunType.MARGINS_RACUN);
+
+        // OTC (uglavnom) nikada ne koristi margine
+        request.setMargins(false);
         request.setUsername(userService.getUsernameByToken(token));
         request.setUplata(0.0);
         request.setIsplata(0.0);
         request.setRezervisano(0.0);
-        request.setOrderId(null); //TODO: Generate order id
+        request.setOrderId(-1L);
+
         return request;
     }
 
-    private TransakcijaRequest createStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
-        if(stavka.getType() == TransakcionaStavkaType.BUY) {
-            var request = baseRequest(stavka, token, true);
-            request.setRezervisano(stavka.getKolicina() * stavka.getCenaHartije());
-            return request;
-        }else {
-            var request = baseRequest(stavka, token, false);
-            request.setRezervisano(stavka.getKolicina());
-            return request;
-        }
+    private TransakcijaRequest createStavkaTransaction(TransakcionaStavka stavka, String token) {
+        TransakcijaRequest transakcijaRequest = baseRequest(stavka, token, true);
+        transakcijaRequest.setRezervisano(stavka.getKolicinaPotrazna());
+        transakcijaRequest.setOpis("Rezervacija za ugovor " + stavka.getUgovor().getDelovodniBroj());
+        return transakcijaRequest;
     }
 
-    private TransakcijaRequest deleteStavkaTransaction(TransakcionaStavka stavka, String token) throws Exception {
-        if(stavka.getType() == TransakcionaStavkaType.BUY) {
-            var request = baseRequest(stavka, token, true);
-            request.setRezervisano(-stavka.getKolicina()  * stavka.getCenaHartije());
-            return request;
-        }else {
-            var request = baseRequest(stavka, token, false);
-            request.setRezervisano(-stavka.getKolicina());
-            return request;
-        }
+    private TransakcijaRequest deleteStavkaTransaction(TransakcionaStavka stavka, String token) {
+        TransakcijaRequest transakcijaRequest = baseRequest(stavka, token, true);
+        transakcijaRequest.setRezervisano(-stavka.getKolicinaPotrazna());
+        transakcijaRequest.setOpis("Izmena ugovora " + stavka.getUgovor().getDelovodniBroj());
+        return transakcijaRequest;
     }
 
-    private TransakcijaRequest finalizeStavkaTransactionIsplata(TransakcionaStavka stavka, String token) throws Exception {
-        if(stavka.getType() == TransakcionaStavkaType.BUY)
-        {
-            var request = baseRequest(stavka, token, true);
-            request.setIsplata(stavka.getKolicina() * stavka.getCenaHartije());
-            return request;
+    private TransakcijaRequest finalizeStavkaTransaction(TransakcionaStavka stavka, String token, boolean isPotrazna) {
+        TransakcijaRequest transakcijaRequest = baseRequest(stavka, token, isPotrazna);
+        transakcijaRequest.setOpis("Realizacija ugovora " + stavka.getUgovor().getDelovodniBroj());
+        if(isPotrazna) {
+            transakcijaRequest.setIsplata(stavka.getKolicinaPotrazna());
+        } else {
+            transakcijaRequest.setUplata(stavka.getKolicinaDugovna());
+            if(stavka.getKapitalTypePotrazni().equals(KapitalType.NOVAC) && !stavka.getKapitalTypeDugovni().equals(KapitalType.NOVAC)) {
+                transakcijaRequest.setUnitPrice(stavka.getKolicinaPotrazna() / stavka.getKolicinaDugovna());
+            }
         }
-        else
-        {
-            var request = baseRequest(stavka, token, false);
-            request.setUplata(stavka.getKolicina());
-            return request;
-        }
-    }
-
-    private TransakcijaRequest finalizeStavkaTransactionUplata(TransakcionaStavka stavka, String token) throws Exception {
-        if(stavka.getType() == TransakcionaStavkaType.BUY)
-        {
-            var request = baseRequest(stavka, token, false);
-            request.setUplata(stavka.getKolicina());
-            return request;
-        }
-        else
-        {
-            var request = baseRequest(stavka, token, true);
-            request.setIsplata(stavka.getKolicina() * stavka.getCenaHartije());
-            return request;
-        }
+        return transakcijaRequest;
     }
 
 }

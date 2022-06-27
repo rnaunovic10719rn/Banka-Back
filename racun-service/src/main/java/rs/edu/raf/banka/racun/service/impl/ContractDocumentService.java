@@ -29,7 +29,7 @@ public class ContractDocumentService {
         }
 
         ContractDocument contractDocument = new ContractDocument();
-        contractDocument.setContract(contract);
+        contractDocument.setUgovorId(contract.getId());
         contractDocument.setDocument(new Binary(BsonBinarySubType.BINARY, document.getBytes()));
         contractDocument = documentRepository.save(contractDocument);
 

@@ -144,12 +144,8 @@ services:
     build: ./racun-service
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-racun:5432/postgres
-      racun.user-service-url: http://korisnicki-servis:8080/api/limit-change
-      racun.user-service-url2: http://korisnicki-servis:8080/api/user
-      racun.forex-quote-url: http://berza:8082/api/forex/podaci/
-      racun.akcije-quote-url: http://berza:8082/api/akcije/podaci/id/
-      racun.futures-quote-url: http://berza:8082/api/futures/podaci/id/
-      racun.berzaById-url: http://berza:8082/api/berza/id/
+      racun.user-service-baseurl: http://korisnicki-servis:8080/
+      racun.berza-service-baseurl: http://berza:8082/
       spring.data.mongodb.host: db-mongo
     ports:
       - "8083:8083"

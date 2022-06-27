@@ -107,7 +107,7 @@ public class UgovorController {
     }
 
     @PostMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaCreateRequest request) throws Exception {
+    public ResponseEntity<?> createStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaRequest request) throws Exception {
         var stavka = ugovorService.addStavka(request, token);
         return ResponseEntity.ok(stavka);
     }
@@ -119,7 +119,7 @@ public class UgovorController {
     }
 
     @PutMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> modifyStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaUpdateRequest request) throws Exception {
+    public ResponseEntity<?> modifyStavka(@RequestHeader("Authorization") String token, @RequestBody TransakcionaStavkaRequest request) throws Exception {
         var result = ugovorService.modifyStavka(request, token);
         return ResponseEntity.ok(result);
     }

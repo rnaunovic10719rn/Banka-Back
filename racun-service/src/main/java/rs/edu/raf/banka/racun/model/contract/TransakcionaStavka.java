@@ -1,15 +1,13 @@
 package rs.edu.raf.banka.racun.model.contract;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import rs.edu.raf.banka.racun.enums.HartijaOdVrednostiType;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.RacunType;
-import rs.edu.raf.banka.racun.enums.TransakcionaStavkaType;
-import rs.edu.raf.banka.racun.model.Valuta;
 
 import javax.persistence.*;
-
 
 @Entity
 @Data
@@ -17,34 +15,40 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class TransakcionaStavka {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     Ugovor ugovor;
 
-    TransakcionaStavkaType type;
-
-    Long hartijaId;
-
-    HartijaOdVrednostiType hartijaType;
-
     Long userId = -1L;
 
-    RacunType racunType;
+    /**
+     * POTRAZNA STRANA -- STA MI DAJEMO KUPCU
+     */
 
-    @ManyToOne
-    @JoinColumn(name = "valuta_id")
-    Valuta valuta;
+    KapitalType kapitalTypePotrazni;
+    Long kapitalPotrazniId;
+    Double kolicinaPotrazna;
 
-    Integer kolicina;
+    /**
+     * DUGOVNA STRANA -- STA KUPAC DAJE NAMA
+     */
 
-    Double cenaHartije;
+    KapitalType kapitalTypeDugovni;
+    Long kapitalDugovniId;
+    Double kolicinaDugovna;
 
-    public TransakcionaStavka copy() {
-        return new TransakcionaStavka(id, ugovor, type, hartijaId, hartijaType, userId, racunType, valuta, kolicina, cenaHartije);
+    public TransakcionaStavka(TransakcionaStavka stavka) {
+        this.ugovor = stavka.ugovor;
+        this.userId = stavka.userId;
+        this.kapitalTypePotrazni = stavka.kapitalTypePotrazni;
+        this.kapitalPotrazniId = stavka.kapitalPotrazniId;
+        this.kolicinaPotrazna = stavka.kolicinaPotrazna;
+        this.kapitalTypeDugovni = stavka.kapitalTypeDugovni;
+        this.kapitalDugovniId = stavka.kapitalDugovniId;
+        this.kolicinaDugovna = stavka.kolicinaDugovna;
     }
-
 }

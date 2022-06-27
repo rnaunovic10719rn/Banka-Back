@@ -36,7 +36,6 @@ public class Ugovor
 
     Long userId = -1L;
 
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "ugovor", fetch = FetchType.LAZY, orphanRemoval = true)
     List<TransakcionaStavka> stavke;
 

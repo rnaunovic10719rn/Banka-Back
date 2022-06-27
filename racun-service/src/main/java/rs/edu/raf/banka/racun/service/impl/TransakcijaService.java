@@ -38,11 +38,11 @@ public class TransakcijaService {
 
     private final EntityManager entityManager;
 
-    @Value("${racun.user-service-url}")
-    private String USER_SERVICE_URL;
+    @Value("${racun.user-service-baseurl}")
+    private String USER_SERVICE_BASE_URL;
 
-    @Value("${racun.forex-quote-url}")
-    private String FOREX_EXCHANGE_RATE_URL;
+    @Value("${racun.berza-service-baseurl}")
+    private String BERZA_SERVICE_BASE_URL;
 
     @Autowired
     public TransakcijaService(RacunRepository racunRepository,
@@ -218,7 +218,7 @@ public class TransakcijaService {
         // Konverzija iz ne-RSD valutu u RSD
         if(transakcijaRequest.getType() == KapitalType.NOVAC && limitDelta != 0 && !token.equals("Bearer BERZA-SERVICE")) {
             if (!transakcijaRequest.getValutaOznaka().equalsIgnoreCase("RSD")) {
-                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, transakcijaRequest.getValutaOznaka(), "RSD");
+                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(BERZA_SERVICE_BASE_URL, token, transakcijaRequest.getValutaOznaka(), "RSD");
                 if (resp.getBody() == null) {
                     return null;
                 }
@@ -226,7 +226,7 @@ public class TransakcijaService {
                 limitDelta *= fpd.getExchangeRate();
             }
             // Poziv user servisu da azurira limit
-            HttpUtils.updateUserLimit(USER_SERVICE_URL, token, limitDelta);
+            HttpUtils.updateUserLimit(USER_SERVICE_BASE_URL, token, limitDelta);
         }
 
         // Cuvanje podataka
