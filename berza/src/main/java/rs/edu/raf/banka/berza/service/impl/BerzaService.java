@@ -68,6 +68,14 @@ public class BerzaService {
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
     }
 
+    public List<Akcije> findAllAkcije() {
+        return akcijeRepository.findAll();
+    }
+
+    public List<FuturesUgovori> findAllFuturesUgovori() {
+        return futuresUgovoriRepository.findAll();
+    }
+
     public Akcije createUpdateAkcija(AkcijaCreateUpdateRequest request) {
         if(StringUtils.emptyString(request.getOznaka()) ||
                 StringUtils.emptyString(request.getOpis()) ||
