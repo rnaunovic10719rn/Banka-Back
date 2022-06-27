@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import rs.edu.raf.banka.user_service.model.User;
 
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
 
 @Entity
@@ -20,9 +21,16 @@ public class PasswordResetToken {
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     private User user;
     private Date expiryDate;
+    private Boolean used = false;
 
     public PasswordResetToken(String token, User user){
+        // Stavi da token istice posle 5 minuta.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MINUTE, 5);
+
         this.token = token;
         this.user = user;
+        this.expiryDate = calendar.getTime();
     }
 }

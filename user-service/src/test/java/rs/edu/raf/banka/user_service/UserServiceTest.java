@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
@@ -21,6 +22,7 @@ import rs.edu.raf.banka.user_service.repository.UserRepository;
 import rs.edu.raf.banka.user_service.service.implementation.UserServiceImplementation;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +45,9 @@ class UserServiceTest {
 
     @Mock
     private PasswordTokenRepository passwordTokenRepository;
+
+    @Mock
+    private JmsTemplate jmsTemplate;
 
     private CreateUserForm createUserForm = initUserMockForm();
 
@@ -447,8 +452,7 @@ class UserServiceTest {
 
     @Test
     void testCreatePasswordResetTokenForUser() {
-        PasswordResetToken token = new PasswordResetToken();
-        token.setToken("token");
+        PasswordResetToken token = new PasswordResetToken("token", null);
 
         userService.createPasswordResetTokenForUser(null, token.getToken());
 

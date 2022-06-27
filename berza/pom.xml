@@ -36,7 +36,7 @@
 		<jacoco.version>0.8.8</jacoco.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-		<sonar.coverage.exclusions>**/bootstrap/*, **/configuration/*, **/dto/**, **/enums/*, **/model/*, **/requests/*, **/response/*, **/controller/*, **/security/*</sonar.coverage.exclusions>
+		<sonar.coverage.exclusions>**/bootstrap/*, **/configuration/*, **/dto/**, **/enums/*, **/model/*, **/requests/*, **/response/*, **/controller/*, **/security/*, **/service/remote/*</sonar.coverage.exclusions>
 	</properties>
 
 	<dependencies>

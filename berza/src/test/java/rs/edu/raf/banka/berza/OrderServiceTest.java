@@ -6,18 +6,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.berza.dto.UserDto;
-import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
-import rs.edu.raf.banka.berza.enums.OrderAction;
-import rs.edu.raf.banka.berza.enums.OrderStatus;
-import rs.edu.raf.banka.berza.enums.OrderType;
+import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
+import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.response.TransakcijaResponse;
+import rs.edu.raf.banka.berza.service.impl.FuturesUgovoriPodaciService;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
 import rs.edu.raf.banka.berza.service.impl.UserService;
 import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
+import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +40,9 @@ public class OrderServiceTest {
 
     @Mock
     TransakcijaService transakcijaService;
+
+    @Mock
+    FuturesUgovoriPodaciService futuresUgovoriPodaciService;
 
     @Test
     void testGetOrders1() {
@@ -159,4 +162,46 @@ public class OrderServiceTest {
                 hartijaOdVrednostiType, orderAction,ukupnaCena,provizija,
                 orderType, OrderStatus.APPROVED).getOrderAction());
     }
+
+    @Test
+    void testApproveOrderROLE_SUPERVISOR(){
+        String userRole = UserRole.ROLE_SUPERVISOR.toString();
+        Long id = 1L;
+
+        Order order = new Order();
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.FUTURES_UGOVOR);
+        order.setHartijaOdVrednostiId(1L);
+        when(orderRepository.getById(any())).thenReturn(order);
+        when(futuresUgovoriPodaciService.isRelevant(order.getHartijaOdVrednostiId())).thenReturn(true);
+        assertEquals(new ApproveRejectOrderResponse(MessageUtils.ORDER_APPROVED), orderService.approveOrder(userRole, id));
+    }
+
+    @Test
+    void testApproveOrderROLEAGENT(){
+        String userRole = UserRole.ROLE_AGENT.toString();
+        Long id = 1L;
+        assertEquals(new ApproveRejectOrderResponse(MessageUtils.REQUIRED_PERMISSION), orderService.approveOrder(userRole, id));
+    }
+
+    @Test
+    void testApproveOrderROLE_SUPERVISORreject(){
+        String userRole = UserRole.ROLE_SUPERVISOR.toString();
+        Long id = 1L;
+
+        Order order = new Order();
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.FUTURES_UGOVOR);
+        order.setHartijaOdVrednostiId(1L);
+        when(orderRepository.getById(any())).thenReturn(order);
+        when(futuresUgovoriPodaciService.isRelevant(order.getHartijaOdVrednostiId())).thenReturn(false);
+        assertEquals(new ApproveRejectOrderResponse(MessageUtils.ORDER_REJECTED), orderService.approveOrder(userRole, id));
+    }
+
+    @Test
+    void testApproveOrderROLEAGENTreject(){
+        String userRole = UserRole.ROLE_AGENT.toString();
+        Long id = 1L;
+        assertEquals(new ApproveRejectOrderResponse(MessageUtils.REQUIRED_PERMISSION), orderService.rejectOrder(userRole, id));
+    }
+
+
 }

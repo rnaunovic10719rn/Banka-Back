@@ -20,7 +20,9 @@ public abstract class HartijaOdVrednosti {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String oznakaHartije;
+
     private String opisHartije;
 
     @ManyToOne
@@ -35,4 +37,6 @@ public abstract class HartijaOdVrednosti {
 
     @ElementCollection
     private List<String> istorijskiPodaci;
+
+    private Boolean custom = false;
 }

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.exceptions.InvalidCompanyException;
 import rs.edu.raf.banka.racun.model.company.Company;
+import rs.edu.raf.banka.racun.model.company.CompanyContactPerson;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.requests.CompanyRequest;
 import rs.edu.raf.banka.racun.utils.StringUtils;
@@ -61,13 +62,16 @@ public class CompanyService {
         }
 
         Company company = companyOptional.get();
-        company.setNaziv(companyRequest.getNaziv());
-        company.setAdresa(companyRequest.getAdresa());
-        company.setDrzava(companyRequest.getDrzava());
-        company.setMaticniBroj(companyRequest.getMaticniBroj());
-        company.setPib(companyRequest.getPib());
-        company.setSifraDelatnosti(companyRequest.getSifraDelatnosti());
-
+        //ako su maticni broj ili pib drugaciji, u tom slucaju se posmatra kao nova kompanija i treba je tako evidentirati
+        //u sistemu, a staru samo ostaviti kakva je bila
+        if (company.getMaticniBroj() != companyRequest.getMaticniBroj() || company.getPib() != companyRequest.getPib()) {
+            this.createCompany(companyRequest);
+        } else {
+            company.setNaziv(companyRequest.getNaziv());
+            company.setAdresa(companyRequest.getAdresa());
+            company.setDrzava(companyRequest.getDrzava());
+            company.setSifraDelatnosti(companyRequest.getSifraDelatnosti());
+        }
         return companyRepository.save(company);
     }
 
@@ -77,6 +81,29 @@ public class CompanyService {
 
     public List<Company> getCompanies() {
         return companyRepository.findAll();
+    }
+
+    public List<Company> getCompanyByNaziv(String naziv) {
+        return companyRepository.findByNaziv(naziv);
+    }
+
+    public Company getCompanyByMaticniBroj(String maticniBroj) {
+        return companyRepository.findByMaticniBroj(maticniBroj);
+    }
+
+    public Company getCompanyByPib(String pib) {
+        return companyRepository.findByPib(pib);
+    }
+
+    //delete company treba izmeniti kada se implementiraju transakcije
+    //treba obezbediti da je moguce obrisati samo kompaniju koja nema transakcije
+    //kompanija koja ima transakcije ostaje u sistemu
+    public void deleteCompany(Long id) {
+        Optional<Company> company = companyRepository.findById(id);
+        if(company.isEmpty()) {
+            throw new InvalidCompanyException("Provided company does not exist");
+        }
+        companyRepository.delete(company.get());
     }
 
 }

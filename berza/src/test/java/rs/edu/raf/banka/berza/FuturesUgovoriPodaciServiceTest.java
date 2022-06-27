@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
+import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.service.impl.FuturesUgovoriPodaciService;
@@ -16,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,6 +57,28 @@ public class FuturesUgovoriPodaciServiceTest {
         when(futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(any())).thenReturn(future);
         when(influxScrapperService.getFuturesQoute(any())).thenReturn(null);
         assertNull(futuresUgovoriPodaciService.getOdabraniFuturesUgovori().get(0));
+    }
+
+    @Test
+    void testIsRelevantNull(){
+        when(futuresUgovoriRepository.findFuturesUgovoriByIdAndSettlementDateAfter(any(), any())).thenReturn(null);
+        assertFalse(futuresUgovoriPodaciService.isRelevant(1L));
+    }
+
+    @Test
+    void testIsRelevant(){
+        when(futuresUgovoriRepository.findFuturesUgovoriByIdAndSettlementDateAfter(any(), any())).thenReturn(new FuturesUgovori());
+        assertTrue(futuresUgovoriPodaciService.isRelevant(1L));
+    }
+
+    @Test
+    void testGetFuturesUgovorById(){
+        FuturesUgovori future = new FuturesUgovori();
+        future.setOznakaHartije("symbol");
+        when(futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(any())).thenReturn(null);
+        when(futuresUgovoriRepository.findFuturesById(any())).thenReturn(future);
+        when(influxScrapperService.getFuturesQoute(any())).thenReturn(null);
+        assertNull(futuresUgovoriPodaciService.getFuturesUgovorById(1L));
     }
 
 }

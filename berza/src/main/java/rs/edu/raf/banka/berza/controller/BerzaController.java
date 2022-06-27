@@ -5,14 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
+import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
+import rs.edu.raf.banka.berza.requests.FuturesCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.service.impl.BerzaService;
-import rs.edu.raf.banka.berza.service.impl.HartijaService;
-import rs.edu.raf.banka.berza.service.impl.OrderService;
-import rs.edu.raf.banka.berza.service.impl.UserService;
+import rs.edu.raf.banka.berza.service.impl.*;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import java.util.List;
@@ -24,6 +27,7 @@ public class BerzaController {
     private final BerzaService berzaService;
     private final UserService userService;
     private final OrderService orderService;
+    private final PriceService priceService;
     private final ModelMapper modelMapper;
     private HartijaService hartijaService;
 
@@ -31,11 +35,13 @@ public class BerzaController {
     public BerzaController(BerzaService berzaService,
                            OrderService orderService,
                            UserService userService,
+                           PriceService priceService,
                            ModelMapper modelMapper,
                            HartijaService hartijaService){
         this.berzaService = berzaService;
         this.orderService = orderService;
         this.userService = userService;
+        this.priceService = priceService;
         this.modelMapper = modelMapper;
         this.hartijaService = hartijaService;
     }
@@ -103,8 +109,73 @@ public class BerzaController {
     }
 
     @GetMapping(value = "/hartija/{hartijaType}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getHartija(@PathVariable String hartijaType,  @PathVariable long id){
+    public ResponseEntity<?> getHartija(@PathVariable String hartijaType, @PathVariable long id) {
         return ResponseEntity.ok(hartijaService.findHartijaByIdAndType(id, hartijaType));
+    }
+
+    @GetMapping(value = "/askbid/{hartijaType}/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAskBidPrice(@PathVariable String hartijaType, @PathVariable String symbol) {
+        AskBidPriceDto dto = priceService.getAskBidPrice(HartijaOdVrednostiType.valueOf(hartijaType.toUpperCase()), symbol);
+        if(dto == null || dto.getHartijaId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createCustomStock(@RequestHeader("Authorization") String token, @RequestBody AkcijaCreateUpdateRequest request){
+        if(request.getId() != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Akcije akcija = berzaService.createUpdateAkcija(request);
+        if(akcija == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(akcija);
+    }
+
+    @PutMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateCustomStock(@RequestHeader("Authorization") String token, @RequestBody AkcijaCreateUpdateRequest request){
+        if(request.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Akcije akcija = berzaService.createUpdateAkcija(request);
+        if(akcija == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(akcija);
+    }
+
+    @PostMapping(value = "/hartija/future", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createCustomFuturesContract(@RequestHeader("Authorization") String token, @RequestBody FuturesCreateUpdateRequest request){
+        if(request.getId() != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        FuturesUgovori futuresUgovor = berzaService.createUpdateFuturesUgovor(request);
+        if(futuresUgovor == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(futuresUgovor);
+    }
+
+    @PutMapping(value = "/hartija/future", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateCustomFuturesContract(@RequestHeader("Authorization") String token, @RequestBody FuturesCreateUpdateRequest request){
+        if(request.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        FuturesUgovori futuresUgovor = berzaService.createUpdateFuturesUgovor(request);
+        if(futuresUgovor == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(futuresUgovor);
     }
 
 }

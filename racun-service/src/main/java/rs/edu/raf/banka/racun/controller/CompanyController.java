@@ -14,6 +14,7 @@ import rs.edu.raf.banka.racun.service.impl.CompanyBankAccountService;
 import rs.edu.raf.banka.racun.service.impl.CompanyContactPersonService;
 import rs.edu.raf.banka.racun.service.impl.CompanyService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -36,13 +37,28 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanies());
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getCompany(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyById(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         Optional<Company> company = companyService.getCompanyById(id);
-        if(company.isEmpty()) {
+        if (company.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(company.get());
+    }
+
+    @GetMapping(value = "/naziv/{naziv}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyByNaziv(@RequestHeader("Authorization") String token, @PathVariable String naziv) {
+        return ResponseEntity.ok(companyService.getCompanyByNaziv(naziv));
+    }
+
+    @GetMapping(value = "/maticniBroj/{maticniBroj}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyByMaticniBroj(@RequestHeader("Authorization") String token, @PathVariable String maticniBroj) {
+        return ResponseEntity.ok(companyService.getCompanyByMaticniBroj(maticniBroj));
+    }
+
+    @GetMapping(value = "/pib/{pib}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCompanyByPib(@RequestHeader("Authorization") String token, @PathVariable String pib) {
+        return ResponseEntity.ok(companyService.getCompanyByPib(pib));
     }
 
     @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,6 +69,12 @@ public class CompanyController {
     @PostMapping(value = "/edit", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> editCompany(@RequestHeader("Authorization") String token, @RequestBody CompanyRequest companyRequest) {
         return ResponseEntity.ok(companyService.editCompany(companyRequest));
+    }
+
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> deleteCompany(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        companyService.deleteCompany(id);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -115,4 +137,9 @@ public class CompanyController {
         return ResponseEntity.ok(bankAccountService.editBankAccount(bankAccountRequest));
     }
 
+    @DeleteMapping(value = "/bankaccount/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> deleteBankAccount(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        bankAccountService.deleteBankAccount(id);
+        return ResponseEntity.ok().build();
+    }
 }

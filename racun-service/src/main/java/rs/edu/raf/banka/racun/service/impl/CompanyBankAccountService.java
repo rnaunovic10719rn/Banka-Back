@@ -6,6 +6,7 @@ import rs.edu.raf.banka.racun.exceptions.InvalidCompanyException;
 import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.company.Company;
 import rs.edu.raf.banka.racun.model.company.CompanyBankAccount;
+import rs.edu.raf.banka.racun.model.company.CompanyContactPerson;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyBankAccountRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
@@ -106,6 +107,14 @@ public class CompanyBankAccountService {
         }
 
         return companyBankAccountRepository.findByCompany(company.get());
+    }
+
+    public void deleteBankAccount(Long id) {
+        Optional<CompanyBankAccount> bankAccount = companyBankAccountRepository.findById(id);
+        if(bankAccount.isEmpty()) {
+            throw new InvalidCompanyException("Provided bank account does not exist");
+        }
+        companyBankAccountRepository.delete(bankAccount.get());
     }
 
 }

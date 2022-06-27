@@ -34,4 +34,10 @@ public class SredstvaKapital {
 
     @Version
     private Integer version = 0;
+
+    private Double ulozenaSredstva;
+    private Double pozajmljenaSredstva;
+
+    private Double maintenanceMargin;
+    private Boolean marginCall = false;
 }

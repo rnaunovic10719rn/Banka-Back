@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.dto.*;
+import rs.edu.raf.banka.racun.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.racun.enums.KapitalType;
+import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.*;
 
 import rs.edu.raf.banka.racun.repository.RacunRepository;
@@ -29,17 +31,8 @@ public class SredstvaKapitalService {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
     private final UserService userService;
 
-    @Value("${racun.forex-quote-url}")
-    private String FOREX_EXCHANGE_RATE_URL;
-
-    @Value("${racun.akcije-quote-url}")
-    private String AKCIJE_BY_ID_URL;
-
-    @Value("${racun.futures-quote-url}")
-    private String FUTURES_BY_ID_URL;
-
-    @Value("${racun.berzaById-url}")
-    private String BERZA_BY_ID_URL;
+    @Value("${racun.berza-service-baseurl}")
+    private String BERZA_SERVICE_BASE_URL;
 
     @Autowired
     public SredstvaKapitalService(SredstvaKapitalRepository sredstvaKapitalRepository,
@@ -218,7 +211,7 @@ public class SredstvaKapitalService {
 
 
     public AkcijePodaciDto getAkcija(Long id) {
-        ResponseEntity<AkcijePodaciDto> apdResp = HttpUtils.getAkcijeById(AKCIJE_BY_ID_URL, id);
+        ResponseEntity<AkcijePodaciDto> apdResp = HttpUtils.getAkcijeById(BERZA_SERVICE_BASE_URL, id);
         if (apdResp.getBody() == null) {
             return null;
         }
@@ -227,7 +220,7 @@ public class SredstvaKapitalService {
     }
 
     public BerzaDto getBerza(Long id) {
-        ResponseEntity<BerzaDto> berzaResp = HttpUtils.getBerzaById(BERZA_BY_ID_URL, id);
+        ResponseEntity<BerzaDto> berzaResp = HttpUtils.getBerzaById(BERZA_SERVICE_BASE_URL, id);
         if (berzaResp.getBody() == null) {
             return null;
         }
@@ -236,7 +229,7 @@ public class SredstvaKapitalService {
     }
 
     public ForexPodaciDto getForex(String token, String from) {
-        ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, from, "RSD");
+        ResponseEntity<ForexPodaciDto> fpdResp = HttpUtils.getExchangeRate(BERZA_SERVICE_BASE_URL, token, from, "RSD");
         if (fpdResp.getBody() == null) {
             return null;
         }
@@ -245,7 +238,7 @@ public class SredstvaKapitalService {
     }
 
     public FuturesPodaciDto getFuture(Long id) {
-        ResponseEntity<FuturesPodaciDto> futureResp = HttpUtils.getFuturesById(FUTURES_BY_ID_URL, id);
+        ResponseEntity<FuturesPodaciDto> futureResp = HttpUtils.getFuturesById(BERZA_SERVICE_BASE_URL, id);
         if (futureResp.getBody() == null) {
             return null;
         }
@@ -283,5 +276,30 @@ public class SredstvaKapitalService {
             return agentSredstvaKapitalDto;
         }
            return null;
+    }
+
+    public SredstvaKapital pocetnoStanjeMarzniRacun(UUID uuidRacuna, KapitalType kapitalType, Long hartijaId){
+        Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
+        if(racun == null) {
+            return null;
+        }
+
+        Valuta valuta = valutaRepository.findValutaByKodValute("USD");
+        if(valuta == null) {
+            return null;
+        }
+
+        SredstvaKapital mRacun = new SredstvaKapital();
+        mRacun.setRacun(racun);
+        mRacun.setValuta(valuta);
+        mRacun.setHaritjeOdVrednostiID(hartijaId);
+        mRacun.setKapitalType(kapitalType);
+        mRacun.setUlozenaSredstva(0.0);
+        mRacun.setPozajmljenaSredstva(0.0);
+        mRacun.setMaintenanceMargin(0.0);
+        //Mozda ne treba da se setuje na false uopste jer smo stavili u modelu default false anotaciju
+        mRacun.setMarginCall(false);
+
+        return sredstvaKapitalRepository.save(mRacun);
     }
 }
