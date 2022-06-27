@@ -7,7 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
+import rs.edu.raf.banka.berza.requests.FuturesCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
 import rs.edu.raf.banka.berza.response.OrderResponse;
@@ -116,6 +120,62 @@ public class BerzaController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createCustomStock(@RequestHeader("Authorization") String token, @RequestBody AkcijaCreateUpdateRequest request){
+        if(request.getId() != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Akcije akcija = berzaService.createUpdateAkcija(request);
+        if(akcija == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(akcija);
+    }
+
+    @PutMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateCustomStock(@RequestHeader("Authorization") String token, @RequestBody AkcijaCreateUpdateRequest request){
+        if(request.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Akcije akcija = berzaService.createUpdateAkcija(request);
+        if(akcija == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(akcija);
+    }
+
+    @PostMapping(value = "/hartija/future", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createCustomFuturesContract(@RequestHeader("Authorization") String token, @RequestBody FuturesCreateUpdateRequest request){
+        if(request.getId() != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        FuturesUgovori futuresUgovor = berzaService.createUpdateFuturesUgovor(request);
+        if(futuresUgovor == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(futuresUgovor);
+    }
+
+    @PutMapping(value = "/hartija/future", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateCustomFuturesContract(@RequestHeader("Authorization") String token, @RequestBody FuturesCreateUpdateRequest request){
+        if(request.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        FuturesUgovori futuresUgovor = berzaService.createUpdateFuturesUgovor(request);
+        if(futuresUgovor == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(futuresUgovor);
     }
 
 }

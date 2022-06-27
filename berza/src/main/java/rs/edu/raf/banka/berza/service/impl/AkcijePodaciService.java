@@ -51,7 +51,7 @@ public class AkcijePodaciService {
 
     public AkcijePodaciDto getAkcijaByTicker(String ticker) {
         Akcije akcija = akcijeRepository.findAkcijeByOznakaHartije(ticker);
-        if(akcija == null || DateUtils.isDateInDecayDays(akcija.getLastUpdated(), 1)) {
+        if(akcija == null || DateUtils.isDateInDecayDays(akcija.getLastUpdated(), 1) || akcija.getCustom()) {
             CompanyOverview co = alphaVantageService.getCompanyOverview(ticker);
             if(co == null) {
                 return null;
@@ -66,6 +66,7 @@ public class AkcijePodaciService {
             akcija.setOpisHartije(co.getName());
             akcija.setLastUpdated(new Date());
             akcija.setOutstandingShares(co.getSharesOutstanding());
+            akcija.setCustom(false);
 
             akcijeRepository.save(akcija);
         }
