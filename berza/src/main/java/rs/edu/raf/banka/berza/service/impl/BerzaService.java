@@ -97,6 +97,7 @@ public class BerzaService {
         akcija.setOpisHartije(request.getOpis());
         akcija.setBerza(berza);
         akcija.setOutstandingShares(request.getOutstandingShares());
+        akcija.setLastUpdated(new Date());
         akcija.setCustom(true);
 
         return akcijeRepository.save(akcija);
@@ -139,6 +140,7 @@ public class BerzaService {
         futuresUgovor.setContractUnit(request.getContractUnit());
         futuresUgovor.setMaintenanceMargin(request.getMaintenanceMargin());
         futuresUgovor.setSettlementDate(request.getSettlementDate());
+        futuresUgovor.setLastUpdated(new Date());
         futuresUgovor.setCustom(true);
 
         return futuresUgovoriRepository.save(futuresUgovor);
