@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.dto.UserDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
-import rs.edu.raf.banka.racun.enums.RacunType;
-import rs.edu.raf.banka.racun.enums.TransakcionaStavkaType;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
+import rs.edu.raf.banka.racun.exceptions.ContractExpcetion;
 import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.contract.ContractDocument;
 import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
@@ -26,6 +25,7 @@ import rs.edu.raf.banka.racun.response.AskBidPriceResponse;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
 import rs.edu.raf.banka.racun.utils.StringUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -74,27 +74,27 @@ public class UgovorService
         return ugovor.get();
     }
 
-    private TransakcionaStavka getTransakcionaStavkaById(Long id) throws Exception {
+    private TransakcionaStavka getTransakcionaStavkaById(Long id) throws ContractExpcetion {
         var stavka = stavkaRepository.findById(id);
         if(stavka.isEmpty())
-            throw new Exception("Transakciona stavka not found");
+            throw new ContractExpcetion("Transakciona stavka not found");
         return stavka.get();
     }
 
-    public TransakcionaStavka getTransakcionaStavkaById(Long id, String token) throws Exception {
+    public TransakcionaStavka getTransakcionaStavkaById(Long id, String token) throws ContractExpcetion {
         var stavka =getTransakcionaStavkaById(id);
         var ugovor = stavka.getUgovor();
         if(ugovor == null)
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
         checkUserCanAccessUgovor(ugovor, token);
         return stavka;
     }
 
 
-    private UserDto getUserByToken(String token) throws Exception {
+    private UserDto getUserByToken(String token) throws ContractExpcetion {
         var user = userService.getUserByToken(token);
         if(user == null)
-            throw new Exception("Invalid token");
+            throw new ContractExpcetion("Invalid token");
         return user;
     }
 
@@ -110,35 +110,35 @@ public class UgovorService
         return user.getRoleName().equals("ROLE_AGENT");
     }
 
-    private UserDto checkUserCanAccessUgovor(Ugovor ugovor, String token) throws Exception {
+    private UserDto checkUserCanAccessUgovor(Ugovor ugovor, String token) throws ContractExpcetion {
 
         var user = getUserByToken(token);
 
         if(isUserSupervisor(user) || (isUserAgent(user) && ugovor.getUserId() == user.getId()))
             return user;
 
-        throw new Exception("No permissions");
+        throw new ContractExpcetion("No permissions");
     }
 
-    private UserDto checkUserCanFinalizeUgovor(Ugovor ugovor, String token) throws Exception {
+    private UserDto checkUserCanFinalizeUgovor(Ugovor ugovor, String token) throws ContractExpcetion {
 
         var user = getUserByToken(token);
 
         if(isUserSupervisor(user))
             return user;
 
-        throw new Exception("No permissions");
+        throw new ContractExpcetion("No permissions");
     }
 
-    public Ugovor getUgovorById(Long id, String token) throws Exception {
+    public Ugovor getUgovorById(Long id, String token) throws ContractExpcetion {
         var ugovor = getById(id);
         if(ugovor == null)
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
         checkUserCanAccessUgovor(ugovor, token);
         return ugovor;
     }
 
-    public List<Ugovor> getAll(String token) throws Exception {
+    public List<Ugovor> getAll(String token) throws ContractExpcetion {
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
             return ugovorRepository.findAll();
@@ -147,7 +147,7 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllDraft(String token) throws Exception
+    public List<Ugovor> getAllDraft(String token) throws ContractExpcetion
     {
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
@@ -157,7 +157,7 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllFinalized(String token) throws Exception
+    public List<Ugovor> getAllFinalized(String token) throws ContractExpcetion
     {
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
@@ -167,10 +167,10 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllByCompany(Long companyId, String token) throws Exception {
+    public List<Ugovor> getAllByCompany(Long companyId, String token) throws ContractExpcetion {
         var company = companyRepository.findById(companyId);
         if(company.isEmpty())
-            throw new Exception("Company not found");
+            throw new ContractExpcetion("Company not found");
 
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
@@ -180,10 +180,10 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllByCompanyAndUgovorStatus(Long companyId, String token, UgovorStatus status) throws Exception {
+    public List<Ugovor> getAllByCompanyAndUgovorStatus(Long companyId, String token, UgovorStatus status) throws ContractExpcetion {
         var company = companyRepository.findById(companyId);
         if(company.isEmpty())
-            throw new Exception("Company not found");
+            throw new ContractExpcetion("Company not found");
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByCompanyAndStatus(company.get(), status);
@@ -192,7 +192,7 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllByDelovodniBroj(String delovodniBroj, String token) throws Exception {
+    public List<Ugovor> getAllByDelovodniBroj(String delovodniBroj, String token) throws ContractExpcetion {
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByDelovodniBroj(delovodniBroj);
@@ -201,7 +201,7 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public List<Ugovor> getAllByDelovodniBrojAndUgovorStatus(String delovodniBroj, String token, UgovorStatus status) throws Exception {
+    public List<Ugovor> getAllByDelovodniBrojAndUgovorStatus(String delovodniBroj, String token, UgovorStatus status) throws ContractExpcetion {
         var user = getUserByToken(token);
         if(isUserSupervisor(user))
             return ugovorRepository.findAllByDelovodniBrojAndStatus(delovodniBroj, status);
@@ -210,18 +210,18 @@ public class UgovorService
         return new ArrayList<>();
     }
 
-    public Ugovor createUgovor(UgovorCreateRequest request, String token) throws Exception {
+    public Ugovor createUgovor(UgovorCreateRequest request, String token) throws ContractExpcetion {
 
         var user = getUserByToken(token);
         if(request.getCompanyId() == null || request.getDescription() == null || request.getDelovodniBroj() == null)
-            throw new Exception("bad request");
+            throw new ContractExpcetion("bad request");
 
         var ugovor = new Ugovor();
         ugovor.setUserId(user.getId());
         ugovor.setStatus(UgovorStatus.DRAFT);
         var company = companyRepository.findById(request.getCompanyId());
         if(company.isEmpty())
-            throw new Exception("Company not found");
+            throw new ContractExpcetion("Company not found");
         ugovor.setCompany(company.get());
         ugovor.setDescription(request.getDescription());
         ugovor.setDelovodniBroj(request.getDelovodniBroj());
@@ -231,26 +231,26 @@ public class UgovorService
         return ugovor;
     }
 
-    public Ugovor modifyUgovor(UgovorUpdateRequest request, String token) throws Exception {
+    public Ugovor modifyUgovor(UgovorUpdateRequest request, String token) throws ContractExpcetion {
 
         if(request.getCompanyId() == null && request.getDescription() == null && request.getDelovodniBroj() == null)
-            throw new Exception("bad request");
+            throw new ContractExpcetion("bad request");
 
         var ugovor = getById(request.getId());
         if(ugovor == null)
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
 
         checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
-            throw new Exception("Ugovor is finalized");
+            throw new ContractExpcetion("Ugovor is finalized");
 
         var modified = false;
         if(request.getCompanyId() != null)
         {
             var company = companyRepository.findById(request.getCompanyId());
             if(company.isEmpty())
-                throw new Exception("Company not found");
+                throw new ContractExpcetion("Company not found");
             ugovor.setCompany(company.get());
             modified = true;
         }
@@ -271,17 +271,17 @@ public class UgovorService
         return ugovor;
     }
 
-    public Ugovor finalizeUgovor(Long id, MultipartFile document, String token) throws Exception {
+    public Ugovor finalizeUgovor(Long id, MultipartFile document, String token) throws ContractExpcetion, IOException {
         if (document == null)
-            throw new Exception("bad request");
+            throw new ContractExpcetion("bad request");
         var ugovor = getById(id);
         if(ugovor == null)
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
 
         checkUserCanFinalizeUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
-            throw new Exception("Ugovor is finalized");
+            throw new ContractExpcetion("Ugovor is finalized");
 
         String documentId = contractDocumentService.saveDocument(ugovor, document);
 
@@ -294,7 +294,7 @@ public class UgovorService
         return ugovor;
     }
 
-    private void finalizeTranactions(String token, List<TransakcionaStavka> stavke) throws Exception {
+    private void finalizeTranactions(String token, List<TransakcionaStavka> stavke) {
         for(var stavka: stavke) {
             TransakcijaRequest finalizeRequestPotrazna = finalizeStavkaTransaction(stavka, token, true);
             submitTransaction(finalizeRequestPotrazna, token);
@@ -304,25 +304,50 @@ public class UgovorService
         }
     }
 
-    public Binary getContractDocument(Long id, String token) throws Exception {
+    public Ugovor rejectUgovor(Long id, String token) throws ContractExpcetion {
+        Ugovor ugovor = getById(id);
+        if(ugovor == null)
+            throw new ContractExpcetion("Ugovor not found");
+
+        checkUserCanAccessUgovor(ugovor, token);
+
+        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+            throw new ContractExpcetion("Ugovor is finalized");
+
+        rejectTransactions(token, ugovor.getStavke());
+
+        ugovor.setStatus(UgovorStatus.REJECTED);
+        ugovor = ugovorRepository.save(ugovor);
+
+        return ugovor;
+    }
+
+    private void rejectTransactions(String token, List<TransakcionaStavka> stavke) {
+        for(var stavka: stavke) {
+            TransakcijaRequest deleteTransakcija = deleteStavkaTransaction(stavka, token);
+            submitTransaction(deleteTransakcija, token);
+        }
+    }
+
+    public Binary getContractDocument(Long id, String token) throws ContractExpcetion {
         if(id == null)
-            throw new Exception("Invalid contract ID");
+            throw new ContractExpcetion("Invalid contract ID");
 
         var ugovor = getById(id);
         if(ugovor == null)
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
 
         checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() != UgovorStatus.FINALIZED || ugovor.getDocumentId() == null || ugovor.getDocumentId().isBlank())
-            throw new Exception("Contract not found");
+            throw new ContractExpcetion("Contract not found");
 
         ContractDocument contractDocument = contractDocumentService.getDocument(ugovor.getDocumentId());
 
         return contractDocument.getDocument();
     }
 
-    public TransakcionaStavka addStavka(TransakcionaStavkaRequest request, String token) throws Exception {
+    public TransakcionaStavka addStavka(TransakcionaStavkaRequest request, String token) throws ContractExpcetion {
         if(request.getUgovorId() == null ||
                 request.getStavkaId() != null ||
                 request.getKapitalTypePotrazni() == null ||
@@ -331,18 +356,18 @@ public class UgovorService
                 StringUtils.emptyString(request.getKapitalOznakaDugovni()) ||
                 request.getKolicinaPotrazna() == null ||
                 request.getKolicinaDugovna() == null) {
-            throw new Exception("bad request");
+            throw new ContractExpcetion("bad request");
         }
 
         Ugovor ugovor = getById(request.getUgovorId());
         if(ugovor == null) {
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
         }
 
         UserDto user = checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED) {
-            throw new Exception("Ugovor is finalized");
+            throw new ContractExpcetion("Ugovor is finalized");
         }
 
         validateAndCompleteRequest(request);
@@ -363,13 +388,13 @@ public class UgovorService
 
         TransakcijaRequest createRequest = createStavkaTransaction(stavka, token);
         if(!submitTransaction(createRequest, token)) {
-            throw new Exception("Transaction error");
+            throw new ContractExpcetion("Transaction error");
         }
 
         return stavkaRepository.save(stavka);
     }
 
-    public TransakcionaStavka modifyStavka(TransakcionaStavkaRequest request, String token) throws Exception {
+    public TransakcionaStavka modifyStavka(TransakcionaStavkaRequest request, String token) throws ContractExpcetion {
         if(request.getStavkaId() == null ||
                 request.getUgovorId() != null ||
                 request.getKapitalTypePotrazni() == null ||
@@ -378,19 +403,19 @@ public class UgovorService
                 StringUtils.emptyString(request.getKapitalOznakaDugovni()) ||
                 request.getKolicinaPotrazna() == null ||
                 request.getKolicinaDugovna() == null) {
-            throw new Exception("bad request");
+            throw new ContractExpcetion("bad request");
         }
 
         TransakcionaStavka stavka = getTransakcionaStavkaById(request.getStavkaId());
         Ugovor ugovor = stavka.getUgovor();
         if(ugovor == null) {
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
         }
 
         checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED) {
-            throw new Exception("Ugovor is finalized");
+            throw new ContractExpcetion("Ugovor is finalized");
         }
 
         validateAndCompleteRequest(request);
@@ -429,12 +454,12 @@ public class UgovorService
         if(modified) {
             TransakcijaRequest deleteRequest = deleteStavkaTransaction(originalStavka, token);
             if(!submitTransaction(deleteRequest, token))
-                throw new Exception("Transaction error");
+                throw new ContractExpcetion("Transaction error");
             var createRequest = createStavkaTransaction(stavka, token);
             if(!submitTransaction(createRequest, token)) {
                 var restoreRequest = createStavkaTransaction(originalStavka, token);
                 submitTransaction(restoreRequest, token);
-                throw new Exception("Transaction error");
+                throw new ContractExpcetion("Transaction error");
             }
 
             ugovor.setLastChanged(new Date());
@@ -445,21 +470,21 @@ public class UgovorService
         return stavka;
     }
 
-    public TransakcionaStavka removeStavka(Long id, String token) throws Exception {
+    public TransakcionaStavka removeStavka(Long id, String token) throws ContractExpcetion {
         TransakcionaStavka stavka = getTransakcionaStavkaById(id);
         Ugovor ugovor = stavka.getUgovor();
         if(ugovor == null) {
-            throw new Exception("Ugovor not found");
+            throw new ContractExpcetion("Ugovor not found");
         }
 
         checkUserCanAccessUgovor(ugovor, token);
 
         if(ugovor.getStatus() == UgovorStatus.FINALIZED)
-            throw new Exception("Ugovor is finalized");
+            throw new ContractExpcetion("Ugovor is finalized");
 
         var deleteRequest = deleteStavkaTransaction(stavka, token);
         if(!submitTransaction(deleteRequest, token)) {
-            throw new Exception("Transaction error");
+            throw new ContractExpcetion("Transaction error");
         }
 
         ugovor.setLastChanged(new Date());
@@ -469,19 +494,19 @@ public class UgovorService
         return stavka;
     }
 
-    private void validateAndCompleteRequest(TransakcionaStavkaRequest createRequest) throws Exception {
+    private void validateAndCompleteRequest(TransakcionaStavkaRequest createRequest) throws ContractExpcetion {
         // Potrazna
         if(createRequest.getKapitalTypePotrazni().equals(KapitalType.NOVAC)) {
             // Provera valute
             Valuta valuta = valutaRepository.findValutaByKodValute(createRequest.getKapitalOznakaPotrazni());
             if(valuta == null) {
-                throw new Exception("Currency not found");
+                throw new ContractExpcetion("Currency not found");
             }
             createRequest.setKapitalPotrazniId(valuta.getId());
         } else {
             AskBidPriceResponse askBidPriceResponse = getAskBidPrice(createRequest.getKapitalTypePotrazni(), createRequest.getKapitalOznakaPotrazni());
             if(askBidPriceResponse == null) {
-                throw new Exception("Security not found");
+                throw new ContractExpcetion("Security not found");
             }
             createRequest.setKapitalPotrazniId(askBidPriceResponse.getHartijaId());
         }
@@ -491,13 +516,13 @@ public class UgovorService
             // Provera valute
             Valuta valuta = valutaRepository.findValutaByKodValute(createRequest.getKapitalOznakaDugovni());
             if(valuta == null) {
-                throw new Exception("Currency not found");
+                throw new ContractExpcetion("Currency not found");
             }
             createRequest.setKapitalDugovniId(valuta.getId());
         } else {
             AskBidPriceResponse askBidPriceResponse = getAskBidPrice(createRequest.getKapitalTypeDugovni(), createRequest.getKapitalOznakaDugovni());
             if(askBidPriceResponse == null) {
-                throw new Exception("Security not found");
+                throw new ContractExpcetion("Security not found");
             }
             createRequest.setKapitalDugovniId(askBidPriceResponse.getHartijaId());
         }
