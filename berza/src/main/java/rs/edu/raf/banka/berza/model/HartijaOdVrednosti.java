@@ -35,4 +35,6 @@ public abstract class HartijaOdVrednosti {
 
     @ElementCollection
     private List<String> istorijskiPodaci;
+
+    private Boolean custom = false;
 }

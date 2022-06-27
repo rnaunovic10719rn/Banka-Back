@@ -7,10 +7,13 @@ import rs.edu.raf.banka.berza.dto.*;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.*;
+import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
+import rs.edu.raf.banka.berza.requests.FuturesCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
+import rs.edu.raf.banka.berza.utils.StringUtils;
 
 import java.util.*;
 
@@ -19,6 +22,7 @@ public class BerzaService {
 
     private BerzaRepository berzaRepository;
     private AkcijeRepository akcijeRepository;
+    private FuturesUgovoriRepository futuresUgovoriRepository;
     private OrderService orderService;
     private AkcijePodaciService akcijePodaciService;
     private ForexPodaciService forexPodaciService;
@@ -29,11 +33,13 @@ public class BerzaService {
 
     @Autowired
     public BerzaService(BerzaRepository berzaRepository, AkcijeRepository akcijeRepository,
-                        OrderService orderService, AkcijePodaciService akcijePodaciService,
-                        ForexPodaciService forexPodaciService, FuturesUgovoriPodaciService futuresUgovoriPodaciService,
-                        UserService userService, PriceService priceService){
+                        FuturesUgovoriRepository futuresUgovoriRepository, OrderService orderService,
+                        AkcijePodaciService akcijePodaciService, ForexPodaciService forexPodaciService,
+                        FuturesUgovoriPodaciService futuresUgovoriPodaciService, UserService userService,
+                        PriceService priceService){
         this.berzaRepository = berzaRepository;
         this.akcijeRepository = akcijeRepository;
+        this.futuresUgovoriRepository = futuresUgovoriRepository;
         this.orderService = orderService;
         this.akcijePodaciService = akcijePodaciService;
         this.forexPodaciService = forexPodaciService;
@@ -60,6 +66,82 @@ public class BerzaService {
 
     public Akcije findAkcije(String symbol){
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
+    }
+
+    public Akcije createUpdateAkcija(AkcijaCreateUpdateRequest request) {
+        if(StringUtils.emptyString(request.getOznaka()) ||
+                StringUtils.emptyString(request.getOpis()) ||
+                request.getOutstandingShares() == null) {
+            throw new RuntimeException("bad request");
+        }
+
+        Berza berza = null;
+        if(!StringUtils.emptyString(request.getBerzaOznaka())) {
+            berza = berzaRepository.findBerzaByOznakaBerze(request.getBerzaOznaka());
+            if(berza == null) {
+                throw new RuntimeException("exchange not found");
+            }
+        }
+
+        Akcije akcija = new Akcije();
+        if(request.getId() != null) {
+            akcija = akcijeRepository.findAkcijeById(request.getId());
+            if(akcija == null) {
+                throw new RuntimeException("stock not found");
+            }
+            if(!akcija.getCustom()) {
+                throw new RuntimeException("stock is not custom");
+            }
+        }
+        akcija.setOznakaHartije(request.getOznaka().toUpperCase());
+        akcija.setOpisHartije(request.getOpis());
+        akcija.setBerza(berza);
+        akcija.setOutstandingShares(request.getOutstandingShares());
+        akcija.setCustom(true);
+
+        return akcijeRepository.save(akcija);
+    }
+
+    public FuturesUgovori createUpdateFuturesUgovor(FuturesCreateUpdateRequest request) {
+        if(StringUtils.emptyString(request.getOznaka()) ||
+                StringUtils.emptyString(request.getOpis()) ||
+                StringUtils.emptyString(request.getContractUnit()) ||
+                request.getContractSize() == null ||
+                request.getMaintenanceMargin() == null ||
+                request.getSettlementDate() == null) {
+            throw new RuntimeException("bad request");
+        }
+
+        Berza berza = null;
+        if(!StringUtils.emptyString(request.getBerzaOznaka())) {
+            berza = berzaRepository.findBerzaByOznakaBerze(request.getBerzaOznaka());
+            if(berza == null) {
+                throw new RuntimeException("exchange not found");
+            }
+        }
+
+        FuturesUgovori futuresUgovor = new FuturesUgovori();
+        if(request.getId() != null) {
+            Optional<FuturesUgovori> fu = futuresUgovoriRepository.findById(request.getId());
+            if(fu.isEmpty()) {
+                throw new RuntimeException("futures contract not found");
+            }
+
+            futuresUgovor = fu.get();
+            if(!futuresUgovor.getCustom()) {
+                throw new RuntimeException("futures contract is not custom");
+            }
+        }
+        futuresUgovor.setOznakaHartije(request.getOznaka().toUpperCase());
+        futuresUgovor.setOpisHartije(request.getOpis());
+        futuresUgovor.setBerza(berza);
+        futuresUgovor.setContractSize(request.getContractSize());
+        futuresUgovor.setContractUnit(request.getContractUnit());
+        futuresUgovor.setMaintenanceMargin(request.getMaintenanceMargin());
+        futuresUgovor.setSettlementDate(request.getSettlementDate());
+        futuresUgovor.setCustom(true);
+
+        return futuresUgovoriRepository.save(futuresUgovor);
     }
 
     public OrderResponse makeOrder(String token, OrderRequest orderRequest) {
