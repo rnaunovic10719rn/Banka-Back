@@ -32,11 +32,11 @@ public class MarginTransakcija {
     private KapitalType kapitalType = KapitalType.NOVAC;
     private Long haritjeOdVrednostiID;
 
-    private Double ulog;
-    private Double loanValue;
+    private Double iznos;
+    private Double iznosKredita;
     private Double maintenanceMargin;
-    private Double kamata;
 
+    private double kolicina;
     private double unitPrice;
 
 }
