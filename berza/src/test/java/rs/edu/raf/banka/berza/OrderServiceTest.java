@@ -106,7 +106,7 @@ public class OrderServiceTest {
         Double provizija = 1.0;
         OrderType orderType = OrderType.LIMIT_ORDER;
         boolean isAON = true;
-        boolean isMargin = true;
+        boolean isMargin = false;
         String oznakaHartije = "usd";
         Double ask = 1.0;
         Double bid = 0.0;
