@@ -2,9 +2,7 @@ package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import rs.edu.raf.banka.racun.dto.ForexPodaciDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
 import rs.edu.raf.banka.racun.enums.RacunType;
@@ -19,7 +17,6 @@ import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.requests.MarginTransakcijaRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
-import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -143,7 +140,6 @@ public class MarginTransakcijaService {
             sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() + request.getKredit());
             sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() + request.getMaintenanceMargin());
         } else if(request.getTipTranskacije() == MarginTransakcijaType.ISPLATA) {
-            double hartijaStaroUkupno = sredstvaKapital.getUkupno();
             double hartijaNovoUkupno = sredstvaKapital.getUkupno() - request.getKolicina();
             if(hartijaNovoUkupno < 0) {
                 log.error("dodajTransakciju: novo ukupno is < 0 ({})", hartijaNovoUkupno);
