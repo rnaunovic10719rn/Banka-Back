@@ -13,10 +13,9 @@ import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
-import rs.edu.raf.banka.berza.requests.OrderRequest;
-import rs.edu.raf.banka.berza.requests.TransakcijaKapitalType;
-import rs.edu.raf.banka.berza.requests.TransakcijaRequest;
+import rs.edu.raf.banka.berza.requests.*;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
+import rs.edu.raf.banka.berza.response.MarginTransakcijaResponse;
 import rs.edu.raf.banka.berza.response.TransakcijaResponse;
 import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 import rs.edu.raf.banka.berza.utils.HttpUtils;
@@ -119,6 +118,10 @@ public class OrderService {
     }
 
     private TransakcijaRequest getRezervacijaForOrder(Order order) {
+        if(order.isMargin()) {
+            return null;
+        }
+
         TransakcijaRequest transakcijaRequest = new TransakcijaRequest();
 
         if (order.getHartijaOdVrednosti() == HartijaOdVrednostiType.AKCIJA || order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FUTURES_UGOVOR) {
@@ -269,6 +272,50 @@ public class OrderService {
         return transakcije;
     }
 
+    private MarginTransakcijaRequest getMarginTransakcijaForOrder(Order order, Integer kolicina) {
+        MarginTransakcijaRequest transakcija = new MarginTransakcijaRequest();
+
+        double cena;
+        if(order.getOrderAction() == OrderAction.BUY) {
+            transakcija.setTipTranskacije(MarginTransakcijaType.UPLATA);
+            cena = order.getAsk();
+        } else {
+            transakcija.setTipTranskacije(MarginTransakcijaType.ISPLATA);
+            cena = order.getBid();
+        }
+        double ukupnaCena = cena * kolicina;
+        double mmr = calculateMaintenanceMargin(order.getHartijaOdVrednosti(), ukupnaCena);
+
+        transakcija.setOpis("Realizacija margins ordera " + order.getId());
+
+        if(order.getOrderAction() == OrderAction.BUY) {
+            transakcija.setKredit(ukupnaCena * 0.5);
+            transakcija.setIznos(mmr * 1.1);
+            transakcija.setMaintenanceMargin(mmr);
+        } else {
+            transakcija.setKredit(0.0);
+            transakcija.setIznos(ukupnaCena);
+            transakcija.setMaintenanceMargin(0.0);
+        }
+
+        if(order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FOREX) {
+            transakcija.setTipKapitala(TransakcijaKapitalType.NOVAC);
+            transakcija.setValutaOznaka(order.getHartijaOdVrednostiSymbol());
+        } else {
+            switch (order.getHartijaOdVrednosti()) {
+                case AKCIJA -> transakcija.setTipKapitala(TransakcijaKapitalType.AKCIJA);
+                case FUTURES_UGOVOR -> transakcija.setTipKapitala(TransakcijaKapitalType.FUTURE_UGOVOR);
+            }
+            transakcija.setHartijaId(order.getHartijaOdVrednostiId());
+        }
+
+        transakcija.setKolicina(Double.valueOf(kolicina));
+        transakcija.setUnitPrice(cena);
+        transakcija.setUsername(order.getUsername());
+
+        return transakcija;
+    }
+
     @Transactional
     public Order saveOrder(String token, OrderRequest orderRequest, Long userAccount, Berza berza, Long hartijaOdVrednostiId, HartijaOdVrednostiType hartijaOdVrednostiType,
                            OrderAction orderAction, Double ukupnaCena, Double provizija,
@@ -366,7 +413,7 @@ public class OrderService {
         int kolicina = order.getPreostalaKolicina();
         int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
         // Ukoliko je order AON (All or None), izvrsi sve odjednom.
-        if (order.isAON()) {
+        if (order.isAON() || order.isMargin()) {
             kolicinaZaTransakciju = order.getKolicina();
         }
 
@@ -393,18 +440,34 @@ public class OrderService {
 
         log.info("Executing order {} {} for {} (remaining {})", order.getId(), order.getOrderAction(), kolicinaZaTransakciju, novaPreostalaKolicina);
 
-        List<TransakcijaRequest> transakcije = getTransakcijeForOrder(order, kolicinaZaTransakciju, lastSegment);
-        for(TransakcijaRequest tr: transakcije) {
-            tr.setUsername(order.getUsername());
-            HttpUtils.retryTemplate().execute(context -> {
-                TransakcijaResponse transakcijaResponse = transakcijaService.commitTransaction("Bearer BERZA-SERVICE", tr);
-                if(transakcijaResponse == null) {
-                    // NB: Bitno kako bi rollbackovali order.
-                    throw new RuntimeException("failed to commit transaction");
-                }
+        if(!order.isMargin()) {
+            List<TransakcijaRequest> transakcije = getTransakcijeForOrder(order, kolicinaZaTransakciju, lastSegment);
+            for(TransakcijaRequest tr: transakcije) {
+                tr.setUsername(order.getUsername());
+                HttpUtils.retryTemplate().execute(context -> {
+                    TransakcijaResponse transakcijaResponse = transakcijaService.commitTransaction("Bearer BERZA-SERVICE", tr);
+                    if(transakcijaResponse == null) {
+                        // NB: Bitno kako bi rollbackovali order.
+                        throw new RuntimeException("failed to commit transaction");
+                    }
 
-                return null;
-            });
+                    return null;
+                });
+            }
+        } else {
+            MarginTransakcijaRequest transakcija = getMarginTransakcijaForOrder(order, kolicinaZaTransakciju);
+            transakcija.setUsername(order.getUsername());
+
+            try {
+                MarginTransakcijaResponse transakcijaResponse = transakcijaService.commitMarginsTransaction("Bearer BERZA-SERVICE", transakcija);
+                if (transakcijaResponse == null) {
+                    order.setOrderStatus(OrderStatus.REJECTED);
+                    order.setDone(false);
+                }
+            } catch (Exception e) {
+                order.setOrderStatus(OrderStatus.REJECTED);
+                order.setDone(false);
+            }
         }
 
         order.setPreostalaKolicina(novaPreostalaKolicina);
@@ -501,5 +564,17 @@ public class OrderService {
             return "USD";
         }
         return order.getBerza().getValuta().getKodValute();
+    }
+
+    private double calculateMaintenanceMargin(HartijaOdVrednostiType type, Double ukupanIznos) {
+        switch (type) {
+            case AKCIJA -> {
+                return ukupanIznos * 0.5;
+            }
+            case FOREX, FUTURES_UGOVOR -> {
+                return ukupanIznos * 0.1;
+            }
+        }
+        return 0.0;
     }
 }
