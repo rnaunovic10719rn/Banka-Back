@@ -87,7 +87,7 @@ public class MarginTransakcijaService {
             if (sredstvaKapital == null) {
                 sredstvaKapitalService.pocetnoStanje(racun.getBrojRacuna(), request.getValutaOznaka(), 0);
             }
-        } else {
+        } else if(request.getTipKapitala() != KapitalType.MARGIN) {
             SredstvaKapital sredstvaKapital = sredstvaKapitalRepository.findByRacunAndHaritja(racun, request.getTipKapitala(), request.getHartijaId());
             if (sredstvaKapital == null) {
                 sredstvaKapitalService.pocetnoStanje(racun.getBrojRacuna(), request.getTipKapitala(), request.getHartijaId(), 0);
@@ -96,20 +96,24 @@ public class MarginTransakcijaService {
 
         // Preuzmi i ZAKLJUCAJ sredstva za zeljenu hartiju
         Query query;
-        if(request.getTipKapitala() == KapitalType.NOVAC) {
-            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
-            query.setParameter("valuta", valuta);
-        } else {
-            query = entityManager.createQuery("from SredstvaKapital where racun = :racun and haritjeOdVrednostiID = :hartijaId and kapitalType = :kapitalType");
-            query.setParameter("hartijaId", request.getHartijaId());
-            query.setParameter("kapitalType", request.getTipKapitala());
-        }
-        query.setParameter("racun", racun);
-        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
-        List<SredstvaKapital> skList = query.getResultList();
-        if(skList.size() != 1) {
-            log.error("dodajTransakciju: unable to find sredstvaKapital for {} and hartija", racun.getBrojRacuna().toString());
-            return null;
+        SredstvaKapital sredstvaKapital = null;
+        if(request.getTipKapitala() != KapitalType.MARGIN) {
+            if (request.getTipKapitala() == KapitalType.NOVAC) {
+                query = entityManager.createQuery("from SredstvaKapital where racun = :racun and valuta = :valuta and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.NOVAC");
+                query.setParameter("valuta", valuta);
+            } else {
+                query = entityManager.createQuery("from SredstvaKapital where racun = :racun and haritjeOdVrednostiID = :hartijaId and kapitalType = :kapitalType");
+                query.setParameter("hartijaId", request.getHartijaId());
+                query.setParameter("kapitalType", request.getTipKapitala());
+            }
+            query.setParameter("racun", racun);
+            query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+            List<SredstvaKapital> skList = query.getResultList();
+            if (skList.size() != 1) {
+                log.error("dodajTransakciju: unable to find sredstvaKapital for {} and hartija", racun.getBrojRacuna().toString());
+                return null;
+            }
+            sredstvaKapital = skList.get(0);
         }
 
         // Preuzmi i ZAKLJUCAJ sredstva za Margins racun
@@ -122,57 +126,65 @@ public class MarginTransakcijaService {
             return null;
         }
 
-        SredstvaKapital sredstvaKapital = skList.get(0);
         SredstvaKapital sredstvaKapitalMargin = skMarginList.get(0);
 
         // Azuriraj sredstva i kapital sa novim stanjem
-        if (request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
-            // Uplata, tj. kupvoina hartije od vrednosti
-            double hartijaNovoUkupno = sredstvaKapital.getUkupno() + request.getKolicina();
+        if(request.getTipKapitala() != KapitalType.MARGIN) {
+            if (request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
+                // Uplata, tj. kupvoina hartije od vrednosti
+                double hartijaNovoUkupno = sredstvaKapital.getUkupno() + request.getKolicina();
 
-            sredstvaKapital.setUkupno(hartijaNovoUkupno);
-            sredstvaKapital.setRaspolozivo(hartijaNovoUkupno);
-            sredstvaKapital.setKreditnaSredstva(sredstvaKapital.getKreditnaSredstva() + request.getKredit());
-            sredstvaKapital.setMaintenanceMargin(sredstvaKapital.getMaintenanceMargin() + request.getMaintenanceMargin());
+                sredstvaKapital.setUkupno(hartijaNovoUkupno);
+                sredstvaKapital.setRaspolozivo(hartijaNovoUkupno);
+                sredstvaKapital.setKreditnaSredstva(sredstvaKapital.getKreditnaSredstva() + request.getKredit());
+                sredstvaKapital.setMaintenanceMargin(sredstvaKapital.getMaintenanceMargin() + request.getMaintenanceMargin());
 
-            sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() + request.getIznos());
-            sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
-            sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() + request.getKredit());
-            sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() + request.getMaintenanceMargin());
-        } else if(request.getTipTranskacije() == MarginTransakcijaType.ISPLATA) {
-            double hartijaNovoUkupno = sredstvaKapital.getUkupno() - request.getKolicina();
-            if(hartijaNovoUkupno < 0) {
-                log.error("dodajTransakciju: novo ukupno is < 0 ({})", hartijaNovoUkupno);
-                return null;
-            }
-
-            sredstvaKapital.setUkupno(hartijaNovoUkupno);
-            sredstvaKapital.setRaspolozivo(hartijaNovoUkupno);
-
-            if(request.getIznos() >= sredstvaKapital.getKreditnaSredstva()) {
-                Double stariKredit = sredstvaKapital.getKreditnaSredstva();
-                sredstvaKapital.setKreditnaSredstva(0.0);
-
-                Double stariMMR = sredstvaKapital.getMaintenanceMargin();
-                sredstvaKapital.setMaintenanceMargin(0.0);
-
-                double razlika = request.getIznos() - stariKredit;
-                // Od margine oduzimam ono sto sam otplatio
-                sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() - stariKredit);
-                sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() + razlika);
+                sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() + request.getIznos());
                 sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
-                sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() - stariMMR);
-            } else {
-                // Aproksimacija: maintenance margin umanjujem za procenat kapitala koji sam prodao.
-                double procent = request.getIznos() / sredstvaKapital.getKreditnaSredstva();
-                double noviMaintenanceMargin = sredstvaKapital.getMaintenanceMargin() * procent;
-                double razlikaMaintenanceMargin = sredstvaKapital.getMaintenanceMargin() - noviMaintenanceMargin;
-                sredstvaKapital.setMaintenanceMargin(noviMaintenanceMargin);
-                sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() - razlikaMaintenanceMargin);
+                sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() + request.getKredit());
+                sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() + request.getMaintenanceMargin());
+            } else if (request.getTipTranskacije() == MarginTransakcijaType.ISPLATA) {
+                double hartijaNovoUkupno = sredstvaKapital.getUkupno() - request.getKolicina();
+                if (hartijaNovoUkupno < 0) {
+                    log.error("dodajTransakciju: novo ukupno is < 0 ({})", hartijaNovoUkupno);
+                    return null;
+                }
 
-                sredstvaKapital.setKreditnaSredstva(sredstvaKapital.getKreditnaSredstva() - request.getIznos());
-                sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() - request.getIznos());
+                sredstvaKapital.setUkupno(hartijaNovoUkupno);
+                sredstvaKapital.setRaspolozivo(hartijaNovoUkupno);
+
+                if (request.getIznos() >= sredstvaKapital.getKreditnaSredstva()) {
+                    Double stariKredit = sredstvaKapital.getKreditnaSredstva();
+                    sredstvaKapital.setKreditnaSredstva(0.0);
+
+                    Double stariMMR = sredstvaKapital.getMaintenanceMargin();
+                    sredstvaKapital.setMaintenanceMargin(0.0);
+
+                    double razlika = request.getIznos() - stariKredit;
+                    // Od margine oduzimam ono sto sam otplatio
+                    sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() - stariKredit);
+                    sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() + razlika);
+                    sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
+                    sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() - stariMMR);
+                } else {
+                    // Aproksimacija: maintenance margin umanjujem za procenat kapitala koji sam prodao.
+                    double procent = request.getIznos() / sredstvaKapital.getKreditnaSredstva();
+                    double noviMaintenanceMargin = sredstvaKapital.getMaintenanceMargin() * procent;
+                    double razlikaMaintenanceMargin = sredstvaKapital.getMaintenanceMargin() - noviMaintenanceMargin;
+                    sredstvaKapital.setMaintenanceMargin(noviMaintenanceMargin);
+                    sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() - razlikaMaintenanceMargin);
+
+                    sredstvaKapital.setKreditnaSredstva(sredstvaKapital.getKreditnaSredstva() - request.getIznos());
+                    sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() - request.getIznos());
+                }
             }
+        } else {
+            if (request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
+                sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() + request.getIznos());
+            } else {
+                sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() - request.getIznos());
+            }
+            sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
         }
 
         // Pravljenje margins transakcije
@@ -213,6 +225,23 @@ public class MarginTransakcijaService {
                 log.error("dodajTransakciju: failed to add transaction for ulog");
                 return null;
             }
+        } else if (request.getTipTranskacije() == MarginTransakcijaType.ISPLATA && request.getTipKapitala() == KapitalType.MARGIN) {
+            TransakcijaRequest tr = new TransakcijaRequest();
+            tr.setOpis("Povlacenje sredstava sa marznog racuna");
+            tr.setType(KapitalType.NOVAC);
+            tr.setValutaOznaka(sredstvaKapitalMargin.getValuta().getKodValute());
+            tr.setUplata(mt.getIznos());
+            tr.setIsplata(0.0);
+            tr.setRezervisano(0.0);
+            tr.setMargins(false);
+            tr.setOrderId(null);
+            tr.setUsername(request.getUsername());
+
+            Transakcija transakcija = transakcijaService.dodajTransakciju(token, tr);
+            if (transakcija == null) {
+                log.error("dodajTransakciju: failed to add transaction for ulog");
+                return null;
+            }
         }
 
         // Racunanje i izmena limita
@@ -232,7 +261,9 @@ public class MarginTransakcijaService {
 
         // Cuvanje podataka
         mt = marginTransakcijaRepository.save(mt);
-        sredstvaKapitalRepository.save(sredstvaKapital);
+        if(sredstvaKapital != null) {
+            sredstvaKapitalRepository.save(sredstvaKapital);
+        }
         sredstvaKapitalRepository.save(sredstvaKapitalMargin);
 
         return mt;
