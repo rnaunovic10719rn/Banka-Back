@@ -26,8 +26,6 @@ public class IntegrationTest {
 
     private String token;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @BeforeEach
     public void setUp() throws JSONException {
@@ -50,5 +48,33 @@ public class IntegrationTest {
                 .content("")).andExpect(status().isOk());
 
     }
+
+    @Test
+    void getAkcijeById() throws Exception {
+        mockMvc.perform(get("/api/akcije/podaci/{ticker}","1")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+    }
+
+    @Test
+    void getAkcijeById2() throws Exception {
+        mockMvc.perform(get("/api/akcije/podaci/id/{id}",1L)
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+    }
+
+    @Test
+    void getAkcijeTimeseries() throws Exception {
+        mockMvc.perform(get("/api/akcije/podaci/timeseries/{type}/{symbol}","1","1")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isBadRequest());
+
+    }
+
 
 }
