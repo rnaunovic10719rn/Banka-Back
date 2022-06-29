@@ -186,6 +186,12 @@ public class BerzaService {
         // Korak 4a: Uzmi ID korisnika kako bi mogli da vezemo porudzbinu za korisnika
         Long userId = userService.getUserByToken(token).getId();
 
+        // Korak 4b: Konverzija ordera u USD ako je u pitanju margins order
+        if(!valuta.equals("USD") && orderRequest.isMarginFlag()) {
+            ForexPodaciDto exchangeRate = forexPodaciService.getForexBySymbol(valuta, "USD");
+            ukupnaCena *= exchangeRate.getExchangeRate();
+        }
+
         // Korak 5: Sacuvaj order u bazi podataka
         Order order = orderService.saveOrder(token, orderRequest, userId, askBidPrice.getBerza(), askBidPrice.getHartijaId(), hartijaTip, orderAkcija, ukupnaCena,
                 provizija, orderType, status);
