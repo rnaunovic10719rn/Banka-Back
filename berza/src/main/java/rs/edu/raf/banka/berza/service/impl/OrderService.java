@@ -412,8 +412,10 @@ public class OrderService {
         Random random = new Random();
         int kolicina = order.getPreostalaKolicina();
         int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
-        // Ukoliko je order AON (All or None), izvrsi sve odjednom.
-        if (order.isAON() || order.isMargin()) {
+        // Ukoliko je order AON (All or None), margins ili Forex izvrsi sve odjednom.
+        if (order.isAON() ||
+                order.isMargin() ||
+                order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FOREX) {
             kolicinaZaTransakciju = order.getKolicina();
         }
 

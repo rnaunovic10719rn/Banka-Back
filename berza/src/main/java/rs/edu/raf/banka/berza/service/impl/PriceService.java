@@ -51,7 +51,7 @@ public class PriceService {
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)){
             String[] split = symbol.split(" ");
-            ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[0], split[1]);
+            ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[1], split[0]);
             if(forex != null) {
                 askBidPrice.setHartijaId(forex.getId());
                 askBidPrice.setAsk(forex.getAsk());
