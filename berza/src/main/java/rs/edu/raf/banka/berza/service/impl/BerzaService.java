@@ -181,7 +181,7 @@ public class BerzaService {
         if(askBidPrice.getBerza() != null) {
             valuta = askBidPrice.getBerza().getValuta().getKodValute();
         }
-        OrderStatus status = getOrderStatus(token, ukupnaCena, valuta);
+        OrderStatus status = getOrderStatus(token, ukupnaCena, valuta, orderRequest.isMarginFlag());
 
         // Korak 4a: Uzmi ID korisnika kako bi mogli da vezemo porudzbinu za korisnika
         Long userId = userService.getUserByToken(token).getId();
@@ -235,10 +235,14 @@ public class BerzaService {
         return OrderType.MARKET_ORDER;
     }
 
-    public OrderStatus getOrderStatus(String token, double price, String valuta) {
+    public OrderStatus getOrderStatus(String token, double price, String valuta, boolean margin) {
         UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
 
         if(role.equals(UserRole.ROLE_AGENT)) {
+            if(margin) {
+                return OrderStatus.ON_HOLD;
+            }
+
             UserDto user = userService.getUserByToken(token);
             Double presostaoLimit = user.getLimit() - user.getLimitUsed();
             if(!valuta.equals("RSD")) {

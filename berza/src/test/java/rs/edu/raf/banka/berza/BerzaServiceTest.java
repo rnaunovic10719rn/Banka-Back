@@ -244,7 +244,7 @@ public class BerzaServiceTest {
 
         when(userService.getUserByToken(token)).thenReturn(user);
         when(userService.getUserRoleByToken(token)).thenReturn(String.valueOf(UserRole.ROLE_AGENT));
-        assertEquals(OrderStatus.APPROVED, berzaService.getOrderStatus(token, price, valuta));
+        assertEquals(OrderStatus.APPROVED, berzaService.getOrderStatus(token, price, valuta, false));
     }
 
     @Test
@@ -259,7 +259,7 @@ public class BerzaServiceTest {
 
         when(userService.getUserByToken(token)).thenReturn(user);
         when(userService.getUserRoleByToken(token)).thenReturn(String.valueOf(UserRole.ROLE_AGENT));
-        assertEquals(OrderStatus.ON_HOLD, berzaService.getOrderStatus(token, price, valuta));
+        assertEquals(OrderStatus.ON_HOLD, berzaService.getOrderStatus(token, price, valuta, false));
     }
 
     @Test
@@ -277,7 +277,7 @@ public class BerzaServiceTest {
         when(userService.getUserByToken(token)).thenReturn(user);
         when(userService.getUserRoleByToken(token)).thenReturn(String.valueOf(UserRole.ROLE_AGENT));
         when(forexPodaciService.getForexBySymbol(valuta, "RSD")).thenReturn(exchangeRate);
-        assertEquals(OrderStatus.APPROVED, berzaService.getOrderStatus(token, price, valuta));
+        assertEquals(OrderStatus.APPROVED, berzaService.getOrderStatus(token, price, valuta, false));
     }
 
     @Test

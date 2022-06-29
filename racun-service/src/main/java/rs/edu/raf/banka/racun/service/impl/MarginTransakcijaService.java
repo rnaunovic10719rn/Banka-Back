@@ -244,21 +244,6 @@ public class MarginTransakcijaService {
             }
         }
 
-        // Racunanje i izmena limita
-        // Konverzija iz ne-RSD valutu u RSD
-//        if(transakcijaRequest.getType() == KapitalType.NOVAC && limitDelta != 0 && !token.equals("Bearer BERZA-SERVICE")) {
-//            if (!transakcijaRequest.getValutaOznaka().equalsIgnoreCase("RSD")) {
-//                ResponseEntity<ForexPodaciDto> resp = HttpUtils.getExchangeRate(FOREX_EXCHANGE_RATE_URL, token, transakcijaRequest.getValutaOznaka(), "RSD");
-//                if (resp.getBody() == null) {
-//                    return null;
-//                }
-//                ForexPodaciDto fpd = resp.getBody();
-//                limitDelta *= fpd.getExchangeRate();
-//            }
-//            // Poziv user servisu da azurira limit
-//            HttpUtils.updateUserLimit(USER_SERVICE_URL, token, limitDelta);
-//        }
-
         // Cuvanje podataka
         mt = marginTransakcijaRepository.save(mt);
         if(sredstvaKapital != null) {
