@@ -76,5 +76,48 @@ public class IntegrationTest {
 
     }
 
+    @Test
+    void findAll() throws Exception {
+        mockMvc.perform(get("/api/berza")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
 
+    }
+
+    @Test
+    void findBerzaById() throws Exception {
+        mockMvc.perform(get("/api/berza/id/{id}",1L)
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+    }
+
+    @Test
+    void findAkcija() throws Exception {
+        mockMvc.perform(get("/api/berza/{oznaka}","1")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+    }
+
+    @Test
+    void getOrders() throws Exception {
+        mockMvc.perform(get("/api/berza/order/{status}/{done}","1",true)
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+    }
+
+    @Test
+    void makeOrder() throws Exception {
+        mockMvc.perform(get("/api/berza/order","1",true)
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+    }
 }
