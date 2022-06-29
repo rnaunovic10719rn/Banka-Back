@@ -329,7 +329,7 @@ public class BerzaServiceTest {
         user.setId(1L);
 
 
-        when(priceService.getAskBidPrice(any(), any())).thenReturn(askBidPrice);
+        when(priceService.getAskBidPrice(any(), (String) any())).thenReturn(askBidPrice);
         when(userService.getUserByToken(any())).thenReturn(user);
         when(userService.getUserRoleByToken(any())).thenReturn(String.valueOf(UserRole.ROLE_ADMIN));
         assertEquals(new OrderResponse(MessageUtils.ERROR).getMessage(),berzaService.makeOrder(token, request).getMessage());
