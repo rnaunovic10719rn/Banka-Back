@@ -558,7 +558,9 @@ public class OrderService {
     }
 
     private boolean isSupervisor(String userRole) {
-        return UserRole.ROLE_SUPERVISOR.equals(UserRole.valueOf(userRole));
+        return UserRole.ROLE_SUPERVISOR.equals(UserRole.valueOf(userRole)) ||
+                UserRole.ROLE_ADMIN.equals(UserRole.valueOf(userRole)) ||
+                UserRole.ROLE_GL_ADMIN.equals(UserRole.valueOf(userRole));
     }
 
     private String getValutaForOrder(Order order) {
