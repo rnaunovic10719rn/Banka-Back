@@ -5,4 +5,5 @@ public enum KapitalType {
     AKCIJA,
     FOREX,
     FUTURE_UGOVOR,
+    MARGIN,
 }

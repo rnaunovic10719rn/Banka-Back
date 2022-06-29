@@ -23,7 +23,7 @@ public class SredstvaKapital {
 
     @ManyToOne
     @JoinColumn(name = "valuta_id")
-    private  Valuta valuta;
+    private Valuta valuta;
 
     private KapitalType kapitalType = KapitalType.NOVAC;
     private Long haritjeOdVrednostiID;
@@ -32,12 +32,11 @@ public class SredstvaKapital {
     private double rezervisano;
     private double raspolozivo;
 
+    private Double kreditnaSredstva;
+    private Double maintenanceMargin;
+    private Boolean marginCall = false;
+
     @Version
     private Integer version = 0;
 
-    private Double ulozenaSredstva;
-    private Double pozajmljenaSredstva;
-
-    private Double maintenanceMargin;
-    private Boolean marginCall = false;
 }

@@ -90,4 +90,8 @@ public class ForexPodaciService {
         return forexRepository.findAll();
     }
 
+    public Forex getById(Long id) {
+        return forexRepository.getById(id);
+    }
+
 }

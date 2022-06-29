@@ -94,6 +94,8 @@ public class SredstvaKapitalService {
         sredstvaKapital.setRaspolozivo(ukupno);
         sredstvaKapital.setKapitalType(kapitalType);
         sredstvaKapital.setHaritjeOdVrednostiID(hartijaId);
+        sredstvaKapital.setKreditnaSredstva(0.0);
+        sredstvaKapital.setMaintenanceMargin(0.0);
         return sredstvaKapitalRepository.save(sredstvaKapital);
     }
 
@@ -278,7 +280,7 @@ public class SredstvaKapitalService {
            return null;
     }
 
-    public SredstvaKapital pocetnoStanjeMarzniRacun(UUID uuidRacuna, KapitalType kapitalType, Long hartijaId){
+    public SredstvaKapital pocetnoStanjeMarzniRacun(UUID uuidRacuna){
         Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
         if(racun == null) {
             return null;
@@ -292,12 +294,10 @@ public class SredstvaKapitalService {
         SredstvaKapital mRacun = new SredstvaKapital();
         mRacun.setRacun(racun);
         mRacun.setValuta(valuta);
-        mRacun.setHaritjeOdVrednostiID(hartijaId);
-        mRacun.setKapitalType(kapitalType);
-        mRacun.setUlozenaSredstva(0.0);
-        mRacun.setPozajmljenaSredstva(0.0);
+        mRacun.setHaritjeOdVrednostiID(-1L);
+        mRacun.setKapitalType(KapitalType.MARGIN);
+        mRacun.setKreditnaSredstva(0.0);
         mRacun.setMaintenanceMargin(0.0);
-        //Mozda ne treba da se setuje na false uopste jer smo stavili u modelu default false anotaciju
         mRacun.setMarginCall(false);
 
         return sredstvaKapitalRepository.save(mRacun);

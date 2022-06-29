@@ -8,6 +8,9 @@ import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.Forex;
+import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 
 @Service
@@ -25,6 +28,24 @@ public class PriceService {
         this.akcijePodaciService = akcijePodaciService;
         this.forexPodaciService = forexPodaciService;
         this.futuresUgovoriPodaciService = futuresUgovoriPodaciService;
+    }
+
+    public AskBidPriceDto getAskBidPrice(HartijaOdVrednostiType hartijaTip, Long id) {
+        if(hartijaTip.equals(HartijaOdVrednostiType.AKCIJA)){
+            Akcije akcija = akcijePodaciService.getByID(id);
+
+            return getAskBidPrice(hartijaTip, akcija.getOznakaHartije());
+        } else if(hartijaTip.equals(HartijaOdVrednostiType.FUTURES_UGOVOR)) {
+            FuturesUgovori futuresUgovor = futuresUgovoriPodaciService.getById(id);
+
+            return getAskBidPrice(hartijaTip, futuresUgovor.getOznakaHartije());
+        } else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)) {
+            Forex forex = forexPodaciService.getById(id);
+
+            return getAskBidPrice(hartijaTip, forex.getOznakaHartije());
+        }
+
+        return null;
     }
 
     public AskBidPriceDto getAskBidPrice(HartijaOdVrednostiType hartijaTip, String symbol) {
@@ -51,7 +72,7 @@ public class PriceService {
         }
         else if(hartijaTip.equals(HartijaOdVrednostiType.FOREX)){
             String[] split = symbol.split(" ");
-            ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[0], split[1]);
+            ForexPodaciDto forex = forexPodaciService.getForexBySymbol(split[1], split[0]);
             if(forex != null) {
                 askBidPrice.setHartijaId(forex.getId());
                 askBidPrice.setAsk(forex.getAsk());

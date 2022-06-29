@@ -63,4 +63,8 @@ public class FuturesUgovoriPodaciService {
         return this.getFuturesUgovor(future.getOznakaHartije());
     }
 
+    public FuturesUgovori getById(Long id) {
+        return futuresUgovoriRepository.getById(id);
+    }
+
 }
