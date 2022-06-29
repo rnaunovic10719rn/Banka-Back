@@ -128,6 +128,15 @@ public class MarginTransakcijaService {
 
         SredstvaKapital sredstvaKapitalMargin = skMarginList.get(0);
 
+        // Provera margin call-a
+        if(sredstvaKapitalMargin.getUkupno() >= sredstvaKapitalMargin.getMaintenanceMargin()) {
+            sredstvaKapitalMargin.setMarginCall(false);
+        }
+        if(sredstvaKapitalMargin.getMarginCall() && request.getTipTranskacije() == MarginTransakcijaType.UPLATA && request.getTipKapitala() != KapitalType.MARGIN) {
+            log.error("failed transaction because margin call is true");
+            return null;
+        }
+
         // Azuriraj sredstva i kapital sa novim stanjem
         if(request.getTipKapitala() != KapitalType.MARGIN) {
             if (request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
