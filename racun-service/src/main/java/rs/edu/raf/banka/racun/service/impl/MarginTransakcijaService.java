@@ -2,6 +2,7 @@ package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
@@ -261,5 +262,42 @@ public class MarginTransakcijaService {
         sredstvaKapitalRepository.save(sredstvaKapitalMargin);
 
         return mt;
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // Every 1 day
+    @Transactional
+    public void naplataKamate() {
+        Racun racun = racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN);
+        if(racun == null) {
+            log.error("margins racun not found");
+            return;
+        }
+
+        double kamata = 0.0;
+
+        // Naplata kamate za akcije
+        List<SredstvaKapital> sks = sredstvaKapitalRepository.findAllByRacunAndKapitalType(racun, KapitalType.AKCIJA);
+        for(SredstvaKapital sk: sks) {
+            kamata += sk.getKreditnaSredstva() * 0.00033;
+        }
+        if(kamata == 0.0) {
+            return;
+        }
+
+        // Preuzmi i ZAKLJUCAJ sredstva za Margins racun
+        Query qryMarginsSredstva;
+        qryMarginsSredstva = entityManager.createQuery("from SredstvaKapital where racun = :racun and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.MARGIN");
+        qryMarginsSredstva.setParameter("racun", racun);
+        List<SredstvaKapital> skMarginList = qryMarginsSredstva.getResultList();
+        if(skMarginList.size() != 1) {
+            log.error("dodajTransakciju: unable to find sredstvaKapital for {}", racun.getBrojRacuna().toString());
+            return;
+        }
+        SredstvaKapital sredstvaKapitalMargin = skMarginList.get(0);
+
+        sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() - kamata);
+        sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
+
+        log.info("zavrsena naplata kamate");
     }
 }

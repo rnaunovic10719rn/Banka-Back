@@ -27,5 +27,6 @@ public interface SredstvaKapitalRepository extends JpaRepository<SredstvaKapital
     @Query("SELECT s FROM SredstvaKapital s WHERE s.racun = :racun AND s.valuta = :valuta AND s.haritjeOdVrednostiID = :hartijaId AND s.kapitalType = :hartijaType")
     List<SredstvaKapital> findAllByRacunAndValutaAndHaritja(Racun racun, Valuta valuta, KapitalType hartijaType, Long hartijaId);
 
+    List<SredstvaKapital> findAllByRacunAndKapitalType(Racun racun, KapitalType kapitalType);
 
 }
