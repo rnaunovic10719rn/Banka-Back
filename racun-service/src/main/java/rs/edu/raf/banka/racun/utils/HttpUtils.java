@@ -103,4 +103,15 @@ public class HttpUtils {
         return restTemplate.exchange(askBidUrl.toString(), HttpMethod.GET, entity, AskBidPriceResponse.class);
     }
 
+    public static ResponseEntity<AskBidPriceResponse> getAskBidPriceByID(String berzaServiceBaseUrl, String hartijaType, Long id) {
+        URI main = URI.create(berzaServiceBaseUrl + BERZA_SERVICE_ENDPOINT_ASK_BID);
+        URI askBidUrl = main.resolve("./" + hartijaType.toUpperCase() + "/id/" + id);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        return restTemplate.exchange(askBidUrl.toString(), HttpMethod.GET, entity, AskBidPriceResponse.class);
+    }
+
 }

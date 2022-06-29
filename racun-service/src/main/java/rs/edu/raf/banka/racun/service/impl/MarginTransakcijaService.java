@@ -2,11 +2,15 @@ package rs.edu.raf.banka.racun.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
 import rs.edu.raf.banka.racun.enums.RacunType;
+import rs.edu.raf.banka.racun.exceptions.ContractExpcetion;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
@@ -18,6 +22,8 @@ import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.requests.MarginTransakcijaRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
+import rs.edu.raf.banka.racun.response.AskBidPriceResponse;
+import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -39,6 +45,9 @@ public class MarginTransakcijaService {
     private final UserService userService;
 
     private final EntityManager entityManager;
+
+    @Value("${racun.berza-service-baseurl}")
+    private String BERZA_SERVICE_BASE_URL;
 
     @Autowired
     public MarginTransakcijaService(MarginTransakcijaRepository marginTransakcijaRepository,
@@ -299,5 +308,81 @@ public class MarginTransakcijaService {
         sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
 
         log.info("zavrsena naplata kamate");
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // Every 1 day
+    @Transactional
+    public void checkMarginCall() {
+        Racun racun = racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN);
+        if(racun == null) {
+            log.error("margins racun not found");
+            return;
+        }
+
+        SredstvaKapital sredstvaKapitalMargins = sredstvaKapitalRepository.findByRacunAndKapitalType(racun, KapitalType.MARGIN);
+        if(sredstvaKapitalMargins == null) {
+            log.error("margins sredstva not found");
+            return;
+        }
+
+        double razlikaMMR = 0.0;
+
+        // Izracunavanje maintenance margin za akcije
+        List<SredstvaKapital> sks = sredstvaKapitalRepository.findAllByRacunAndKapitalType(racun, KapitalType.AKCIJA);
+        razlikaMMR += calculateMMRDifference(sks);
+
+        // Izracunavanje maintenance margin za futures ugovore
+        sks = sredstvaKapitalRepository.findAllByRacunAndKapitalType(racun, KapitalType.FUTURE_UGOVOR);
+        razlikaMMR += calculateMMRDifference(sks);
+
+        if(sredstvaKapitalMargins.getUkupno() + razlikaMMR >= 0.0) {
+            log.info("margina je zadovoljena");
+            return;
+        }
+
+        // Preuzmi i ZAKLJUCAJ sredstva za Margins racun
+        Query qryMarginsSredstva;
+        qryMarginsSredstva = entityManager.createQuery("from SredstvaKapital where racun = :racun and kapitalType = rs.edu.raf.banka.racun.enums.KapitalType.MARGIN");
+        qryMarginsSredstva.setParameter("racun", racun);
+        List<SredstvaKapital> skMarginList = qryMarginsSredstva.getResultList();
+        if(skMarginList.size() != 1) {
+            log.error("dodajTransakciju: unable to find sredstvaKapital for {}", racun.getBrojRacuna().toString());
+            return;
+        }
+        SredstvaKapital sredstvaKapitalMargin = skMarginList.get(0);
+
+        sredstvaKapitalMargin.setMarginCall(true);
+        sredstvaKapitalRepository.save(sredstvaKapitalMargin);
+
+        log.info("margina nije zadovoljena za {}!", razlikaMMR);
+    }
+
+    private AskBidPriceResponse getAskBidPrice(KapitalType kapitalType, Long id) {
+        String type = "";
+        switch (kapitalType) {
+            case AKCIJA -> type = "AKCIJA";
+            case FOREX -> type = "FOREX";
+            case FUTURE_UGOVOR -> type = "FUTURES_UGOVOR";
+        }
+        ResponseEntity<AskBidPriceResponse> resp = HttpUtils.getAskBidPriceByID(BERZA_SERVICE_BASE_URL, type, id);
+        if(!resp.getStatusCode().equals(HttpStatus.OK)) {
+            return null;
+        }
+        return resp.getBody();
+    }
+
+    private double calculateMMRDifference(List<SredstvaKapital> sks) {
+        double razlikaMMR = 0.0;
+
+        for(SredstvaKapital sk: sks) {
+            AskBidPriceResponse askBidPriceResponse = getAskBidPrice(sk.getKapitalType(), sk.getHaritjeOdVrednostiID());
+            if(askBidPriceResponse == null) {
+                throw new ContractExpcetion("Security not found");
+            }
+
+            razlikaMMR += (askBidPriceResponse.getAsk() * sk.getUkupno()) - sk.getKreditnaSredstva() - sk.getMaintenanceMargin();
+        }
+
+        return razlikaMMR;
     }
 }

@@ -122,6 +122,15 @@ public class BerzaController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping(value = "/askbid/{hartijaType}/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAskBidPriceByID(@PathVariable String hartijaType, @PathVariable Long id) {
+        AskBidPriceDto dto = priceService.getAskBidPrice(HartijaOdVrednostiType.valueOf(hartijaType.toUpperCase()), id);
+        if(dto == null || dto.getHartijaId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dto);
+    }
+
     @GetMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllStocks(@RequestHeader("Authorization") String token){
         return ResponseEntity.ok(berzaService.findAllAkcije());
