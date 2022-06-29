@@ -13,4 +13,8 @@ public class SupervisorSredstvaKapitalDto {
     private double ukupno;
     private double rezervisano;
     private double raspolozivo;
+    private double kredit = 0.0;
+    private double maintenanceMargin = 0.0;
+    private boolean marginCall = false;
+
 }

@@ -312,6 +312,7 @@ public class OrderService {
         transakcija.setKolicina(Double.valueOf(kolicina));
         transakcija.setUnitPrice(cena);
         transakcija.setUsername(order.getUsername());
+        transakcija.setOrderId(order.getId());
 
         return transakcija;
     }
