@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.dto.*;
-import rs.edu.raf.banka.racun.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
 import rs.edu.raf.banka.racun.enums.RacunType;
@@ -14,7 +13,6 @@ import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
 import rs.edu.raf.banka.racun.repository.*;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -28,7 +26,6 @@ public class SredstvaKapitalService {
     private final MarginTransakcijaRepository marginTransakcijaRepository;
     private final RacunRepository racunRepository;
     private final ValutaRepository valutaRepository;
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
     private final UserService userService;
 
     @Value("${racun.berza-service-baseurl}")
@@ -148,67 +145,59 @@ public class SredstvaKapitalService {
                 continue;
             if (sredstvaKapital.getKapitalType().equals(KapitalType.AKCIJA) && kapitalType.equals(KapitalType.AKCIJA.toString())) {
                 AkcijePodaciDto akcijePodaciDto = this.getAkcija(sredstvaKapital.getHaritjeOdVrednostiID());
+                BerzaDto berzaDto = this.getBerza(akcijePodaciDto.getBerzaId());
+
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
                 kapitalPoTipuHartijeDto.setId(akcijePodaciDto.getId());
                 kapitalPoTipuHartijeDto.setOznakaHartije(akcijePodaciDto.getTicker());
-                BerzaDto berzaDto = this.getBerza(akcijePodaciDto.getBerzaId());
                 kapitalPoTipuHartijeDto.setBerza(berzaDto.getOznakaBerze());
-                Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
-                kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
-                Double cena = akcijePodaciDto.getPrice();
-                kapitalPoTipuHartijeDto.setCena(cena);
-                ForexPodaciDto forexPodaciDto = this.getForex(token, berzaDto.getKodValute());
-                Double vrednostValuta = cena*kolicinaUVlasnistvu;
-                if(!margin) {
-                    vrednostValuta *= forexPodaciDto.getExchangeRate();
-                }
-                kapitalPoTipuHartijeDto.setVrednostRSD(vrednostValuta);
-                Double vrednost = cena*kolicinaUVlasnistvu;
-                kapitalPoTipuHartijeDto.setVrednost(vrednost);
-                Double kupljenoZa = 0.0;
-                if(!margin) {
-                    kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
-                } else {
-                    kupljenoZa = marginTransakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
-                }
-                kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
-                Double profit = vrednost - kupljenoZa;
-                kapitalPoTipuHartijeDto.setProfit(profit);
+                kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu((long) sredstvaKapital.getUkupno());
+                kapitalPoTipuHartijeDto.setCena(akcijePodaciDto.getPrice());
                 kapitalPoTipuHartijeDto.setKodValute(berzaDto.getKodValute());
+
+                ForexPodaciDto forexPodaciDto = this.getForex(token, berzaDto.getKodValute());
+                preracunajCene(kapitalPoTipuHartijeDto, sredstvaKapital, forexPodaciDto, kapitalType, margin);
+
                 toReturn.add(kapitalPoTipuHartijeDto);
             }
             if (sredstvaKapital.getKapitalType().equals(KapitalType.FUTURE_UGOVOR) && kapitalType.equals(KapitalType.FUTURE_UGOVOR.toString())) {
                 FuturesPodaciDto futuresPodaciDto = this.getFuture(sredstvaKapital.getHaritjeOdVrednostiID());
+
                 KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto = new KapitalPoTipuHartijeDto();
                 kapitalPoTipuHartijeDto.setId(futuresPodaciDto.getId());
                 kapitalPoTipuHartijeDto.setOznakaHartije(futuresPodaciDto.getSymbol());
                 kapitalPoTipuHartijeDto.setBerza("EUREX");
-                Long kolicinaUVlasnistvu = (long) sredstvaKapital.getUkupno();
-                kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu(kolicinaUVlasnistvu);
-                Double cena = futuresPodaciDto.getOpen();
-                kapitalPoTipuHartijeDto.setCena(cena);
-                ForexPodaciDto forexPodaciDto = this.getForex(token, "USD");
-                Double vrednostValuta = cena*kolicinaUVlasnistvu;
-                if(!margin) {
-                    vrednostValuta *= forexPodaciDto.getExchangeRate();
-                }
-                kapitalPoTipuHartijeDto.setVrednostRSD(vrednostValuta);
-                Double vrednost = cena*kolicinaUVlasnistvu;
-                kapitalPoTipuHartijeDto.setVrednost(vrednost);
-                Double kupljenoZa = 0.0;
-                if(!margin) {
-                    kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
-                } else {
-                    kupljenoZa = marginTransakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
-                }
-                kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
-                Double profit = vrednost - kupljenoZa;
-                kapitalPoTipuHartijeDto.setProfit(profit);
+                kapitalPoTipuHartijeDto.setKolicinaUVlasnistvu((long) sredstvaKapital.getUkupno());
+                kapitalPoTipuHartijeDto.setCena(futuresPodaciDto.getOpen());
                 kapitalPoTipuHartijeDto.setKodValute("USD");
+
+                ForexPodaciDto forexPodaciDto = this.getForex(token, "USD");
+                preracunajCene(kapitalPoTipuHartijeDto, sredstvaKapital, forexPodaciDto, kapitalType, margin);
+
                 toReturn.add(kapitalPoTipuHartijeDto);
             }
         }
         return toReturn;
+    }
+
+    private void preracunajCene(KapitalPoTipuHartijeDto kapitalPoTipuHartijeDto, SredstvaKapital sredstvaKapital, ForexPodaciDto forexPodaciDto, String kapitalType, boolean margin) {
+        Double vrednostValuta = kapitalPoTipuHartijeDto.getCena() * kapitalPoTipuHartijeDto.getKolicinaUVlasnistvu();
+        if(!margin) {
+            vrednostValuta *= forexPodaciDto.getExchangeRate();
+        }
+        kapitalPoTipuHartijeDto.setVrednostRSD(vrednostValuta);
+        kapitalPoTipuHartijeDto.setVrednost(kapitalPoTipuHartijeDto.getCena() * kapitalPoTipuHartijeDto.getKolicinaUVlasnistvu()); // Vrednost u originalnoj valuti
+
+        Double kupljenoZa;
+        if(!margin) {
+            kupljenoZa = transakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
+        } else {
+            kupljenoZa = marginTransakcijaRepository.getKupljenoZa(sredstvaKapital.getHaritjeOdVrednostiID(), KapitalType.valueOf(kapitalType));
+        }
+        kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
+
+        Double profit = kapitalPoTipuHartijeDto.getVrednost() - kupljenoZa;
+        kapitalPoTipuHartijeDto.setProfit(profit);
     }
 
     public List<TransakcijeHartijeDto> getTransakcijeHartijeKes(Long id, String strKapitalType) {
@@ -261,8 +250,7 @@ public class SredstvaKapitalService {
         if (apdResp.getBody() == null) {
             return null;
         }
-        AkcijePodaciDto akcijePodaciDto = apdResp.getBody();
-        return akcijePodaciDto;
+        return apdResp.getBody();
     }
 
     public BerzaDto getBerza(Long id) {
@@ -270,8 +258,7 @@ public class SredstvaKapitalService {
         if (berzaResp.getBody() == null) {
             return null;
         }
-        BerzaDto berzaDto = berzaResp.getBody();
-        return berzaDto;
+        return berzaResp.getBody();
     }
 
     public ForexPodaciDto getForex(String token, String from) {
@@ -279,8 +266,7 @@ public class SredstvaKapitalService {
         if (fpdResp.getBody() == null) {
             return null;
         }
-        ForexPodaciDto forexPodaciDto = fpdResp.getBody();
-        return forexPodaciDto;
+        return fpdResp.getBody();
     }
 
     public FuturesPodaciDto getFuture(Long id) {
@@ -288,8 +274,7 @@ public class SredstvaKapitalService {
         if (futureResp.getBody() == null) {
             return null;
         }
-        FuturesPodaciDto futuresPodaciDto = futureResp.getBody();
-        return futuresPodaciDto;
+        return futureResp.getBody();
     }
 
 
@@ -335,15 +320,15 @@ public class SredstvaKapitalService {
            return null;
     }
 
-    public SredstvaKapital pocetnoStanjeMarzniRacun(UUID uuidRacuna){
+    public void pocetnoStanjeMarzniRacun(UUID uuidRacuna){
         Racun racun = racunRepository.findByBrojRacuna(uuidRacuna);
         if(racun == null) {
-            return null;
+            return;
         }
 
         Valuta valuta = valutaRepository.findValutaByKodValute("USD");
         if(valuta == null) {
-            return null;
+            return;
         }
 
         SredstvaKapital mRacun = new SredstvaKapital();
@@ -354,8 +339,7 @@ public class SredstvaKapitalService {
         mRacun.setKreditnaSredstva(0.0);
         mRacun.setMaintenanceMargin(0.0);
         mRacun.setMarginCall(false);
-
-        return sredstvaKapitalRepository.save(mRacun);
+        sredstvaKapitalRepository.save(mRacun);
     }
 
     private Racun getRacun(boolean margin) {
