@@ -68,6 +68,24 @@ public class MarginTransakcijaService {
         this.entityManager = entityManager;
     }
 
+    public List<MarginTransakcija> getAll(String token) {
+        String role = userService.getRoleByToken(token);
+        String username = userService.getUsernameByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return marginTransakcijaRepository.findByUsername(username);
+        else
+            return marginTransakcijaRepository.getAll();
+    }
+
+    public List<MarginTransakcija> getAll(String token, Date odFilter, Date doFilter){
+        String role = userService.getRoleByToken(token);
+        String username = userService.getUsernameByToken(token);
+        if (role.equals("ROLE_AGENT"))
+            return marginTransakcijaRepository.findByUsername(username, odFilter, doFilter);
+        else
+            return marginTransakcijaRepository.getAll(odFilter, doFilter);
+    }
+
     @Transactional
     public MarginTransakcija dodajTransakciju(String token, MarginTransakcijaRequest request){
         // Ekstraktuj username iz Bearer tokena

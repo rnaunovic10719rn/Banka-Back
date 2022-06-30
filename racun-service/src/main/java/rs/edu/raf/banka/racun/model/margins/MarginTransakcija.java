@@ -1,6 +1,8 @@
 package rs.edu.raf.banka.racun.model.margins;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
 import rs.edu.raf.banka.racun.model.Racun;

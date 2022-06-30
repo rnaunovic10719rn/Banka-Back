@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.racun.exceptions.InvalidCompanyException;
 import rs.edu.raf.banka.racun.model.company.Company;
-import rs.edu.raf.banka.racun.model.company.CompanyContactPerson;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.requests.CompanyRequest;
 import rs.edu.raf.banka.racun.utils.StringUtils;

@@ -6,7 +6,11 @@ import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 @Service

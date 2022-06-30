@@ -1,8 +1,10 @@
 package rs.edu.raf.banka.user_service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,17 +14,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import rs.edu.raf.banka.user_service.controller.response_forms.CreateUserForm;
 import rs.edu.raf.banka.user_service.model.User;
 import rs.edu.raf.banka.user_service.repository.UserRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest

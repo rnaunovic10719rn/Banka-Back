@@ -3,12 +3,16 @@ package rs.edu.raf.banka.racun.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import rs.edu.raf.banka.racun.enums.KapitalType;
+
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class KapitalHartijeDto {
-    KapitalType kapitalType;
-    double ukupno = 0.0;
+public class MarginTransakcijeHartijeDto {
+    Date datum;
+    String tipOrdera;
+    Double cena;
+    Long kolicina;
+    Double ukupno;
 }

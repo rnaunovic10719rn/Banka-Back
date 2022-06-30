@@ -6,18 +6,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import rs.edu.raf.banka.mailservice.activemq.Consumer;
 import rs.edu.raf.banka.mailservice.exceptions.BadMessage;
 import rs.edu.raf.banka.mailservice.smtp.EmailServiceImpl;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ConsumerTest {

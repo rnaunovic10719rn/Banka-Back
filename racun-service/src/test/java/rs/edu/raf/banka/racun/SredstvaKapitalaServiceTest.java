@@ -10,6 +10,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
+import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
@@ -18,10 +19,8 @@ import rs.edu.raf.banka.racun.repository.RacunRepository;
 import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
 import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
-
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +28,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -90,14 +88,14 @@ public class SredstvaKapitalaServiceTest {
     void testGetUkupnoStanjePoHartijama() {
         List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
 
-        when(sredstvaKapitalRepository.findAll()).thenReturn(sredstvaKapitals);
+        when(sredstvaKapitalRepository.findAllByRacun(any())).thenReturn(sredstvaKapitals);
         List<KapitalHartijeDto> toReturn = new ArrayList<>();
         KapitalHartijeDto khdAkcija = new KapitalHartijeDto(KapitalType.AKCIJA, 0.0);
         KapitalHartijeDto khdFuture = new KapitalHartijeDto(KapitalType.FUTURE_UGOVOR, 0.0);
         toReturn.add(khdAkcija);
         toReturn.add(khdFuture);
 
-        assertEquals(sredstvaKapitalService.getUkupnoStanjePoHartijama(""),toReturn);
+        assertEquals(sredstvaKapitalService.getUkupnoStanjePoHartijama("", false),toReturn);
     }
 
     @Test
@@ -105,7 +103,7 @@ public class SredstvaKapitalaServiceTest {
         List<SredstvaKapital> sredstvaKapitals = sredstvaKapitalRepository.findAll();
         List<KapitalPoTipuHartijeDto> toReturn = new ArrayList<>();
 
-        assertEquals(sredstvaKapitalService.getStanjeJednogTipaHartije("",""),toReturn);
+        assertEquals(sredstvaKapitalService.getStanjeJednogTipaHartije("","", false),toReturn);
     }
 
 
@@ -124,6 +122,10 @@ public class SredstvaKapitalaServiceTest {
 
     @Test
     void testGetTransakcijeHartijeUplata() {
+        Racun racun = new Racun();
+        racun.setBrojRacuna(UUID.randomUUID());
+        racun.setTipRacuna(RacunType.KES);
+        when(racunRepository.findRacunByTipRacuna(RacunType.KES)).thenReturn(racun);
         List<Transakcija> transakcijaList = new ArrayList<>();
         List<TransakcijeHartijeDto> toReturn = new ArrayList<>();
         Transakcija transakcija = new Transakcija();
@@ -133,16 +135,20 @@ public class SredstvaKapitalaServiceTest {
         transakcijeHartijeDto.setDatum(transakcija.getDatumVreme());
         transakcijeHartijeDto.setTipOrdera("Kupovina");
         transakcijeHartijeDto.setKolicina((long) transakcija.getUplata());
-        when(transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalType(1L,KapitalType.NOVAC)).thenReturn(transakcijaList);
+        when(transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalTypeAndRacun(1L, KapitalType.NOVAC, racun)).thenReturn(transakcijaList);
         transakcijeHartijeDto.setCena(transakcija.getUnitPrice());
         transakcijeHartijeDto.setUkupno(transakcija.getUnitPrice()*transakcijeHartijeDto.getKolicina());
         toReturn.add(transakcijeHartijeDto);
-        assertEquals(sredstvaKapitalService.getTransakcijeHartije(1L,KapitalType.NOVAC.toString()),toReturn);
+        assertEquals(sredstvaKapitalService.getTransakcijeHartijeKes(1L,KapitalType.NOVAC.toString()),toReturn);
     }
 
 
     @Test
     void testGetTransakcijeHartijeIsplata() {
+        Racun racun = new Racun();
+        racun.setBrojRacuna(UUID.randomUUID());
+        racun.setTipRacuna(RacunType.KES);
+        when(racunRepository.findRacunByTipRacuna(RacunType.KES)).thenReturn(racun);
         List<Transakcija> transakcijaList = new ArrayList<>();
         List<TransakcijeHartijeDto> toReturn = new ArrayList<>();
         Transakcija transakcija = new Transakcija();
@@ -152,15 +158,19 @@ public class SredstvaKapitalaServiceTest {
         transakcijeHartijeDto.setDatum(transakcija.getDatumVreme());
         transakcijeHartijeDto.setTipOrdera("Prodaja");
         transakcijeHartijeDto.setKolicina((long) transakcija.getIsplata());
-        when(transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalType(1L,KapitalType.NOVAC)).thenReturn(transakcijaList);
+        when(transakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalTypeAndRacun(1L, KapitalType.NOVAC, racun)).thenReturn(transakcijaList);
         transakcijeHartijeDto.setCena(transakcija.getUnitPrice());
         transakcijeHartijeDto.setUkupno(transakcija.getUnitPrice()*transakcijeHartijeDto.getKolicina());
         toReturn.add(transakcijeHartijeDto);
-        assertEquals(sredstvaKapitalService.getTransakcijeHartije(1L,KapitalType.NOVAC.toString()),toReturn);
+        assertEquals(sredstvaKapitalService.getTransakcijeHartijeKes(1L,KapitalType.NOVAC.toString()),toReturn);
     }
 
     @Test
     void testFindSredstvaKapitalSupervisor() {
+        Racun racun = new Racun();
+        racun.setBrojRacuna(UUID.randomUUID());
+        racun.setTipRacuna(RacunType.KES);
+        when(racunRepository.findRacunByTipRacuna(RacunType.KES)).thenReturn(racun);
         when(userService.getRoleByToken(initValidJWT())).thenReturn("ROLE_ADMIN");
         List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
         List<SupervisorSredstvaKapitalDto> sredstvaKapitalDtos = new ArrayList<>();
@@ -173,9 +183,12 @@ public class SredstvaKapitalaServiceTest {
         s.setUkupno(sredstvaKapital.getUkupno());
         s.setRezervisano(sredstvaKapital.getRezervisano());
         s.setRaspolozivo(sredstvaKapital.getRaspolozivo());
+        s.setKredit(0.0);
+        s.setMaintenanceMargin(0.0);
+        s.setMarginCall(false);
         sredstvaKapitalDtos.add(s);
-        when(sredstvaKapitalRepository.findAll()).thenReturn(sredstvaKapitals);
-        assertEquals(sredstvaKapitalService.findSredstvaKapitalSupervisor(initValidJWT()),sredstvaKapitalDtos);
+        when(sredstvaKapitalRepository.findAllByRacun(racun)).thenReturn(sredstvaKapitals);
+        assertEquals(sredstvaKapitalService.findSredstvaKapitalSupervisor(initValidJWT(), false), sredstvaKapitalDtos);
     }
 
     @Test
@@ -183,15 +196,15 @@ public class SredstvaKapitalaServiceTest {
         when(userService.getRoleByToken(initValidJWT())).thenReturn("ROLE_ADMIN");
         List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
         List<SupervisorSredstvaKapitalDto> sredstvaKapitalDtos = new ArrayList<>();
-        when(sredstvaKapitalRepository.findAll()).thenReturn(sredstvaKapitals);
-        assertEquals(sredstvaKapitalService.findSredstvaKapitalSupervisor(initValidJWT()),sredstvaKapitalDtos);
+        when(sredstvaKapitalRepository.findAllByRacun(any())).thenReturn(sredstvaKapitals);
+        assertEquals(sredstvaKapitalService.findSredstvaKapitalSupervisor(initValidJWT(), false),sredstvaKapitalDtos);
     }
 
     @Test
     void testFindSredstvaKapitalNoNovacSupervisorRoleNull() {
         when(userService.getRoleByToken(initValidJWT())).thenReturn("ROLE_AGENT");
         List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
-        assertEquals(sredstvaKapitalService.findSredstvaKapitalSupervisor(initValidJWT()),null);
+        assertEquals(sredstvaKapitalService.findSredstvaKapitalSupervisor(initValidJWT(), false),null);
     }
 
     @Test

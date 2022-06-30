@@ -1,10 +1,10 @@
 package rs.edu.raf.banka.mailservice.activemq;
 
-import rs.edu.raf.banka.mailservice.exceptions.BadMessage;
-import rs.edu.raf.banka.mailservice.smtp.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import rs.edu.raf.banka.mailservice.exceptions.BadMessage;
+import rs.edu.raf.banka.mailservice.smtp.EmailService;
 
 import javax.mail.MessagingException;
 
