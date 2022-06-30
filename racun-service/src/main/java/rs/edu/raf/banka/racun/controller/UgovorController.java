@@ -8,7 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.exceptions.ContractExpcetion;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
-import rs.edu.raf.banka.racun.requests.*;
+import rs.edu.raf.banka.racun.requests.TransakcionaStavkaRequest;
+import rs.edu.raf.banka.racun.requests.UgovorCreateRequest;
+import rs.edu.raf.banka.racun.requests.UgovorUpdateRequest;
 import rs.edu.raf.banka.racun.service.impl.UgovorService;
 
 import java.io.IOException;

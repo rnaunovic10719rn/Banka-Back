@@ -1,27 +1,30 @@
 package rs.edu.raf.banka.berza.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import rs.edu.raf.banka.berza.dto.BerzaCSV;
-import rs.edu.raf.banka.berza.dto.InflacijaCSV;
 import rs.edu.raf.banka.berza.dto.CurrencyCSV;
+import rs.edu.raf.banka.berza.dto.InflacijaCSV;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.IstorijaInflacije;
 import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
-import rs.edu.raf.banka.berza.repository.ValutaRepository;
 import rs.edu.raf.banka.berza.repository.InflacijaRepository;
+import rs.edu.raf.banka.berza.repository.ValutaRepository;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j

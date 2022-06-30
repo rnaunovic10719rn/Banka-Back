@@ -1,4 +1,5 @@
 package rs.edu.raf.banka.racun.service.impl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -7,14 +8,16 @@ import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
 import rs.edu.raf.banka.racun.enums.RacunType;
-import rs.edu.raf.banka.racun.model.*;
-
+import rs.edu.raf.banka.racun.model.Racun;
+import rs.edu.raf.banka.racun.model.SredstvaKapital;
+import rs.edu.raf.banka.racun.model.Transakcija;
+import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
 import rs.edu.raf.banka.racun.repository.*;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service

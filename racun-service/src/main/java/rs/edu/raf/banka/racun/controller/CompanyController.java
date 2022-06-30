@@ -14,7 +14,6 @@ import rs.edu.raf.banka.racun.service.impl.CompanyBankAccountService;
 import rs.edu.raf.banka.racun.service.impl.CompanyContactPersonService;
 import rs.edu.raf.banka.racun.service.impl.CompanyService;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController

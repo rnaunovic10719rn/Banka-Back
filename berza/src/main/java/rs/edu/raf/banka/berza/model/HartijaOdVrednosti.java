@@ -1,11 +1,11 @@
 package rs.edu.raf.banka.berza.model;
 
-import java.util.Date;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @MappedSuperclass
 @Data
