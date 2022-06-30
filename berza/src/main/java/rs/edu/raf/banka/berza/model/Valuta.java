@@ -20,8 +20,8 @@ public class Valuta {
     private String kodValute;
     private String nazivValute;
     private String oznakaValute;
-    private String drzava;
 
     @OneToMany
     private List<IstorijaInflacije> istorijaInflacije;
+
 }

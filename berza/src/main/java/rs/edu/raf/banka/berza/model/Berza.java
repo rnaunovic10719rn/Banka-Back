@@ -24,16 +24,10 @@ public class Berza {
     private String micCode;
     private String openTime;
     private String closeTime;
+    private String vremenskaZona;
 
     @ManyToOne
     private Valuta valuta;
-
-    private String vremenskaZona;
-    private String preMarket;
-    private String postMarket;
-
-    @ElementCollection
-    private List<Date> praznici;
 
     @OneToMany
     private List<Order> orderi;

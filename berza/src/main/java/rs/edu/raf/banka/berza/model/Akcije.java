@@ -14,16 +14,4 @@ public class Akcije extends HartijaOdVrednosti{
 
     private Long outstandingShares;
 
-    public double getPromenaProcenat() {
-        return (100 * (super.getPromenaIznos()) / (super.getCena() - super.getPromenaIznos()) );
-    }
-
-    public double getDollarVolume () {
-        return super.getVolume() * super.getCena();
-    }
-
-    public double getMarketCap() {
-        return outstandingShares * super.getCena();
-    }
-
 }
