@@ -21,7 +21,4 @@ public class Forex extends HartijaOdVrednosti{
     private Long contractSize;
     private Double lotSize;
 
-    public double getNominalnaVrednost () {
-        return lotSize * super.getCena();
-    }
 }

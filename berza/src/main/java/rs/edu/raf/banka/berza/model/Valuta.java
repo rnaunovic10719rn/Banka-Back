@@ -23,5 +23,5 @@ public class Valuta {
 
     @OneToMany
     private List<IstorijaInflacije> istorijaInflacije;
-    
+
 }
