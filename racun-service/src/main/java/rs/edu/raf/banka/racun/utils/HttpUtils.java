@@ -4,7 +4,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.requests.ChangeUserLimitRequest;
@@ -95,6 +94,17 @@ public class HttpUtils {
     public static ResponseEntity<AskBidPriceResponse> getAskBidPrice(String berzaServiceBaseUrl, String hartijaType, String symbol) {
         URI main = URI.create(berzaServiceBaseUrl + BERZA_SERVICE_ENDPOINT_ASK_BID);
         URI askBidUrl = main.resolve("./" + hartijaType.toUpperCase() + "/" + symbol);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        return restTemplate.exchange(askBidUrl.toString(), HttpMethod.GET, entity, AskBidPriceResponse.class);
+    }
+
+    public static ResponseEntity<AskBidPriceResponse> getAskBidPriceByID(String berzaServiceBaseUrl, String hartijaType, Long id) {
+        URI main = URI.create(berzaServiceBaseUrl + BERZA_SERVICE_ENDPOINT_ASK_BID);
+        URI askBidUrl = main.resolve("./" + hartijaType.toUpperCase() + "/id/" + id);
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

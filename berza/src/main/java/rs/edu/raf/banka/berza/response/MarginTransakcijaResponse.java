@@ -9,8 +9,9 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransakcijaResponse {
+public class MarginTransakcijaResponse {
     private Long id;
+    private String tip;
 
     private Date datumVreme;
 
@@ -18,9 +19,12 @@ public class TransakcijaResponse {
     private String username;
     private String opis;
 
-    private double uplata;
-    private double isplata;
-    private double rezervisano;
-    private double rezervisanoKoristi;
+    private double ulog;
+    private double loanValue;
+    private double maintenanceMargin;
+    private double kamata;
+    private double unitPrice;
 
+    private String kapitalType;
+    private Long hartijeOdVrednostiID;
 }

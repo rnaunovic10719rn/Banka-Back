@@ -2,22 +2,17 @@ package rs.edu.raf.banka.berza;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
-import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.service.impl.FuturesUgovoriPodaciService;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

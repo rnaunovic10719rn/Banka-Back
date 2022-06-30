@@ -18,6 +18,7 @@ import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
 import rs.edu.raf.banka.racun.utils.HttpUtils;
+
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;

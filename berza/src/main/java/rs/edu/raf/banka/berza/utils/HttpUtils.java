@@ -9,7 +9,9 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.berza.dto.UserDto;
+import rs.edu.raf.banka.berza.requests.MarginTransakcijaRequest;
 import rs.edu.raf.banka.berza.requests.TransakcijaRequest;
+import rs.edu.raf.banka.berza.response.MarginTransakcijaResponse;
 import rs.edu.raf.banka.berza.response.TransakcijaResponse;
 
 import java.net.URI;
@@ -37,6 +39,18 @@ public class HttpUtils {
 
         HttpEntity<TransakcijaRequest> entity = new HttpEntity<>(transakcija, headers);
         return restTemplate.exchange(transactionUrl.toString(), HttpMethod.POST, entity, TransakcijaResponse.class);
+    }
+
+    public static ResponseEntity<MarginTransakcijaResponse> postMarginsTransaction(String url, String token, MarginTransakcijaRequest transakcija) {
+        URI main = URI.create(url);
+        URI transactionUrl = main.resolve("./margin/transakcija");
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", token);
+
+        HttpEntity<MarginTransakcijaRequest> entity = new HttpEntity<>(transakcija, headers);
+        return restTemplate.exchange(transactionUrl.toString(), HttpMethod.POST, entity, MarginTransakcijaResponse.class);
     }
 
     public static RetryTemplate retryTemplate() {

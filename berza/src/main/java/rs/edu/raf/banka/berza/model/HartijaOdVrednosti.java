@@ -1,16 +1,13 @@
 package rs.edu.raf.banka.berza.model;
 
-import java.util.Date;
-import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
-//@Entity
-//@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@MappedSuperclass // samo za kod, nema veze sa bazon
+@MappedSuperclass
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,14 +26,6 @@ public abstract class HartijaOdVrednosti {
     private Berza berza;
 
     private Date lastUpdated;
-    private Double cena = 0.0;
-    private Double ask = 0.0;
-    private Double bid = 0.0;
-    private Double promenaIznos = 0.0;
-    private Long volume = 0L;
-
-    @ElementCollection
-    private List<String> istorijskiPodaci;
 
     private Boolean custom = false;
 }

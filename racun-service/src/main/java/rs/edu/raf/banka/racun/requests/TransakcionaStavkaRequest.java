@@ -15,7 +15,7 @@ public class TransakcionaStavkaRequest {
      */
 
     KapitalType kapitalTypePotrazni;
-    String kapitalOznakaPotrazni;
+    String kapitalPotrazniOznaka;
     Double kolicinaPotrazna;
 
     @JsonIgnore
@@ -26,7 +26,7 @@ public class TransakcionaStavkaRequest {
      */
 
     KapitalType kapitalTypeDugovni;
-    String kapitalOznakaDugovni;
+    String kapitalDugovniOznaka;
     Double kolicinaDugovna;
 
     @JsonIgnore

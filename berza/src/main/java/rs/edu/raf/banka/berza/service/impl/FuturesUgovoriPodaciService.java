@@ -6,7 +6,11 @@ import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
 import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 @Service
@@ -61,6 +65,10 @@ public class FuturesUgovoriPodaciService {
     public FuturesPodaciDto getFuturesUgovorById(Long id) {
         FuturesUgovori future = futuresUgovoriRepository.findFuturesById(id);
         return this.getFuturesUgovor(future.getOznakaHartije());
+    }
+
+    public FuturesUgovori getById(Long id) {
+        return futuresUgovoriRepository.getById(id);
     }
 
 }

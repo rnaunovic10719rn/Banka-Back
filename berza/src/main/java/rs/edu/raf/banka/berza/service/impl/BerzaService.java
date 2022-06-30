@@ -1,21 +1,30 @@
 package rs.edu.raf.banka.berza.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import rs.edu.raf.banka.berza.dto.*;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
+import rs.edu.raf.banka.berza.dto.BerzaDto;
+import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
+import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
-import rs.edu.raf.banka.berza.model.*;
-import rs.edu.raf.banka.berza.repository.*;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.Berza;
+import rs.edu.raf.banka.berza.model.FuturesUgovori;
+import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.repository.AkcijeRepository;
+import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.FuturesCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 import rs.edu.raf.banka.berza.utils.StringUtils;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class BerzaService {
@@ -66,6 +75,14 @@ public class BerzaService {
 
     public Akcije findAkcije(String symbol){
         return akcijeRepository.findAkcijeByOznakaHartije(symbol);
+    }
+
+    public List<Akcije> findAllAkcije() {
+        return akcijeRepository.findAll();
+    }
+
+    public List<FuturesUgovori> findAllFuturesUgovori() {
+        return futuresUgovoriRepository.findAll();
     }
 
     public Akcije createUpdateAkcija(AkcijaCreateUpdateRequest request) {
@@ -173,10 +190,16 @@ public class BerzaService {
         if(askBidPrice.getBerza() != null) {
             valuta = askBidPrice.getBerza().getValuta().getKodValute();
         }
-        OrderStatus status = getOrderStatus(token, ukupnaCena, valuta);
+        OrderStatus status = getOrderStatus(token, ukupnaCena, valuta, orderRequest.isMarginFlag());
 
         // Korak 4a: Uzmi ID korisnika kako bi mogli da vezemo porudzbinu za korisnika
         Long userId = userService.getUserByToken(token).getId();
+
+        // Korak 4b: Konverzija ordera u USD ako je u pitanju margins order
+        if(!valuta.equals("USD") && orderRequest.isMarginFlag()) {
+            ForexPodaciDto exchangeRate = forexPodaciService.getForexBySymbol(valuta, "USD");
+            ukupnaCena *= exchangeRate.getExchangeRate();
+        }
 
         // Korak 5: Sacuvaj order u bazi podataka
         Order order = orderService.saveOrder(token, orderRequest, userId, askBidPrice.getBerza(), askBidPrice.getHartijaId(), hartijaTip, orderAkcija, ukupnaCena,
@@ -227,10 +250,14 @@ public class BerzaService {
         return OrderType.MARKET_ORDER;
     }
 
-    public OrderStatus getOrderStatus(String token, double price, String valuta) {
+    public OrderStatus getOrderStatus(String token, double price, String valuta, boolean margin) {
         UserRole role = UserRole.valueOf(userService.getUserRoleByToken(token));
 
         if(role.equals(UserRole.ROLE_AGENT)) {
+            if(margin) {
+                return OrderStatus.ON_HOLD;
+            }
+
             UserDto user = userService.getUserByToken(token);
             Double presostaoLimit = user.getLimit() - user.getLimitUsed();
             if(!valuta.equals("RSD")) {

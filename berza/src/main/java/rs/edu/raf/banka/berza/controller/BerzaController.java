@@ -122,6 +122,20 @@ public class BerzaController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping(value = "/askbid/{hartijaType}/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAskBidPriceByID(@PathVariable String hartijaType, @PathVariable Long id) {
+        AskBidPriceDto dto = priceService.getAskBidPrice(HartijaOdVrednostiType.valueOf(hartijaType.toUpperCase()), id);
+        if(dto == null || dto.getHartijaId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllStocks(@RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(berzaService.findAllAkcije());
+    }
+
     @PostMapping(value = "/hartija/akcija", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createCustomStock(@RequestHeader("Authorization") String token, @RequestBody AkcijaCreateUpdateRequest request){
         if(request.getId() != null) {
@@ -148,6 +162,11 @@ public class BerzaController {
         }
 
         return ResponseEntity.ok(akcija);
+    }
+
+    @GetMapping(value = "/hartija/future", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllFuturesUgoovri(@RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(berzaService.findAllFuturesUgovori());
     }
 
     @PostMapping(value = "/hartija/future", produces = MediaType.APPLICATION_JSON_VALUE)

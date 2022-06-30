@@ -1,9 +1,14 @@
 package rs.edu.raf.banka.racun.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import rs.edu.raf.banka.racun.enums.RacunType;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.UUID;
 
 @Entity

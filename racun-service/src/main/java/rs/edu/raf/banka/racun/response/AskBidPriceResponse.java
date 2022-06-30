@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class AskBidPriceResponse {
 
     private Long hartijaId;
+    private Double ask;
 
 }

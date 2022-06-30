@@ -3,8 +3,8 @@ package rs.edu.raf.banka.racun.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import rs.edu.raf.banka.racun.enums.KapitalType;
+import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.Transakcija;
-import rs.edu.raf.banka.racun.model.Valuta;
 
 import java.util.Date;
 import java.util.List;
@@ -39,6 +39,6 @@ public interface TransakcijaRepository extends JpaRepository<Transakcija,Long> {
     @Query("SELECT SUM(unitPrice*uplata) FROM Transakcija WHERE haritjeOdVrednostiID = :hartijaId AND kapitalType = :kapitalType")
     Double getKupljenoZa(Long hartijaId, KapitalType kapitalType);
 
-    List<Transakcija> findByHaritjeOdVrednostiIDAndKapitalType(Long hartijeOdVrednostiID, KapitalType kapitalType);
+    List<Transakcija> findByHaritjeOdVrednostiIDAndKapitalTypeAndRacun(Long hartijeOdVrednostiID, KapitalType kapitalType, Racun racun);
 
 }

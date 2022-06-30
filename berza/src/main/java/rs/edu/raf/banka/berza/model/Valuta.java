@@ -1,8 +1,8 @@
 package rs.edu.raf.banka.berza.model;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
@@ -20,8 +20,8 @@ public class Valuta {
     private String kodValute;
     private String nazivValute;
     private String oznakaValute;
-    private String drzava;
 
     @OneToMany
     private List<IstorijaInflacije> istorijaInflacije;
+
 }
