@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexTimeseriesDto;
-import rs.edu.raf.banka.berza.dto.request.*;
+import rs.edu.raf.banka.berza.dto.request.ForexTimeseriesReadRequest;
+import rs.edu.raf.banka.berza.dto.request.ForexTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.model.Forex;
 import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.ForexRepository;
@@ -13,7 +14,9 @@ import rs.edu.raf.banka.berza.repository.ValutaRepository;
 import rs.edu.raf.banka.berza.service.remote.InfluxScrapperService;
 import rs.edu.raf.banka.berza.utils.DateUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Service

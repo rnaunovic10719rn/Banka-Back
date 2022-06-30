@@ -2,8 +2,8 @@ package rs.edu.raf.banka.racun.repository.contract;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
-import rs.edu.raf.banka.racun.model.contract.Ugovor;
 import rs.edu.raf.banka.racun.model.company.Company;
+import rs.edu.raf.banka.racun.model.contract.Ugovor;
 
 import java.util.List;
 

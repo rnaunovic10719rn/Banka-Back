@@ -23,7 +23,6 @@ import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;

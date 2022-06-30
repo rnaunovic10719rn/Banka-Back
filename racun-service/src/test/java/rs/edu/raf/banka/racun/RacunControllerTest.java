@@ -3,9 +3,7 @@ package rs.edu.raf.banka.racun;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.google.common.net.HttpHeaders;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,11 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.controller.RacunController;
-
 import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -32,7 +27,8 @@ import rs.edu.raf.banka.racun.service.impl.UserService;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)

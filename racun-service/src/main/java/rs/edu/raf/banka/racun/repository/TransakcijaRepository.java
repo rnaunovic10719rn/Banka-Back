@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.Transakcija;
-import rs.edu.raf.banka.racun.model.Valuta;
 
 import java.util.Date;
 import java.util.List;

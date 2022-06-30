@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.Racun;
-import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
 
 import java.util.Date;

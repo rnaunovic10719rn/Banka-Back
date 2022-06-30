@@ -1,21 +1,30 @@
 package rs.edu.raf.banka.berza.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import rs.edu.raf.banka.berza.dto.*;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
+import rs.edu.raf.banka.berza.dto.BerzaDto;
+import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
+import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
-import rs.edu.raf.banka.berza.model.*;
-import rs.edu.raf.banka.berza.repository.*;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.Berza;
+import rs.edu.raf.banka.berza.model.FuturesUgovori;
+import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.repository.AkcijeRepository;
+import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.FuturesCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
-import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 import rs.edu.raf.banka.berza.utils.StringUtils;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class BerzaService {
