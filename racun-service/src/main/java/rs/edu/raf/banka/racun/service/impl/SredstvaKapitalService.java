@@ -291,7 +291,7 @@ public class SredstvaKapitalService {
         List<SupervisorSredstvaKapitalDto> sredstvaKapitalDtos = new ArrayList<>();
 
         for (SredstvaKapital sredstvaKapital : sredstvaKapitals) {
-            if (!sredstvaKapital.getKapitalType().equals(KapitalType.NOVAC)) {
+            if (!sredstvaKapital.getKapitalType().equals(KapitalType.NOVAC) && !sredstvaKapital.getKapitalType().equals(KapitalType.MARGIN)) {
                 continue;
             }
             SupervisorSredstvaKapitalDto s = new SupervisorSredstvaKapitalDto();
