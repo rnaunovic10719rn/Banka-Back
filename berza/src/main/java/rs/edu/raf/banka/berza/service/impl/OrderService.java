@@ -276,10 +276,10 @@ public class OrderService {
 
         double cena;
         if(order.getOrderAction() == OrderAction.BUY) {
-            transakcija.setTipTranskacije(MarginTransakcijaType.UPLATA);
+            transakcija.setTipTransakcije(MarginTransakcijaType.UPLATA);
             cena = order.getAsk();
         } else {
-            transakcija.setTipTranskacije(MarginTransakcijaType.ISPLATA);
+            transakcija.setTipTransakcije(MarginTransakcijaType.ISPLATA);
             cena = order.getBid();
         }
         double ukupnaCena = cena * kolicina;

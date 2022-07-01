@@ -17,7 +17,7 @@ public class MarginTransakcijaRequest {
     @JsonIgnore
     private UUID brojRacuna;
 
-    private MarginTransakcijaType tipTranskacije;
+    private MarginTransakcijaType tipTransakcije;
     private String opis;
     private Long orderId;
     private double iznos;
