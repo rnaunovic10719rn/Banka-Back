@@ -160,14 +160,14 @@ public class MarginTransakcijaService {
         if(sredstvaKapitalMargin.getUkupno() >= sredstvaKapitalMargin.getMaintenanceMargin()) {
             sredstvaKapitalMargin.setMarginCall(false);
         }
-        if(sredstvaKapitalMargin.getMarginCall() && request.getTipTranskacije() == MarginTransakcijaType.UPLATA && request.getTipKapitala() != KapitalType.MARGIN) {
+        if(sredstvaKapitalMargin.getMarginCall() && request.getTipTransakcije() == MarginTransakcijaType.UPLATA && request.getTipKapitala() != KapitalType.MARGIN) {
             log.error("failed transaction because margin call is true");
             return null;
         }
 
         // Azuriraj sredstva i kapital sa novim stanjem
         if(request.getTipKapitala() != KapitalType.MARGIN) {
-            if (request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
+            if (request.getTipTransakcije() == MarginTransakcijaType.UPLATA) {
                 // Uplata, tj. kupvoina hartije od vrednosti
                 double hartijaNovoUkupno = sredstvaKapital.getUkupno() + request.getKolicina();
 
@@ -180,7 +180,7 @@ public class MarginTransakcijaService {
                 sredstvaKapitalMargin.setRaspolozivo(sredstvaKapitalMargin.getUkupno());
                 sredstvaKapitalMargin.setKreditnaSredstva(sredstvaKapitalMargin.getKreditnaSredstva() + request.getKredit());
                 sredstvaKapitalMargin.setMaintenanceMargin(sredstvaKapitalMargin.getMaintenanceMargin() + request.getMaintenanceMargin());
-            } else if (request.getTipTranskacije() == MarginTransakcijaType.ISPLATA) {
+            } else if (request.getTipTransakcije() == MarginTransakcijaType.ISPLATA) {
                 double hartijaNovoUkupno = sredstvaKapital.getUkupno() - request.getKolicina();
                 if (hartijaNovoUkupno < 0) {
                     log.error("dodajTransakciju: novo ukupno is < 0 ({})", hartijaNovoUkupno);
@@ -216,7 +216,7 @@ public class MarginTransakcijaService {
                 }
             }
         } else {
-            if (request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
+            if (request.getTipTransakcije() == MarginTransakcijaType.UPLATA) {
                 sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() + request.getIznos());
             } else {
                 sredstvaKapitalMargin.setUkupno(sredstvaKapitalMargin.getUkupno() - request.getIznos());
@@ -226,7 +226,7 @@ public class MarginTransakcijaService {
 
         // Pravljenje margins transakcije
         MarginTransakcija mt = new MarginTransakcija();
-        mt.setTip(request.getTipTranskacije());
+        mt.setTip(request.getTipTransakcije());
         mt.setRacun(racun);
         mt.setUsername(username);
         mt.setKapitalType(request.getTipKapitala());
@@ -245,7 +245,7 @@ public class MarginTransakcijaService {
         mt.setUnitPrice(request.getUnitPrice());
 
         // Pravljenje transakcije za povlacenje uloga sa kes racuna
-        if(request.getTipTranskacije() == MarginTransakcijaType.UPLATA) {
+        if(request.getTipTransakcije() == MarginTransakcijaType.UPLATA) {
             TransakcijaRequest tr = new TransakcijaRequest();
             tr.setOpis("Pokrivanje inicijalne margine");
             tr.setType(KapitalType.NOVAC);
@@ -262,7 +262,7 @@ public class MarginTransakcijaService {
                 log.error("dodajTransakciju: failed to add transaction for ulog");
                 return null;
             }
-        } else if (request.getTipTranskacije() == MarginTransakcijaType.ISPLATA && request.getTipKapitala() == KapitalType.MARGIN) {
+        } else if (request.getTipTransakcije() == MarginTransakcijaType.ISPLATA && request.getTipKapitala() == KapitalType.MARGIN) {
             TransakcijaRequest tr = new TransakcijaRequest();
             tr.setOpis("Povlacenje sredstava sa marznog racuna");
             tr.setType(KapitalType.NOVAC);

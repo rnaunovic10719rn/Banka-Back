@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MarginTransakcijaRequest {
 
-    private MarginTransakcijaType tipTranskacije;
+    private MarginTransakcijaType tipTransakcije;
     private String opis;
     private Long orderId;
     private double iznos;
