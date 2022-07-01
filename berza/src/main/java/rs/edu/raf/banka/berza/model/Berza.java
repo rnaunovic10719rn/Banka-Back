@@ -1,12 +1,11 @@
 package rs.edu.raf.banka.berza.model;
 
-import java.util.Date;
-import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Data
@@ -24,16 +23,10 @@ public class Berza {
     private String micCode;
     private String openTime;
     private String closeTime;
+    private String vremenskaZona;
 
     @ManyToOne
     private Valuta valuta;
-
-    private String vremenskaZona;
-    private String preMarket;
-    private String postMarket;
-
-    @ElementCollection
-    private List<Date> praznici;
 
     @OneToMany
     private List<Order> orderi;

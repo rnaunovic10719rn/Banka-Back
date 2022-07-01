@@ -1,17 +1,22 @@
 package rs.edu.raf.banka.berza;
 
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
-import rs.edu.raf.banka.berza.model.*;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.Berza;
+import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.model.Valuta;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
@@ -22,8 +27,10 @@ import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 

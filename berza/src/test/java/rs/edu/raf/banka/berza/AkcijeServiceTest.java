@@ -2,7 +2,6 @@ package rs.edu.raf.banka.berza;
 
 import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;

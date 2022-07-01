@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface InflacijaRepository extends JpaRepository<IstorijaInflacije, Long> {
 
     Optional<IstorijaInflacije> findByValutaAndYear(Valuta valuta, String year);
+
 }

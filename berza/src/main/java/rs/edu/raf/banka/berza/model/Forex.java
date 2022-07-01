@@ -1,10 +1,11 @@
 package rs.edu.raf.banka.berza.model;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 
 @Entity
 @Data
@@ -21,7 +22,4 @@ public class Forex extends HartijaOdVrednosti{
     private Long contractSize;
     private Double lotSize;
 
-    public double getNominalnaVrednost () {
-        return lotSize * super.getCena();
-    }
 }

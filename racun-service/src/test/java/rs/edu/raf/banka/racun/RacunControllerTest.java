@@ -3,9 +3,7 @@ package rs.edu.raf.banka.racun;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.google.common.net.HttpHeaders;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,11 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.*;
 import rs.edu.raf.banka.racun.controller.RacunController;
-
 import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
@@ -32,7 +27,8 @@ import rs.edu.raf.banka.racun.service.impl.UserService;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -162,7 +158,7 @@ public class RacunControllerTest {
     void testGetStanjeSupervisor() throws Exception {
         List<SupervisorSredstvaKapitalDto> list = new ArrayList<>();
 
-        when(sredstvaKapitalService.findSredstvaKapitalSupervisor(validJWToken)).thenReturn(list);
+        when(sredstvaKapitalService.findSredstvaKapitalSupervisor(validJWToken, false)).thenReturn(list);
 
         mockMvc.perform(get("/api/racun/stanjeSupervisor", mockValuta).header(HttpHeaders.AUTHORIZATION, "Bearer " + validJWToken))
                 .andExpect(status().isOk());
@@ -188,7 +184,7 @@ public class RacunControllerTest {
     @Test
     void testGetStanje() throws Exception {
         List<KapitalHartijeDto> kapitalHartijeDtoList = new ArrayList<>();
-        when(sredstvaKapitalService.getUkupnoStanjePoHartijama(validJWToken)).thenReturn(kapitalHartijeDtoList);
+        when(sredstvaKapitalService.getUkupnoStanjePoHartijama(validJWToken, false)).thenReturn(kapitalHartijeDtoList);
         mockMvc.perform(get("/api/racun/kapitalStanje").header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isOk());
     }
@@ -196,7 +192,7 @@ public class RacunControllerTest {
     @Test
     void testGetStanjeBadReq() throws Exception {
 
-        when(sredstvaKapitalService.getUkupnoStanjePoHartijama(validJWToken)).thenReturn(null);
+        when(sredstvaKapitalService.getUkupnoStanjePoHartijama(validJWToken, false)).thenReturn(null);
         mockMvc.perform(get("/api/racun/kapitalStanje").header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isBadRequest());
     }
@@ -204,7 +200,7 @@ public class RacunControllerTest {
     @Test
     void testGetStanjePoTipu() throws Exception {
         List<KapitalPoTipuHartijeDto> kapitalPoTipuHartijeDtos = new ArrayList<>();
-        when(sredstvaKapitalService.getStanjeJednogTipaHartije(anyString(), anyString())).thenReturn(kapitalPoTipuHartijeDtos);
+        when(sredstvaKapitalService.getStanjeJednogTipaHartije(anyString(), anyString(), anyBoolean())).thenReturn(kapitalPoTipuHartijeDtos);
 
         mockMvc.perform(get("/api/racun/kapitalStanje/{kapitalType}",KapitalType.NOVAC.toString()).header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isOk());
@@ -212,7 +208,7 @@ public class RacunControllerTest {
 
     @Test
     void testGetStanjePoTipuBadRequest() throws Exception {
-        when(sredstvaKapitalService.getStanjeJednogTipaHartije(anyString(), anyString())).thenReturn(null);
+        when(sredstvaKapitalService.getStanjeJednogTipaHartije(anyString(), anyString(), anyBoolean())).thenReturn(null);
 
         mockMvc.perform(get("/api/racun/kapitalStanje/{kapitalType}",KapitalType.NOVAC.toString()).header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isBadRequest());
@@ -221,7 +217,7 @@ public class RacunControllerTest {
     @Test
     void testGetTransakcijeHartije() throws Exception {
         List<TransakcijeHartijeDto> transakcijeHartijeDtos = new ArrayList<>();
-        when(sredstvaKapitalService.getTransakcijeHartije(anyLong(),anyString())).thenReturn(transakcijeHartijeDtos);
+        when(sredstvaKapitalService.getTransakcijeHartijeKes(anyLong(), anyString())).thenReturn(transakcijeHartijeDtos);
 
         mockMvc.perform(get("/api/racun/transakcijaHartije/{kapitalType}/{id}",KapitalType.NOVAC.toString(),1L).header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isOk());
@@ -229,7 +225,7 @@ public class RacunControllerTest {
 
     @Test
     void testGetTransakcijeHartijeBad() throws Exception {
-        when(sredstvaKapitalService.getTransakcijeHartije(anyLong(),anyString())).thenReturn(null);
+        when(sredstvaKapitalService.getTransakcijeHartijeKes(anyLong(), anyString())).thenReturn(null);
 
         mockMvc.perform(get("/api/racun/transakcijaHartije/{kapitalType}/{id}",KapitalType.NOVAC.toString(),1L).header(HttpHeaders.AUTHORIZATION,  validJWToken))
                 .andExpect(status().isBadRequest());
