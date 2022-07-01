@@ -1,6 +1,8 @@
 package rs.edu.raf.banka.berza;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -15,10 +17,23 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.client.RestTemplate;
+import rs.edu.raf.banka.berza.controller.BerzaController;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
+import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
+import rs.edu.raf.banka.berza.enums.OrderAction;
+import rs.edu.raf.banka.berza.enums.OrderStatus;
+import rs.edu.raf.banka.berza.enums.OrderType;
+import rs.edu.raf.banka.berza.model.Akcije;
+import rs.edu.raf.banka.berza.model.Berza;
+import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.repository.OrderRepository;
+import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
+import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
+import rs.edu.raf.banka.berza.service.impl.BerzaService;
+import rs.edu.raf.banka.berza.service.impl.OrderService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +57,15 @@ public class IntegrationTest {
 
     @Autowired
     AkcijePodaciService akcijePodaciService;
+
+    @Autowired
+    BerzaService berzaService;
+
+    @Autowired
+    OrderService orderService;
+
+    @Autowired
+    OrderRepository orderRepository;
 
 
     @BeforeEach
@@ -68,10 +92,12 @@ public class IntegrationTest {
         MvcResult mvcResult = resultActions.andReturn();
         String strResp = mvcResult.getResponse().getContentAsString();
 
-        List<AkcijePodaciDto> akcijePodaciDtos = objectMapper.readValue(strResp, ArrayList.class);
+
+        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, AkcijePodaciDto.class);
+        List<AkcijePodaciDto> akcijePodaciDtos = objectMapper.readValue(strResp, listType);
         assertThat(akcijePodaciDtos).isNotNull();
 
-        Assert.assertEquals(akcijePodaciService.getOdabraneAkcije().size(), akcijePodaciDtos.size());
+        Assert.assertEquals(akcijePodaciService.getOdabraneAkcije().get(0).getBerzaId(), akcijePodaciDtos.get(0).getBerzaId());
     }
 
     @Test
@@ -125,37 +151,126 @@ public class IntegrationTest {
 
     @Test
     void findAll() throws Exception {
-        mockMvc.perform(get("/api/berza")
+        ResultActions resultActions =  mockMvc.perform(get("/api/berza")
                 .header("Authorization", "Bearer " + token)
                 .contentType("application/json")
                 .content("")).andExpect(status().isOk());
+
+        MvcResult mvcResult = resultActions.andReturn();
+        String strResp = mvcResult.getResponse().getContentAsString();
+
+        List<Berza> berzas = objectMapper.readValue(strResp, ArrayList.class);
+        assertThat(berzas).isNotNull();
+
+        Assert.assertEquals(berzaService.findAll().size(), berzas.size());
 
     }
 
     @Test
     void findBerzaById() throws Exception {
-        mockMvc.perform(get("/api/berza/id/{id}", 1L)
+        ResultActions resultActions = mockMvc.perform(get("/api/berza/id/{id}", 1L)
                 .header("Authorization", "Bearer " + token)
                 .contentType("application/json")
                 .content("")).andExpect(status().isOk());
 
+        MvcResult mvcResult = resultActions.andReturn();
+        String strResp = mvcResult.getResponse().getContentAsString();
+
+        Berza berzas = objectMapper.readValue(strResp, Berza.class);
+        assertThat(berzas).isNotNull();
+
+        Assert.assertEquals(berzaService.findBerza(1L).getOznakaBerze(), berzas.getOznakaBerze());
     }
 
     @Test
     void findAkcija() throws Exception {
-        mockMvc.perform(get("/api/berza/{oznaka}", "1")
+
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setBerzaOznaka("BBJ");
+        akcijaCreateUpdateRequest.setOznaka("BBJ");
+        akcijaCreateUpdateRequest.setOutstandingShares(1L);
+        akcijaCreateUpdateRequest.setOpis("mock");
+        berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+
+        ResultActions resultActions = mockMvc.perform(get("/api/berza/{oznaka}", "BBJ")
                 .header("Authorization", "Bearer " + token)
                 .contentType("application/json")
                 .content("")).andExpect(status().isOk());
+
+        MvcResult mvcResult = resultActions.andReturn();
+        String strResp = mvcResult.getResponse().getContentAsString();
+
+        Akcije akcija = objectMapper.readValue(strResp, Akcije.class);
+        assertThat(akcija).isNotNull();
+
+        Assert.assertEquals(berzaService.findAkcije("BBJ").getBerza().getId(), akcija.getBerza().getId());
 
     }
 
     @Test
     void getOrders() throws Exception {
-        mockMvc.perform(get("/api/berza/order/{status}/{done}", "1", true)
+        Long userAccount = 1L;
+        Long hartijaOdVrednostiId = 1L;
+        HartijaOdVrednostiType hartijaOdVrednostiType = HartijaOdVrednostiType.AKCIJA;
+        Integer kolicina = 1;
+        OrderAction orderAction = OrderAction.SELL;
+        Double ukupnaCena = 1.0;
+        Double provizija = 1.0;
+        OrderType orderType = OrderType.LIMIT_ORDER;
+        boolean isAON = true;
+        boolean isMargin = false;
+        String oznakaHartije = "usd";
+        Double ask = 1.0;
+        Double bid = 0.0;
+
+        Order order = new Order();
+        order.setUserId(userAccount);
+        order.setHartijaOdVrednostiId(hartijaOdVrednostiId);
+        order.setHartijaOdVrednosti(hartijaOdVrednostiType);
+        order.setKolicina(kolicina);
+        order.setOrderAction(orderAction);
+        order.setPredvidjenaCena(ukupnaCena);
+        order.setProvizija(provizija);
+        order.setOrderType(orderType);
+        order.setAON(isAON);
+        order.setMargin(isMargin);
+        order.setHartijaOdVrednostiSymbol(oznakaHartije);
+        order.setAsk(ask);
+        order.setBid(bid);
+
+        Long berzaId = 1L;
+        Berza berza = new Berza();
+        berza.setId(berzaId);
+        berza.setOpenTime("00:00:00");
+        berza.setCloseTime("23:00:00");
+        berza.setOrderi(new ArrayList<>());
+
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setBerza(berza);
+
+        var request = new OrderRequest();
+        request.setSymbol(oznakaHartije);
+        request.setHartijaOdVrednostiTip(hartijaOdVrednostiType.toString());
+        request.setAkcija("buy");
+        request.setKolicina(kolicina);
+        request.setAllOrNoneFlag(isAON);
+        request.setMarginFlag(isMargin);
+
+        orderRepository.save(order);
+
+
+        ResultActions resultActions = mockMvc.perform(get("/api/berza/order/{status}/{done}", "APPROVED", false)
                 .header("Authorization", "Bearer " + token)
                 .contentType("application/json")
                 .content("")).andExpect(status().isOk());
+
+        MvcResult mvcResult = resultActions.andReturn();
+        String strResp = mvcResult.getResponse().getContentAsString();
+
+        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, Order.class);
+        List<Order> orders = objectMapper.readValue(strResp, listType);
+
+        Assert.assertEquals(orderService.getOrders("Bearer " + token, "APPROVED", false).get(0).getBid(),orders.get(0).getBid());
 
     }
 
