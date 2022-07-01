@@ -2,6 +2,7 @@ package rs.edu.raf.banka.berza.service.impl;
 
 import com.crazzyghost.alphavantage.fundamentaldata.response.CompanyOverview;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
@@ -42,6 +43,7 @@ public class AkcijePodaciService {
         this.alphaVantageService = alphaVantageService;
     }
 
+    @Cacheable(value = "AkcijeDto")
     public List<AkcijePodaciDto> getOdabraneAkcije() {
         ArrayList<AkcijePodaciDto> dtos = new ArrayList<>();
         for(String akcija: odabraneAkcije) {
@@ -52,6 +54,7 @@ public class AkcijePodaciService {
         return dtos;
     }
 
+    @Cacheable(value = "AkcijeDto", key = "#ticker")
     public AkcijePodaciDto getAkcijaByTicker(String ticker) {
         Akcije akcija = akcijeRepository.findAkcijeByOznakaHartije(ticker);
         if(akcija == null || DateUtils.isDateInDecayDays(akcija.getLastUpdated(), 1) || akcija.getCustom()) {
@@ -98,6 +101,7 @@ public class AkcijePodaciService {
         return this.getAkcijaByTicker(akcije.getOznakaHartije());
     }
 
+    @Cacheable(value = "AkcijeTimeseries")
     public List<AkcijeTimeseriesDto> getAkcijeTimeseries(AkcijeTimeseriesUpdateRequest req) {
         ZoneId zoneId = null;
         String openHours = null;

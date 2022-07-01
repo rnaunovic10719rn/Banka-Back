@@ -12,6 +12,12 @@ services:
       - "61616:61616/tcp"
     profiles: ["all", "core"]
 
+  redis:
+    image: redis:7.0.1-alpine
+    ports:
+      - "6379:6379"
+    profiles: ["all", "core"]
+
   db-user:
     image: postgres
     ports:
@@ -124,6 +130,7 @@ services:
     env_file: .env
     environment:
       spring.datasource.hikari.jdbcUrl: jdbc:postgresql://db-berza:5432/postgres
+      spring.redis.host: redis
       berza.influxscrapper.endpoint: http://influx-scrapper/
       berza.berze.csv: berze.csv
       berza.inflacije.csv: inflacije.csv

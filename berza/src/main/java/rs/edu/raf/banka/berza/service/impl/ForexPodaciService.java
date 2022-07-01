@@ -2,6 +2,7 @@ package rs.edu.raf.banka.berza.service.impl;
 
 import com.crazzyghost.alphavantage.Config;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.ForexTimeseriesDto;
@@ -40,6 +41,7 @@ public class ForexPodaciService {
         this.alphavantageApiClient = alphavantageApiClient;
     }
 
+    @Cacheable(value = "ForexDto")
     public List<ForexPodaciDto> getOdabraniParovi() {
         List<ForexPodaciDto> fpd = new ArrayList<>();
         for(String p: odabaraniParovi) {
@@ -52,6 +54,7 @@ public class ForexPodaciService {
         return fpd;
     }
 
+    @Cacheable(value = "ForexDto", key = "#symbolFrom + #symbolTo")
     public ForexPodaciDto getForexBySymbol(String symbolFrom, String symbolTo) {
         Valuta valuta1 = valutaRepository.findByOznakaValute(symbolFrom);
         Valuta valuta2 = valutaRepository.findByOznakaValute(symbolTo);
@@ -75,6 +78,7 @@ public class ForexPodaciService {
         return forexPodaciDto;
     }
 
+    @Cacheable(value = "ForexTimeseries")
     public List<ForexTimeseriesDto> getForexTimeseries(ForexTimeseriesUpdateRequest req) {
         DateUtils.StartEndDateTime dt = DateUtils.getStartEndDateTime(req.getType(), req.getInterval(), req.getRequestType());
 
