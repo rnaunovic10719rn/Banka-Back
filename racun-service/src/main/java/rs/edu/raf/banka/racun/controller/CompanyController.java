@@ -73,7 +73,7 @@ public class CompanyController {
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteCompany(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         companyService.deleteCompany(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -106,7 +106,7 @@ public class CompanyController {
     @DeleteMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteContactPerson(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         contactPersonService.deleteContactPerson(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -139,6 +139,6 @@ public class CompanyController {
     @DeleteMapping(value = "/bankaccount/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteBankAccount(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         bankAccountService.deleteBankAccount(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
