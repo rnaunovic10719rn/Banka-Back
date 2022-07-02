@@ -1,31 +1,47 @@
 package rs.edu.raf.banka.racun;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import rs.edu.raf.banka.racun.dto.UserDto;
+import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.UgovorStatus;
 import rs.edu.raf.banka.racun.exceptions.ContractExpcetion;
+import rs.edu.raf.banka.racun.model.Transakcija;
+import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.company.Company;
+import rs.edu.raf.banka.racun.model.contract.ContractDocument;
+import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
+import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
+import rs.edu.raf.banka.racun.repository.contract.ContractDocumentRepository;
 import rs.edu.raf.banka.racun.repository.contract.UgovorRepository;
+import rs.edu.raf.banka.racun.requests.UgovorCreateRequest;
+import rs.edu.raf.banka.racun.requests.UgovorUpdateRequest;
+import rs.edu.raf.banka.racun.service.impl.ContractDocumentService;
+import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UgovorService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
 
+import java.io.IOException;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UgovorServiceTest {
@@ -41,6 +57,15 @@ public class UgovorServiceTest {
 
     @Mock
     CompanyRepository companyRepository;
+
+    @Mock
+    ContractDocumentService contractDocumentService;
+
+    @Mock
+    TransakcijaService transakcijaService;
+
+    @Mock
+    ValutaRepository valutaRepository;
 
     @ParameterizedTest
     @ValueSource(strings = {"ROLE_GL_ADMIN", "ROLE_ADMIN", "ROLE_SUPERVISOR"})
@@ -422,6 +447,158 @@ public class UgovorServiceTest {
         assertEquals(ugovorService.getAllByDelovodniBroj(delovodniBroj, token), ugovori);
         assertEquals(ugovorService.getAllByDelovodniBrojAndUgovorStatus(delovodniBroj, token, UgovorStatus.DRAFT), ugovoriDraft);
         assertEquals(ugovorService.getAllByDelovodniBrojAndUgovorStatus(delovodniBroj, token, UgovorStatus.FINALIZED), ugovoriFinalized);
+    }
+
+    @Test
+    void createUgovorTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+
+        var request = new UgovorCreateRequest();
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        when(ugovorRepository.save(any())).thenReturn(new Ugovor());
+
+        assertNotNull(ugovorService.createUgovor(request, token));
+    }
+
+    @Test
+    void createUgovorBadRequestTest()
+    {
+        var request = new UgovorCreateRequest();
+
+        var token = "test";
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token));
+    }
+
+    @Test
+    void modifyUgovorTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+
+        var ugovorId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        when(ugovorRepository.save(any())).thenReturn(new Ugovor());
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(new Ugovor()));
+
+        assertNotNull(ugovorService.modifyUgovor(request, token));
+    }
+
+    @Test
+    void modifyUgovorFinalizedTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        Long companyId = 1L;
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setStatus(UgovorStatus.FINALIZED);
+
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(ugovor));
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.modifyUgovor(request, token));
+    }
+
+    @Test
+    void finalizeUgovorTest() throws IOException {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        Long ugovorId = 1L;
+        var documentId = "id";
+        var document = new MockMultipartFile("test", new byte[] {1, 2, 3});
+
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var stavke = new ArrayList<TransakcionaStavka>();
+        var stavka = new TransakcionaStavka();
+        stavka.setUserId(userId);
+        stavka.setKapitalTypePotrazni(KapitalType.NOVAC);
+        stavka.setKolicinaPotrazna(0.1);
+        stavka.setKapitalPotrazniId(1L);
+
+        stavka.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        stavka.setKolicinaDugovna(0.1);
+        stavka.setKapitalDugovniId(1L);
+
+        stavka.setUgovor(new Ugovor());
+
+        stavke.add(stavka);
+
+        ugovor.setStavke(stavke);
+
+        String token = "test";
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        when(ugovorRepository.save(ugovor)).thenReturn(ugovor);
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+
+
+        when(contractDocumentService.saveDocument(ugovor, document)).thenReturn(documentId);
+
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(new Transakcija());
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        when(valutaRepository.getById(1L)).thenReturn(valuta);
+
+        assertEquals(ugovorService.finalizeUgovor(ugovorId, document, token), ugovor);
+
     }
 
 }
