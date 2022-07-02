@@ -22,9 +22,11 @@ import rs.edu.raf.banka.racun.model.company.Company;
 import rs.edu.raf.banka.racun.model.contract.ContractDocument;
 import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
+import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.repository.contract.ContractDocumentRepository;
+import rs.edu.raf.banka.racun.repository.contract.TransakcionaStavkaRepository;
 import rs.edu.raf.banka.racun.repository.contract.UgovorRepository;
 import rs.edu.raf.banka.racun.requests.TransakcionaStavkaRequest;
 import rs.edu.raf.banka.racun.requests.UgovorCreateRequest;
@@ -68,6 +70,10 @@ public class UgovorServiceTest {
 
     @Mock
     TransakcijaService transakcijaService;
+
+    @Mock
+    TransakcionaStavkaRepository transakcijaRepository;
+
 
     @Mock
     ValutaRepository valutaRepository;
@@ -718,7 +724,7 @@ public class UgovorServiceTest {
         var ugovor = new Ugovor();
         ugovor.setId(ugovorId);
 
-        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+//        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
 
         var request = new TransakcionaStavkaRequest();
         request.setUgovorId(1L);
@@ -731,17 +737,74 @@ public class UgovorServiceTest {
 
         var valuta = new Valuta();
         valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
 
         when(valutaRepository.findValutaByKodValute("USD")).thenReturn(valuta);
-        when(ugovorRepository.save(ugovor)).thenReturn(ugovor);
+        when(valutaRepository.getById(any())).thenReturn(valuta);
+//        when(ugovorRepository.save(ugovor)).thenReturn(ugovor);
         when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(new Transakcija());
+        when(transakcijaRepository.save(any())).thenReturn(new TransakcionaStavka());
 
         var bidResponse = new AskBidPriceResponse();
         bidResponse.setAsk(1.0);
         bidResponse.setHartijaId(1L);
 
-        when(HttpUtils.getAskBidPrice(any(),any(),any())).thenReturn(ResponseEntity.ok(bidResponse));
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
 
-        assertNotNull(ugovorService.addStavka(request, token));
+            assertNotNull(ugovorService.addStavka(request, token));
+        }
+
+    }
+
+    @Test
+    void createTransakcionaStavkaBadRequestTest()
+    {
+        String token = "test";
+
+        var request = new TransakcionaStavkaRequest();
+        request.setUgovorId(null);
+        request.setKapitalTypePotrazni(null);
+        request.setKapitalTypeDugovni(null);
+        request.setKapitalPotrazniOznaka(null);
+        request.setKapitalDugovniOznaka(null);
+        request.setKolicinaPotrazna(null);
+        request.setKolicinaDugovna(null);
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.addStavka(request, token), "bad request");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UgovorStatus.class, names = {"FINALIZED", "REJECTED"})
+    void createTransakcionaStavkaUgovorFinalizedTest(UgovorStatus ugovorStatus)
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setStatus(ugovorStatus);
+        ugovor.setId(ugovorId);
+
+
+        var request = new TransakcionaStavkaRequest();
+        request.setUgovorId(1L);
+        request.setKapitalTypePotrazni(KapitalType.NOVAC);
+        request.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        request.setKapitalPotrazniOznaka("USD");
+        request.setKapitalDugovniOznaka("USD");
+        request.setKolicinaPotrazna(1.0);
+        request.setKolicinaDugovna(1.0);
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.addStavka(request, token), "Ugovor is finalized");
     }
 }
