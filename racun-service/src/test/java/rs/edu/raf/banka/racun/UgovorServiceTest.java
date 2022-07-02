@@ -908,4 +908,95 @@ public class UgovorServiceTest {
 
         assertThrows( ContractExpcetion.class, () -> ugovorService.modifyStavka(request, token), "Ugovor is finalized");
     }
+
+    @Test
+    void removeTransakcionaStavkaTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+        stavka.setUgovor(ugovor);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(new Transakcija());
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
+            assertNotNull(ugovorService.removeStavka(1L, token));
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UgovorStatus.class, names = {"FINALIZED", "REJECTED"})
+    void removeTransakcionaStavkaFinalizedTest(UgovorStatus ugovorStatus)
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setStatus(ugovorStatus);
+        ugovor.setId(ugovorId);
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+        stavka.setUgovor(ugovor);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
+            assertThrows( ContractExpcetion.class, () -> ugovorService.removeStavka(1L, token), "Ugovor is finalized");
+        }
+    }
 }
