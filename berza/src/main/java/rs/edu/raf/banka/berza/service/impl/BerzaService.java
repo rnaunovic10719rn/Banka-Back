@@ -1,6 +1,7 @@
 package rs.edu.raf.banka.berza.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.BerzaDto;
@@ -57,10 +58,12 @@ public class BerzaService {
         this.priceService = priceService;
     }
 
+    @Cacheable(value="Berze")
     public List<Berza> findAll(){
         return berzaRepository.findAll();
     }
 
+    @Cacheable(value="BerzeDto", key="#id")
     public BerzaDto findBerza(Long id) {
         Berza berza = berzaRepository.findBerzaById(id);
         BerzaDto berzaDto = new BerzaDto();
@@ -69,6 +72,7 @@ public class BerzaService {
         return berzaDto;
     }
 
+    @Cacheable(value="Berze", key="#oznaka.toUpperCase()")
     public Berza findBerza(String oznaka){
         return berzaRepository.findBerzaByOznakaBerze(oznaka);
     }

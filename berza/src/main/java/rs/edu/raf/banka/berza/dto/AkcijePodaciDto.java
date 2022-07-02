@@ -4,10 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AkcijePodaciDto {
+public class AkcijePodaciDto implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -7891725050066298461L;
+
     String ticker;
     String opisHartije;
     String time;

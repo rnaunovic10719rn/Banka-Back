@@ -1,17 +1,23 @@
 package rs.edu.raf.banka.berza.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Berza {
+public class Berza implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 6879714582042601486L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +31,11 @@ public class Berza {
     private String closeTime;
     private String vremenskaZona;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Valuta valuta;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Order> orderi;
 
 }

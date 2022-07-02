@@ -1,6 +1,5 @@
 package rs.edu.raf.banka.berza.controller;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,21 +27,18 @@ public class BerzaController {
     private final UserService userService;
     private final OrderService orderService;
     private final PriceService priceService;
-    private final ModelMapper modelMapper;
-    private HartijaService hartijaService;
+    private final HartijaService hartijaService;
 
     @Autowired
     public BerzaController(BerzaService berzaService,
                            OrderService orderService,
                            UserService userService,
                            PriceService priceService,
-                           ModelMapper modelMapper,
                            HartijaService hartijaService){
         this.berzaService = berzaService;
         this.orderService = orderService;
         this.userService = userService;
         this.priceService = priceService;
-        this.modelMapper = modelMapper;
         this.hartijaService = hartijaService;
     }
 
