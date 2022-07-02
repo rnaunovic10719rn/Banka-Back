@@ -598,7 +598,94 @@ public class UgovorServiceTest {
         when(valutaRepository.getById(1L)).thenReturn(valuta);
 
         assertEquals(ugovorService.finalizeUgovor(ugovorId, document, token), ugovor);
+        assertEquals(ugovor.getStatus(), UgovorStatus.FINALIZED);
+        assertEquals(ugovor.getDocumentId(), documentId);
+    }
 
+    @Test
+    void finalizeUgovorFinalizedTest() throws IOException {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        Long ugovorId = 1L;
+        var document = new MockMultipartFile("test", new byte[] {1, 2, 3});
+
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+        ugovor.setStatus(UgovorStatus.FINALIZED);
+
+        String token = "test";
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.finalizeUgovor(ugovorId, document, token));
+
+    }
+
+    @Test
+    void rejectUgovorTest() throws IOException {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        Long ugovorId = 1L;
+
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+        var stavke = new ArrayList<TransakcionaStavka>();
+        var stavka = new TransakcionaStavka();
+        stavka.setUserId(userId);
+        stavka.setKapitalTypePotrazni(KapitalType.NOVAC);
+        stavka.setKolicinaPotrazna(0.1);
+        stavka.setKapitalPotrazniId(1L);
+
+        stavka.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        stavka.setKolicinaDugovna(0.1);
+        stavka.setKapitalDugovniId(1L);
+
+        stavka.setUgovor(new Ugovor());
+
+        stavke.add(stavka);
+
+        ugovor.setStavke(stavke);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        when(valutaRepository.getById(1L)).thenReturn(valuta);
+
+        String token = "test";
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+        when(ugovorRepository.save(ugovor)).thenReturn(ugovor);
+
+        assertEquals(ugovorService.rejectUgovor(ugovorId, token), ugovor);
+        assertEquals(ugovor.getStatus(), UgovorStatus.REJECTED);
+    }
+
+    @Test
+    void rejectUgovorFinalizedTest() {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        Long ugovorId = 1L;
+
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+        ugovor.setStatus(UgovorStatus.FINALIZED);
+
+        String token = "test";
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token));
     }
 
 }
