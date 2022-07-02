@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -156,7 +157,7 @@ public class UgovorServiceTest {
         given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(ugovor));
         given(userService.getUserByToken(token)).willReturn(user);
 
-        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token));
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token), "No permissions");
     }
 
     @Test
@@ -179,7 +180,7 @@ public class UgovorServiceTest {
         given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(ugovor));
         given(userService.getUserByToken(token)).willReturn(user);
 
-        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token));
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token), "No permissions");
     }
 
     @Test
@@ -202,7 +203,7 @@ public class UgovorServiceTest {
         given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(ugovor));
         given(userService.getUserByToken(token)).willReturn(user);
 
-        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token));
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token), "No permissions");
     }
 
 
@@ -368,9 +369,9 @@ public class UgovorServiceTest {
 
         given(companyRepository.findById(companyId)).willReturn(Optional.empty());
 
-        assertThrows(ContractExpcetion.class , () -> ugovorService.getAllByCompany(companyId, token));
-        assertThrows(ContractExpcetion.class , () -> ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.DRAFT));
-        assertThrows(ContractExpcetion.class , () -> ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.FINALIZED));
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getAllByCompany(companyId, token), "Company not found");
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.DRAFT), "Company not found");
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.FINALIZED), "Company not found");
     }
 
 
@@ -485,7 +486,7 @@ public class UgovorServiceTest {
 
         var token = "test";
 
-        assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token));
+        assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token), "bad request");
     }
 
     @Test
@@ -522,8 +523,9 @@ public class UgovorServiceTest {
         assertNotNull(ugovorService.modifyUgovor(request, token));
     }
 
-    @Test
-    void modifyUgovorFinalizedTest()
+    @ParameterizedTest
+    @EnumSource(value = UgovorStatus.class, names = {"FINALIZED", "REJECTED"})
+    void modifyUgovorFinalizedTest(UgovorStatus status)
     {
         Long userId = 1L;
         var user = new UserDto();
@@ -537,7 +539,7 @@ public class UgovorServiceTest {
         Long companyId = 1L;
         var ugovorId = 1L;
         var ugovor = new Ugovor();
-        ugovor.setStatus(UgovorStatus.FINALIZED);
+        ugovor.setStatus(status);
 
         var request = new UgovorUpdateRequest();
         request.setId(ugovorId);
@@ -547,7 +549,7 @@ public class UgovorServiceTest {
 
         given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(ugovor));
 
-        assertThrows(ContractExpcetion.class, () -> ugovorService.modifyUgovor(request, token));
+        assertThrows(ContractExpcetion.class, () -> ugovorService.modifyUgovor(request, token), "Ugovor is finalized");
     }
 
     @Test
@@ -602,8 +604,9 @@ public class UgovorServiceTest {
         assertEquals(ugovor.getDocumentId(), documentId);
     }
 
-    @Test
-    void finalizeUgovorFinalizedTest() throws IOException {
+    @ParameterizedTest
+    @EnumSource(value = UgovorStatus.class, names = {"FINALIZED", "REJECTED"})
+    void finalizeUgovorFinalizedTest(UgovorStatus status) throws IOException {
         Long userId = 1L;
         var user = new UserDto();
         user.setId(userId);
@@ -614,14 +617,14 @@ public class UgovorServiceTest {
 
         var ugovor = new Ugovor();
         ugovor.setId(ugovorId);
-        ugovor.setStatus(UgovorStatus.FINALIZED);
+        ugovor.setStatus(status);
 
         String token = "test";
         given(userService.getUserByToken(token)).willReturn(user);
 
         when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
 
-        assertThrows(ContractExpcetion.class, () -> ugovorService.finalizeUgovor(ugovorId, document, token));
+        assertThrows(ContractExpcetion.class, () -> ugovorService.finalizeUgovor(ugovorId, document, token), "Ugovor is finalized");
 
     }
 
@@ -667,8 +670,9 @@ public class UgovorServiceTest {
         assertEquals(ugovor.getStatus(), UgovorStatus.REJECTED);
     }
 
-    @Test
-    void rejectUgovorFinalizedTest() {
+    @ParameterizedTest
+    @EnumSource(value = UgovorStatus.class, names = {"FINALIZED", "REJECTED"})
+    void rejectUgovorFinalizedTest(UgovorStatus status) {
         Long userId = 1L;
         var user = new UserDto();
         user.setId(userId);
@@ -678,14 +682,14 @@ public class UgovorServiceTest {
 
         var ugovor = new Ugovor();
         ugovor.setId(ugovorId);
-        ugovor.setStatus(UgovorStatus.FINALIZED);
+        ugovor.setStatus(status);
 
         String token = "test";
         given(userService.getUserByToken(token)).willReturn(user);
 
         when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
 
-        assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token));
+        assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token), "Ugovor is finalized");
     }
 
 }
