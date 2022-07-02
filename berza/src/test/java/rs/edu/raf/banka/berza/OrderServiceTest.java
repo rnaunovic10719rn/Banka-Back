@@ -1,5 +1,6 @@
 package rs.edu.raf.banka.berza;
 
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +70,36 @@ public class OrderServiceTest {
         when(orderRepository.findAll()).thenReturn(List.of(order));
         assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token").get(0).getOrderType());
     }
+
+    @Test
+    void testGetOrders() {
+        Order order = new Order();
+
+        order.setOrderType(OrderType.LIMIT_ORDER);
+        UserDto user = new UserDto();
+        when(userService.getUserByToken(any())).thenReturn(user);
+        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_AGENT");
+        List<Order> orders = new ArrayList<>();
+        orders.add(order);
+        when(orderRepository.findOrderByUserIdAndDoneAndOrderStatus(anyLong(), any(), any())).thenReturn(orders);
+        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token","APPROVED",true).get(0).getOrderType());
+    }
+
+    @Test
+    void testGetOrders2() {
+        Order order = new Order();
+
+        order.setOrderType(OrderType.LIMIT_ORDER);
+        UserDto user = new UserDto();
+        when(userService.getUserByToken(any())).thenReturn(user);
+        when(userService.getUserRoleByToken(any())).thenReturn("ROLE_ADMIN");
+        List<Order> orders = new ArrayList<>();
+        orders.add(order);
+        when(orderRepository.findOrderByOrderStatusAndDone(any(),any())).thenReturn(orders);
+        assertEquals(OrderType.LIMIT_ORDER, orderService.getOrders("token","APPROVED",true).get(0).getOrderType());
+    }
+
+
 
 //    @Test
 //    void testGetOrders21() {
