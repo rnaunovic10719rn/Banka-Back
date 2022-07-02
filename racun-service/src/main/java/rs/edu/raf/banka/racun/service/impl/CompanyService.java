@@ -61,10 +61,10 @@ public class CompanyService {
         }
 
         Company company = companyOptional.get();
-        //ako su maticni broj ili pib drugaciji, u tom slucaju se posmatra kao nova kompanija i treba je tako evidentirati
-        //u sistemu, a staru samo ostaviti kakva je bila
-        if (company.getMaticniBroj() != companyRequest.getMaticniBroj() || company.getPib() != companyRequest.getPib()) {
-            this.createCompany(companyRequest);
+        if (!company.getMaticniBroj().equals(companyRequest.getMaticniBroj())) {
+            throw new InvalidCompanyException("Maticni broj does not change");
+        } else if (!company.getPib().equals(companyRequest.getPib())) {
+            throw new InvalidCompanyException("PIB does not change");
         } else {
             company.setNaziv(companyRequest.getNaziv());
             company.setAdresa(companyRequest.getAdresa());
