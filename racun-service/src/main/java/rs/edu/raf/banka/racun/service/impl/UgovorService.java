@@ -333,20 +333,14 @@ public class UgovorService
         }
     }
 
-    public Binary getContractDocument(Long id, String token) throws ContractExpcetion {
-        if(id == null)
-            throw new ContractExpcetion("Invalid contract ID");
+    public Binary getContractDocument(String documentId) throws ContractExpcetion {
+        if(documentId == null)
+            throw new ContractExpcetion("Invalid document ID");
 
-        var ugovor = getById(id);
-        if(ugovor == null)
-            throw new ContractExpcetion("Ugovor not found");
-
-        checkUserCanAccessUgovor(ugovor, token);
-
-        if(ugovor.getStatus() != UgovorStatus.FINALIZED || ugovor.getDocumentId() == null || ugovor.getDocumentId().isBlank())
-            throw new ContractExpcetion("Contract not found");
-
-        ContractDocument contractDocument = contractDocumentService.getDocument(ugovor.getDocumentId());
+        ContractDocument contractDocument = contractDocumentService.getDocument(documentId);
+        if(contractDocument == null) {
+            throw new ContractExpcetion("Contract doesn't exist");
+        }
 
         return contractDocument.getDocument();
     }
