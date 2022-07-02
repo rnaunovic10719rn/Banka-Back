@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,12 +26,15 @@ import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.repository.contract.ContractDocumentRepository;
 import rs.edu.raf.banka.racun.repository.contract.UgovorRepository;
+import rs.edu.raf.banka.racun.requests.TransakcionaStavkaRequest;
 import rs.edu.raf.banka.racun.requests.UgovorCreateRequest;
 import rs.edu.raf.banka.racun.requests.UgovorUpdateRequest;
+import rs.edu.raf.banka.racun.response.AskBidPriceResponse;
 import rs.edu.raf.banka.racun.service.impl.ContractDocumentService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.UgovorService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
+import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import java.io.IOException;
 import java.sql.Array;
@@ -692,4 +696,52 @@ public class UgovorServiceTest {
         assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token), "Ugovor is finalized");
     }
 
+
+    @Test
+    void createTransakcionaStavkaTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+
+        var request = new TransakcionaStavkaRequest();
+        request.setUgovorId(1L);
+        request.setKapitalTypePotrazni(KapitalType.NOVAC);
+        request.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        request.setKapitalPotrazniOznaka("USD");
+        request.setKapitalDugovniOznaka("USD");
+        request.setKolicinaPotrazna(1.0);
+        request.setKolicinaDugovna(1.0);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+
+        when(valutaRepository.findValutaByKodValute("USD")).thenReturn(valuta);
+        when(ugovorRepository.save(ugovor)).thenReturn(ugovor);
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        when(HttpUtils.getAskBidPrice(any(),any(),any())).thenReturn(ResponseEntity.ok(bidResponse));
+
+        assertNotNull(ugovorService.addStavka(request, token));
+    }
 }
