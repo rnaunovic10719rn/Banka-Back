@@ -246,7 +246,7 @@ public class UgovorService
 
         checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+        if(ugovor.getStatus() != UgovorStatus.DRAFT)
             throw new ContractExpcetion("Ugovor is finalized");
 
         var modified = false;
@@ -284,7 +284,7 @@ public class UgovorService
 
         checkUserCanFinalizeUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+        if(ugovor.getStatus() != UgovorStatus.DRAFT)
             throw new ContractExpcetion("Ugovor is finalized");
 
         String documentId = contractDocumentService.saveDocument(ugovor, document);
@@ -315,7 +315,7 @@ public class UgovorService
 
         checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+        if(ugovor.getStatus() != UgovorStatus.DRAFT)
             throw new ContractExpcetion("Ugovor is finalized");
 
         rejectTransactions(token, ugovor.getStavke());
@@ -370,7 +370,7 @@ public class UgovorService
 
         UserDto user = checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED) {
+        if(ugovor.getStatus() != UgovorStatus.DRAFT) {
             throw new ContractExpcetion("Ugovor is finalized");
         }
 
@@ -418,7 +418,7 @@ public class UgovorService
 
         checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED) {
+        if(ugovor.getStatus() != UgovorStatus.DRAFT) {
             throw new ContractExpcetion("Ugovor is finalized");
         }
 
@@ -483,7 +483,7 @@ public class UgovorService
 
         checkUserCanAccessUgovor(ugovor, token);
 
-        if(ugovor.getStatus() == UgovorStatus.FINALIZED)
+        if(ugovor.getStatus() != UgovorStatus.DRAFT)
             throw new ContractExpcetion("Ugovor is finalized");
 
         var deleteRequest = deleteStavkaTransaction(stavka, token);
