@@ -1,6 +1,7 @@
 package rs.edu.raf.banka.berza.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import rs.edu.raf.banka.berza.dto.FuturesPodaciDto;
 import rs.edu.raf.banka.berza.model.FuturesUgovori;
@@ -28,6 +29,7 @@ public class FuturesUgovoriPodaciService {
         this.influxScrapperService = influxScrapperService;
     }
 
+    @Cacheable(value = "FuturesDto")
     public List<FuturesPodaciDto> getOdabraniFuturesUgovori() {
         List<FuturesPodaciDto> podaci = new ArrayList<>();
 
@@ -44,6 +46,7 @@ public class FuturesUgovoriPodaciService {
         return true;
     }
 
+    @Cacheable(value = "FuturesDto", key = "#symbol")
     public FuturesPodaciDto getFuturesUgovor(String symbol) {
         FuturesUgovori future = futuresUgovoriRepository.findFuturesUgovoriByOznakaHartije(symbol);
         if(future == null){
