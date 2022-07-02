@@ -110,9 +110,9 @@ public class UgovorController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping(value = "/document/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public @ResponseBody byte[] getContractDocument(@RequestHeader("Authorization") String token, @PathVariable Long id) {
-        var result = ugovorService.getContractDocument(id, token);
+    @GetMapping(value = "/document/{documentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody byte[] getContractDocument(@PathVariable String documentId) {
+        var result = ugovorService.getContractDocument(documentId);
         return result.getData();
     }
 
