@@ -201,7 +201,7 @@ public class UgovorServiceTest {
 
         var ugovor2 = new Ugovor();
         ugovor2.setUserId(userId);
-        ugovor2.setStatus(UgovorStatus.FINALIZED);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
         ugovori.add(ugovor2);
         ugovoriDraft.add(ugovor2);
 
@@ -236,7 +236,7 @@ public class UgovorServiceTest {
 
         var ugovor2 = new Ugovor();
         ugovor2.setUserId(userId);
-        ugovor2.setStatus(UgovorStatus.FINALIZED);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
         ugovori.add(ugovor2);
         ugovoriDraft.add(ugovor2);
 
@@ -272,7 +272,7 @@ public class UgovorServiceTest {
 
         var ugovor2 = new Ugovor();
         ugovor2.setUserId(userId);
-        ugovor2.setStatus(UgovorStatus.FINALIZED);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
         ugovori.add(ugovor2);
         ugovoriDraft.add(ugovor2);
 
@@ -313,7 +313,7 @@ public class UgovorServiceTest {
 
         var ugovor2 = new Ugovor();
         ugovor2.setUserId(userId);
-        ugovor2.setStatus(UgovorStatus.FINALIZED);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
         ugovori.add(ugovor2);
         ugovoriDraft.add(ugovor2);
 
@@ -369,7 +369,7 @@ public class UgovorServiceTest {
 
         var ugovor2 = new Ugovor();
         ugovor2.setUserId(userId);
-        ugovor2.setStatus(UgovorStatus.FINALIZED);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
         ugovori.add(ugovor2);
         ugovoriDraft.add(ugovor2);
 
