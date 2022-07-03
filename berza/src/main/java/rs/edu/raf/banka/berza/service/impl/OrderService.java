@@ -447,15 +447,17 @@ public class OrderService {
             List<TransakcijaRequest> transakcije = getTransakcijeForOrder(order, kolicinaZaTransakciju, lastSegment);
             for(TransakcijaRequest tr: transakcije) {
                 tr.setUsername(order.getUsername());
-                HttpUtils.retryTemplate().execute(context -> {
-                    TransakcijaResponse transakcijaResponse = transakcijaService.commitTransaction("Bearer BERZA-SERVICE", tr);
-                    if(transakcijaResponse == null) {
-                        // NB: Bitno kako bi rollbackovali order.
-                        throw new RuntimeException("failed to commit transaction");
-                    }
+                if(HttpUtils.retryTemplate() != null) {
+                    HttpUtils.retryTemplate().execute(context -> {
+                        TransakcijaResponse transakcijaResponse = transakcijaService.commitTransaction("Bearer BERZA-SERVICE", tr);
+                        if (transakcijaResponse == null) {
+                            // NB: Bitno kako bi rollbackovali order.
+                            throw new RuntimeException("failed to commit transaction");
+                        }
 
-                    return null;
-                });
+                        return null;
+                    });
+                }
             }
         } else {
             MarginTransakcijaRequest transakcija = getMarginTransakcijaForOrder(order, kolicinaZaTransakciju);

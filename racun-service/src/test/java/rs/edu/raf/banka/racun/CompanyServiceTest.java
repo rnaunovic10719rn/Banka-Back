@@ -34,7 +34,7 @@ public class CompanyServiceTest {
     CompanyRepository companyRepository;
 
     @Test
-    void testValidateCompanyRequest() {
+    void testValidateCompanyRequestAdresa() {
         CompanyRequest cr = new CompanyRequest();
         cr.setId(2L);
         cr.setNaziv("nazivMockito");
@@ -42,6 +42,69 @@ public class CompanyServiceTest {
         cr.setPib("pibMockito");
         cr.setSifraDelatnosti("sifraMockito");
         cr.setDrzava("drzavaMockito");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateCompanyRequest(cr), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyRequestNaziv() {
+        CompanyRequest cr = new CompanyRequest();
+        cr.setId(2L);
+        cr.setAdresa("mockAdresa");
+        cr.setMaticniBroj("maticniMockito");
+        cr.setPib("pibMockito");
+        cr.setSifraDelatnosti("sifraMockito");
+        cr.setDrzava("drzavaMockito");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateCompanyRequest(cr), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyRequestMaticniBroj() {
+        CompanyRequest cr = new CompanyRequest();
+        cr.setId(2L);
+        cr.setNaziv("nazivMockito");
+        cr.setPib("pibMockito");
+        cr.setSifraDelatnosti("sifraMockito");
+        cr.setDrzava("drzavaMockito");
+        cr.setAdresa("mockAdresa");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateCompanyRequest(cr), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyRequestPIB() {
+        CompanyRequest cr = new CompanyRequest();
+        cr.setId(2L);
+        cr.setNaziv("nazivMockito");
+        cr.setMaticniBroj("maticniMockito");
+        cr.setSifraDelatnosti("sifraMockito");
+        cr.setDrzava("drzavaMockito");
+        cr.setAdresa("mockAdresa");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateCompanyRequest(cr), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyRequestSifra() {
+        CompanyRequest cr = new CompanyRequest();
+        cr.setId(2L);
+        cr.setNaziv("nazivMockito");
+        cr.setMaticniBroj("maticniMockito");
+        cr.setDrzava("drzavaMockito");
+        cr.setAdresa("mockAdresa");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateCompanyRequest(cr), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyRequestDrzava() {
+        CompanyRequest cr = new CompanyRequest();
+        cr.setId(2L);
+        cr.setNaziv("nazivMockito");
+        cr.setMaticniBroj("maticniMockito");
+        cr.setSifraDelatnosti("sifraMockito");
+        cr.setAdresa("mockAdresa");
 
         assertThrows(InvalidCompanyException.class, () -> companyService.validateCompanyRequest(cr), "Required parameter is missing");
     }

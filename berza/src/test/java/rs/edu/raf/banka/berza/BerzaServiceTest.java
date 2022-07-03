@@ -1,5 +1,6 @@
 package rs.edu.raf.banka.berza;
 
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,13 +14,13 @@ import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.ForexPodaciDto;
 import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
-import rs.edu.raf.banka.berza.model.Akcije;
-import rs.edu.raf.banka.berza.model.Berza;
-import rs.edu.raf.banka.berza.model.Order;
-import rs.edu.raf.banka.berza.model.Valuta;
+import rs.edu.raf.banka.berza.model.*;
 import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.BerzaRepository;
+import rs.edu.raf.banka.berza.repository.FuturesUgovoriRepository;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
+import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
+import rs.edu.raf.banka.berza.requests.FuturesCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
 import rs.edu.raf.banka.berza.response.OrderResponse;
 import rs.edu.raf.banka.berza.service.impl.*;
@@ -27,10 +28,11 @@ import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
 import javax.persistence.EntityManager;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +54,9 @@ public class BerzaServiceTest {
 
     @Mock
     AkcijeRepository akcijeRepository;
+
+    @Mock
+    FuturesUgovoriRepository futuresUgovoriRepository;
 
     @Mock
     OrderRepository orderRepository;
@@ -340,6 +345,261 @@ public class BerzaServiceTest {
         when(userService.getUserByToken(any())).thenReturn(user);
         when(userService.getUserRoleByToken(any())).thenReturn(String.valueOf(UserRole.ROLE_ADMIN));
         assertEquals(new OrderResponse(MessageUtils.ERROR).getMessage(),berzaService.makeOrder(token, request).getMessage());
+    }
+
+    @Test
+    void testCreateUpdateAkcija1() {
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setOznaka("META");
+        akcijaCreateUpdateRequest.setOpis("Meta Platforms Inc");
+        akcijaCreateUpdateRequest.setBerzaOznaka("NASDAQ");
+        akcijaCreateUpdateRequest.setOutstandingShares(10L);
+
+        when(berzaRepository.findBerzaByOznakaBerze("NASDAQ")).thenReturn(new Berza());
+
+        berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+    }
+
+    @Test
+    void testCreateUpdateAkcija2() {
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setId(1L);
+        akcijaCreateUpdateRequest.setOznaka("META");
+        akcijaCreateUpdateRequest.setOpis("Meta Platforms Inc");
+        akcijaCreateUpdateRequest.setBerzaOznaka("NASDAQ");
+        akcijaCreateUpdateRequest.setOutstandingShares(10L);
+
+        Akcije akcija = new Akcije();
+        akcija.setCustom(true);
+
+        when(berzaRepository.findBerzaByOznakaBerze("NASDAQ")).thenReturn(new Berza());
+        when(akcijeRepository.findAkcijeById(1L)).thenReturn(akcija);
+
+        berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+    }
+
+    @Test
+    void testCreateUpdateAkcija3() {
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setId(1L);
+        akcijaCreateUpdateRequest.setOznaka("META");
+        akcijaCreateUpdateRequest.setOpis("Meta Platforms Inc");
+        akcijaCreateUpdateRequest.setBerzaOznaka("NASDAQ");
+        akcijaCreateUpdateRequest.setOutstandingShares(10L);
+
+        Akcije akcija = new Akcije();
+        akcija.setCustom(false);
+
+        when(berzaRepository.findBerzaByOznakaBerze("NASDAQ")).thenReturn(new Berza());
+        when(akcijeRepository.findAkcijeById(1L)).thenReturn(akcija);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+        });
+
+        String expectedMessage = "stock is not custom";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateAkcija4() {
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setId(1L);
+        akcijaCreateUpdateRequest.setOznaka("META");
+        akcijaCreateUpdateRequest.setOpis("Meta Platforms Inc");
+        akcijaCreateUpdateRequest.setBerzaOznaka("NASDAQ");
+        akcijaCreateUpdateRequest.setOutstandingShares(10L);
+
+        Akcije akcija = new Akcije();
+        akcija.setCustom(false);
+
+        when(berzaRepository.findBerzaByOznakaBerze("NASDAQ")).thenReturn(new Berza());
+        when(akcijeRepository.findAkcijeById(1L)).thenReturn(null);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+        });
+
+        String expectedMessage = "stock not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateAkcija5() {
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setId(1L);
+        akcijaCreateUpdateRequest.setOznaka("META");
+        akcijaCreateUpdateRequest.setOpis("Meta Platforms Inc");
+        akcijaCreateUpdateRequest.setBerzaOznaka("NASDAQ");
+        akcijaCreateUpdateRequest.setOutstandingShares(10L);
+
+        Akcije akcija = new Akcije();
+        akcija.setCustom(false);
+
+        when(berzaRepository.findBerzaByOznakaBerze("NASDAQ")).thenReturn(null);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+        });
+
+        String expectedMessage = "exchange not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateAkcija6() {
+        AkcijaCreateUpdateRequest akcijaCreateUpdateRequest = new AkcijaCreateUpdateRequest();
+        akcijaCreateUpdateRequest.setId(1L);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateAkcija(akcijaCreateUpdateRequest);
+        });
+
+        String expectedMessage = "bad request";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateFuturesUgovor1() {
+        FuturesCreateUpdateRequest futuresCreateUpdateRequest = new FuturesCreateUpdateRequest();
+        futuresCreateUpdateRequest.setOznaka("CONFH2022");
+        futuresCreateUpdateRequest.setOpis("Some random future");
+        futuresCreateUpdateRequest.setBerzaOznaka("EUREX");
+        futuresCreateUpdateRequest.setContractSize(0.0);
+        futuresCreateUpdateRequest.setMaintenanceMargin(0.0);
+        futuresCreateUpdateRequest.setContractUnit("unit");
+        futuresCreateUpdateRequest.setSettlementDate(new Date());
+
+        when(berzaRepository.findBerzaByOznakaBerze("EUREX")).thenReturn(new Berza());
+
+        berzaService.createUpdateFuturesUgovor(futuresCreateUpdateRequest);
+    }
+
+    @Test
+    void testCreateUpdateFuturesUgovor2() {
+        FuturesCreateUpdateRequest futuresCreateUpdateRequest = new FuturesCreateUpdateRequest();
+        futuresCreateUpdateRequest.setId(1L);
+        futuresCreateUpdateRequest.setOznaka("CONFH2022");
+        futuresCreateUpdateRequest.setOpis("Some random future");
+        futuresCreateUpdateRequest.setBerzaOznaka("EUREX");
+        futuresCreateUpdateRequest.setContractSize(0.0);
+        futuresCreateUpdateRequest.setMaintenanceMargin(0.0);
+        futuresCreateUpdateRequest.setContractUnit("unit");
+        futuresCreateUpdateRequest.setSettlementDate(new Date());
+
+        FuturesUgovori future = new FuturesUgovori();
+        future.setCustom(true);
+
+        when(berzaRepository.findBerzaByOznakaBerze("EUREX")).thenReturn(new Berza());
+        when(futuresUgovoriRepository.findById(1L)).thenReturn(Optional.of(future));
+
+        berzaService.createUpdateFuturesUgovor(futuresCreateUpdateRequest);
+    }
+
+    @Test
+    void testCreateUpdateFuturesUgovor3() {
+        FuturesCreateUpdateRequest futuresCreateUpdateRequest = new FuturesCreateUpdateRequest();
+        futuresCreateUpdateRequest.setId(1L);
+        futuresCreateUpdateRequest.setOznaka("CONFH2022");
+        futuresCreateUpdateRequest.setOpis("Some random future");
+        futuresCreateUpdateRequest.setBerzaOznaka("EUREX");
+        futuresCreateUpdateRequest.setContractSize(0.0);
+        futuresCreateUpdateRequest.setMaintenanceMargin(0.0);
+        futuresCreateUpdateRequest.setContractUnit("unit");
+        futuresCreateUpdateRequest.setSettlementDate(new Date());
+
+        FuturesUgovori future = new FuturesUgovori();
+        future.setCustom(false);
+
+        when(berzaRepository.findBerzaByOznakaBerze("EUREX")).thenReturn(new Berza());
+        when(futuresUgovoriRepository.findById(1L)).thenReturn(Optional.of(future));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateFuturesUgovor(futuresCreateUpdateRequest);
+        });
+
+        String expectedMessage = "futures contract is not custom";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateFuturesUgovor4() {
+        FuturesCreateUpdateRequest futuresCreateUpdateRequest = new FuturesCreateUpdateRequest();
+        futuresCreateUpdateRequest.setId(1L);
+        futuresCreateUpdateRequest.setOznaka("CONFH2022");
+        futuresCreateUpdateRequest.setOpis("Some random future");
+        futuresCreateUpdateRequest.setBerzaOznaka("EUREX");
+        futuresCreateUpdateRequest.setContractSize(0.0);
+        futuresCreateUpdateRequest.setMaintenanceMargin(0.0);
+        futuresCreateUpdateRequest.setContractUnit("unit");
+        futuresCreateUpdateRequest.setSettlementDate(new Date());
+
+        FuturesUgovori future = new FuturesUgovori();
+        future.setCustom(false);
+
+        when(berzaRepository.findBerzaByOznakaBerze("EUREX")).thenReturn(new Berza());
+        when(futuresUgovoriRepository.findById(1L)).thenReturn(Optional.ofNullable(null));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateFuturesUgovor(futuresCreateUpdateRequest);
+        });
+
+        String expectedMessage = "futures contract not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateFuturesUgovor5() {
+        FuturesCreateUpdateRequest futuresCreateUpdateRequest = new FuturesCreateUpdateRequest();
+        futuresCreateUpdateRequest.setId(1L);
+        futuresCreateUpdateRequest.setOznaka("CONFH2022");
+        futuresCreateUpdateRequest.setOpis("Some random future");
+        futuresCreateUpdateRequest.setBerzaOznaka("EUREX");
+        futuresCreateUpdateRequest.setContractSize(0.0);
+        futuresCreateUpdateRequest.setMaintenanceMargin(0.0);
+        futuresCreateUpdateRequest.setContractUnit("unit");
+        futuresCreateUpdateRequest.setSettlementDate(new Date());
+
+        FuturesUgovori future = new FuturesUgovori();
+        future.setCustom(false);
+
+        when(berzaRepository.findBerzaByOznakaBerze("EUREX")).thenReturn(null);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateFuturesUgovor(futuresCreateUpdateRequest);
+        });
+
+        String expectedMessage = "exchange not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void testCreateUpdateFuturesUgovor6() {
+        FuturesCreateUpdateRequest futuresCreateUpdateRequest = new FuturesCreateUpdateRequest();
+        futuresCreateUpdateRequest.setId(1L);
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            berzaService.createUpdateFuturesUgovor(futuresCreateUpdateRequest);
+        });
+
+        String expectedMessage = "bad request";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
 }

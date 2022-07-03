@@ -11,6 +11,7 @@ import rs.edu.raf.banka.racun.model.company.CompanyBankAccount;
 import rs.edu.raf.banka.racun.model.company.CompanyContactPerson;
 import rs.edu.raf.banka.racun.repository.company.CompanyContactPersonRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
+import rs.edu.raf.banka.racun.requests.CompanyBankAccountRequest;
 import rs.edu.raf.banka.racun.requests.CompanyContactPersonRequest;
 import rs.edu.raf.banka.racun.service.impl.CompanyContactPersonService;
 
@@ -33,6 +34,89 @@ public class CompanyContactPersonServiceTest {
 
     @Mock
     CompanyRepository companyRepository;
+
+    @Test
+    void testValidateCompanyConcatPerson1() {
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setId(1L);
+        contactPerson.setIme("mockIme");
+        contactPerson.setPrezime("mockPrezime");
+        contactPerson.setEmail("mockEmail");
+        contactPerson.setBrojTelefona("mockBroj");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateContactPersonRequest(contactPerson), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyConcatPerson2() {
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setId(1L);
+        contactPerson.setCompanyId(1L);
+        contactPerson.setPrezime("mockPrezime");
+        contactPerson.setEmail("mockEmail");
+        contactPerson.setBrojTelefona("mockBroj");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateContactPersonRequest(contactPerson), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyConcatPerson3() {
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setId(1L);
+        contactPerson.setCompanyId(1L);
+        contactPerson.setIme("mockIme");
+        contactPerson.setEmail("mockEmail");
+        contactPerson.setBrojTelefona("mockBroj");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateContactPersonRequest(contactPerson), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyConcatPerson4() {
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setId(1L);
+        contactPerson.setCompanyId(1L);
+        contactPerson.setIme("mockIme");
+        contactPerson.setPrezime("mockPrezime");
+        contactPerson.setBrojTelefona("mockBroj");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateContactPersonRequest(contactPerson), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyConcatPerson5() {
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setId(1L);
+        contactPerson.setCompanyId(1L);
+        contactPerson.setIme("mockIme");
+        contactPerson.setPrezime("mockPrezime");
+        contactPerson.setEmail("mockEmail");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateContactPersonRequest(contactPerson), "Required parameter is missing");
+    }
+
+    @Test
+    void testCreateConcatPersonIdNotNull(){
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setId(1L);
+        contactPerson.setCompanyId(1L);
+        contactPerson.setIme("mockIme");
+        contactPerson.setPrezime("mockPrezime");
+        contactPerson.setEmail("mockEmail");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.createContactPerson(contactPerson), "message");
+    }
+
+    @Test
+    void testEditConcatPersonIdNull(){
+        CompanyContactPersonRequest contactPerson = new CompanyContactPersonRequest();
+        contactPerson.setCompanyId(1L);
+        contactPerson.setIme("mockIme");
+        contactPerson.setPrezime("mockPrezime");
+        contactPerson.setEmail("mockEmail");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.editContactPerson(contactPerson), "message");
+    }
 
     @Test
     void testGetContactPersons(){
