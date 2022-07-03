@@ -8,4 +8,6 @@ public interface BerzaRepository extends JpaRepository<Berza, Long> {
     Berza findBerzaById(Long id);
 
     Berza findBerzaByOznakaBerze(String oznakaBerze);
+
+    Berza findBerzaByMicCode(String micCode);
 }

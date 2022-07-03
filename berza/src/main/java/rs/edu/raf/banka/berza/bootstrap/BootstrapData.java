@@ -74,12 +74,11 @@ public class BootstrapData implements CommandLineRunner {
 
         List<Valuta> valute = new ArrayList<>();
         for(CurrencyCSV c: currencies) {
-            Optional<Valuta> valutaBerze = valutaRepository.getValutaByNazivValute(c.getDescription());
+            Optional<Valuta> valutaBerze = valutaRepository.getValutaByKodValute(c.getIsoCode());
             if(valutaBerze.isPresent()) {
                 continue;
             }
 
-            System.out.println(c);
             Valuta v = new Valuta();
             v.setKodValute(c.getIsoCode());
             v.setNazivValute(c.getDescription());
@@ -105,7 +104,7 @@ public class BootstrapData implements CommandLineRunner {
                 .parse();
 
         for(BerzaCSV bc : berzeCSV) {
-            Berza b = berzaRepository.findBerzaByOznakaBerze(bc.getExchangeAcronym());
+            Berza b = berzaRepository.findBerzaByMicCode(bc.getExchangeMicCode());
             if(b != null) {
                 continue;
             }
