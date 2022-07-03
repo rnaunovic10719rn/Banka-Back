@@ -20,6 +20,8 @@ import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.berza.controller.BerzaController;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
+import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
@@ -28,18 +30,20 @@ import rs.edu.raf.banka.berza.enums.OrderType;
 import rs.edu.raf.banka.berza.model.Akcije;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
+import rs.edu.raf.banka.berza.model.Valuta;
+import rs.edu.raf.banka.berza.repository.AkcijeRepository;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.requests.AkcijaCreateUpdateRequest;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
-import rs.edu.raf.banka.berza.service.impl.AkcijePodaciService;
-import rs.edu.raf.banka.berza.service.impl.BerzaService;
-import rs.edu.raf.banka.berza.service.impl.OrderService;
+import rs.edu.raf.banka.berza.service.impl.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {"berza.berze.csv=./berze.csv", "berza.inflacije.csv=./inflacije.csv"})
@@ -66,6 +70,12 @@ public class IntegrationTest {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    PriceService priceService;
+
+    @Autowired
+    AkcijeRepository akcijeRepository;
 
 
     @BeforeEach
@@ -276,10 +286,66 @@ public class IntegrationTest {
 
     @Test
     void makeOrder() throws Exception {
-        mockMvc.perform(get("/api/berza/order", "1", true)
+        AkcijePodaciDto akcije = new AkcijePodaciDto();
+        akcije.setId(1L);
+        akcije.setBerzaId(2L);
+        akcije.setPrice(10.0);
+
+        Order order = new Order();
+        order.setKolicina(100);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.MARKET_ORDER);
+        order.setPredvidjenaCena(101.0);
+        order.setLimitValue(105);
+
+        Valuta valuta = new Valuta();
+        valuta.setKodValute("EUR");
+
+        Berza berza = new Berza();
+        berza.setId(2L);
+        berza.setOpenTime("09:00:00");
+        berza.setCloseTime("23:00:00");
+        berza.setValuta(valuta);
+
+        var request = new OrderRequest();
+        request.setSymbol("usd");
+        request.setHartijaOdVrednostiTip(HartijaOdVrednostiType.AKCIJA.toString());
+        request.setAkcija("buy");
+        request.setKolicina(100);
+        request.setLimitValue(5);
+        request.setStopValue(10);
+        request.setAllOrNoneFlag(true);
+        request.setMarginFlag(false);
+
+        AskBidPriceDto askBidPrice = new AskBidPriceDto();
+        askBidPrice.setHartijaId(1L);
+        askBidPrice.setAsk(10.0);
+        askBidPrice.setBid(10.0);
+        askBidPrice.setBerza(berza);
+
+        Akcije a = new Akcije();
+        a.setBerza(berza);
+        a.setOznakaHartije("usd");
+        a.setLastUpdated(new Date());
+        akcijeRepository.save(a);
+
+
+        mockMvc.perform(post("/api/berza/order", true)
                 .header("Authorization", "Bearer " + token)
                 .contentType("application/json")
-                .content("")).andExpect(status().isOk());
+                .content(asJsonString(request))).andExpect(status().isOk());
 
+        Assert.assertEquals(orderService.getOrders("Bearer " + token).get(0),order);
+
+    }
+
+    public static String asJsonString(final Object obj) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            final String jsonContent = mapper.writeValueAsString(obj);
+            return jsonContent;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
