@@ -177,9 +177,10 @@ public class UgovorControllerTest {
 //    @Test
 //    void testFinalizeUgovor() throws Exception {
 //        Ugovor ugovor = new Ugovor();
-//        when(ugovorService.finalizeUgovor(any(), any(), anyString())).thenReturn(ugovor);
+//        MockMultipartFile document = new MockMultipartFile("test", new byte[] {1, 2, 3});
+//        when(ugovorService.finalizeUgovor(1L, document, validJWToken)).thenReturn(ugovor);
 //        mockMvc.perform(fileUpload("/api/ugovor/finalize/{id}", 1L)
-//                        .file(mockMultipartFile)
+//                        .file(document)
 //                        .header(HttpHeaders.AUTHORIZATION, validJWToken)
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(asJsonString(ugovorUpdateRequest)))
