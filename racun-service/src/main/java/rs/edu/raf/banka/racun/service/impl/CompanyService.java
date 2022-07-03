@@ -21,7 +21,7 @@ public class CompanyService {
         this.companyRepository = companyRepository;
     }
 
-    private void validateCompanyRequest(CompanyRequest companyRequest) {
+    public void validateCompanyRequest(CompanyRequest companyRequest) {
         if(StringUtils.emptyString(companyRequest.getNaziv()) ||
                 StringUtils.emptyString(companyRequest.getAdresa()) ||
                 StringUtils.emptyString(companyRequest.getDrzava()) ||
@@ -92,17 +92,6 @@ public class CompanyService {
 
     public Company getCompanyByPib(String pib) {
         return companyRepository.findByPib(pib);
-    }
-
-    //delete company treba izmeniti kada se implementiraju transakcije
-    //treba obezbediti da je moguce obrisati samo kompaniju koja nema transakcije
-    //kompanija koja ima transakcije ostaje u sistemu
-    public void deleteCompany(Long id) {
-        Optional<Company> company = companyRepository.findById(id);
-        if(company.isEmpty()) {
-            throw new InvalidCompanyException("Provided company does not exist");
-        }
-        companyRepository.delete(company.get());
     }
 
 }

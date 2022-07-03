@@ -142,13 +142,6 @@ public class CompanyControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void testDeleteCompany() throws Exception {
-
-        mockMvc.perform(delete("/api/company/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
-    }
 
     @Test
     void testGetContactPersons() throws Exception {
@@ -208,6 +201,22 @@ public class CompanyControllerTest {
         List<CompanyBankAccount> bankAccounts = new ArrayList<>();
         when(bankAccountService.getBankAccounts(anyLong())).thenReturn(bankAccounts);
         mockMvc.perform(get("/api/company/bankaccount/{companyId}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetBankAccountNotFound() throws Exception {
+        mockMvc.perform(get("/api/company//bankaccount/id/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetBankAccount() throws Exception {
+        CompanyBankAccount companyBankAccount = new CompanyBankAccount();
+        when(bankAccountService.getBankAccountById(anyLong())).thenReturn(Optional.of(companyBankAccount));
+        mockMvc.perform(get("/api/company/bankaccount/id/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

@@ -29,7 +29,7 @@ public class CompanyBankAccountService {
         this.valutaRepository = valutaRepository;
     }
 
-    private void validateBankAccountRequest(CompanyBankAccountRequest bankAccountRequest) {
+    public void validateBankAccountRequest(CompanyBankAccountRequest bankAccountRequest) {
         if(bankAccountRequest.getCompanyId() == null ||
                 bankAccountRequest.getValutaId() == null ||
                 StringUtils.emptyString(bankAccountRequest.getBrojRacuna()) ||

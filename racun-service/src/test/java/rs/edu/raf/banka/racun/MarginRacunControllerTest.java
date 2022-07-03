@@ -12,10 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import rs.edu.raf.banka.racun.controller.MarginRacunController;
-import rs.edu.raf.banka.racun.dto.KapitalHartijeDto;
-import rs.edu.raf.banka.racun.dto.KapitalPoTipuHartijeDto;
-import rs.edu.raf.banka.racun.dto.MarginTransakcijeHartijeDto;
-import rs.edu.raf.banka.racun.dto.SupervisorSredstvaKapitalDto;
+import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
 import rs.edu.raf.banka.racun.requests.MarginTransakcijaRequest;
@@ -24,6 +21,7 @@ import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -47,6 +45,8 @@ public class MarginRacunControllerTest {
     SredstvaKapitalService sredstvaKapitalService;
 
     MarginTransakcijaRequest marginTransakcijaRequest = initMarginTransakcijaRequest();
+
+    DateFilter dateFilter = initDateFilter();
     String validJWToken = initValidJWT();
     String dummyName = "Mock";
 
@@ -62,9 +62,27 @@ public class MarginRacunControllerTest {
     }
 
     @Test
+    void testDodajTransakcijuBadRequest() throws Exception {
+        mockMvc.perform(post("/api/margin/transakcija").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(marginTransakcijaRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testGetTransakcije() throws Exception {
         List<MarginTransakcija> marginTransakcija = new ArrayList<>();
         when(marginTransakcijaService.getAll(anyString())).thenReturn(marginTransakcija);
+        mockMvc.perform(get("/api/margin/transakcije").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void testGetTransakcijeFilter() throws Exception {
+        List<MarginTransakcija> marginTransakcija = new ArrayList<>();
+        when(marginTransakcijaService.getAll(validJWToken, dateFilter.from, dateFilter.to)).thenReturn(marginTransakcija);
         mockMvc.perform(get("/api/margin/transakcije").header(HttpHeaders.AUTHORIZATION, validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -162,6 +180,14 @@ public class MarginRacunControllerTest {
         marginTransakcijaRequest.setUnitPrice((double) 100L);
         marginTransakcijaRequest.setUsername("mockUsername");
         return marginTransakcijaRequest;
+    }
+
+    private DateFilter initDateFilter() {
+        DateFilter df = new DateFilter();
+        df.from = new Date();
+        df.to = new Date();
+
+        return df;
     }
 
 }
