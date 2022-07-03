@@ -45,6 +45,8 @@ public class CompanyBankAccountServiceTest {
     void testValidateCompanyBankAccountRequest1() {
         CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
         companyBankAccount.setId(2L);
+        companyBankAccount.setValutaId(1L);
+        companyBankAccount.setBrojRacuna("mockBrojRacuna");
         companyBankAccount.setBanka("mockBanka");
 
         assertThrows(InvalidCompanyException.class, () -> companyService.validateBankAccountRequest(companyBankAccount), "Required parameter is missing");
@@ -54,7 +56,31 @@ public class CompanyBankAccountServiceTest {
     void testValidateCompanyBankAccountRequest2() {
         CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
         companyBankAccount.setId(2L);
+        companyBankAccount.setCompanyId(1L);
+        companyBankAccount.setBrojRacuna("mockBrojRacuna");
         companyBankAccount.setBanka("mockBanka");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateBankAccountRequest(companyBankAccount), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyBankAccountRequest3() {
+        CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
+        companyBankAccount.setId(2L);
+        companyBankAccount.setCompanyId(1L);
+        companyBankAccount.setValutaId(1L);
+        companyBankAccount.setBanka("mockBanka");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateBankAccountRequest(companyBankAccount), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyBankAccountRequest4() {
+        CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
+        companyBankAccount.setId(2L);
+        companyBankAccount.setCompanyId(1L);
+        companyBankAccount.setValutaId(1L);
+        companyBankAccount.setBrojRacuna("mockBrojRacuna");
 
         assertThrows(InvalidCompanyException.class, () -> companyService.validateBankAccountRequest(companyBankAccount), "Required parameter is missing");
     }

@@ -25,7 +25,7 @@ public class CompanyContactPersonService {
         this.companyContactPersonRepository = companyContactPersonRepository;
     }
 
-    private void validateContactPersonRequest(CompanyContactPersonRequest contactPersonRequest) {
+    public void validateContactPersonRequest(CompanyContactPersonRequest contactPersonRequest) {
         if(contactPersonRequest.getCompanyId() == null ||
                 StringUtils.emptyString(contactPersonRequest.getIme()) ||
                 StringUtils.emptyString(contactPersonRequest.getPrezime()) ||
