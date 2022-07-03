@@ -375,7 +375,7 @@ public class MarginTransakcijaService {
         log.info("margina nije zadovoljena za {}!", razlikaMMR);
     }
 
-    private AskBidPriceResponse getAskBidPrice(KapitalType kapitalType, Long id) {
+    public AskBidPriceResponse getAskBidPrice(KapitalType kapitalType, Long id) {
         String type = "";
         switch (kapitalType) {
             case AKCIJA -> type = "AKCIJA";
@@ -389,7 +389,7 @@ public class MarginTransakcijaService {
         return resp.getBody();
     }
 
-    private double calculateMMRDifference(List<SredstvaKapital> sks) {
+    public double calculateMMRDifference(List<SredstvaKapital> sks) {
         double razlikaMMR = 0.0;
 
         for(SredstvaKapital sk: sks) {
