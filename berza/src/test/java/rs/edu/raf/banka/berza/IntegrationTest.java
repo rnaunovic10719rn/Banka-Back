@@ -1,6 +1,6 @@
 package rs.edu.raf.banka.berza;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import org.json.JSONException;
@@ -17,11 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.client.RestTemplate;
-import rs.edu.raf.banka.berza.controller.BerzaController;
 import rs.edu.raf.banka.berza.dto.AkcijePodaciDto;
 import rs.edu.raf.banka.berza.dto.AkcijeTimeseriesDto;
 import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
-import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.dto.request.AkcijeTimeseriesUpdateRequest;
 import rs.edu.raf.banka.berza.enums.HartijaOdVrednostiType;
 import rs.edu.raf.banka.berza.enums.OrderAction;
@@ -282,6 +280,22 @@ public class IntegrationTest {
 
         Assert.assertEquals(orderService.getOrders("Bearer " + token, "APPROVED", false).get(0).getBid(),orders.get(0).getBid());
 
+    }
+
+    @Test
+    void getOrdersByToken() throws Exception {
+        ResultActions resultActions = mockMvc.perform(get("/api/berza/order")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content("")).andExpect(status().isOk());
+
+        MvcResult mvcResult = resultActions.andReturn();
+        String strResp = mvcResult.getResponse().getContentAsString();
+
+        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, Order.class);
+        List<Order> orders = objectMapper.readValue(strResp, listType);
+
+        Assert.assertEquals(orderService.getOrders("Bearer " + token),orders);
     }
 
     @Test
