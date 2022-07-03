@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisabledIfEnvironmentVariable(named = "WORKSPACE", matches = "CI")
-public class IntegrationTest {
+class IntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -69,7 +69,7 @@ public class IntegrationTest {
                 .andExpect(status().isOk());
 
         Optional<User> user = userRepository.findByEmail("create.test@raf.rs");
-        assertThat(user.isEmpty()).isEqualTo(false);
+        assertThat(user.isEmpty()).isFalse();
         assertThat(user.get().getJmbg()).isEqualTo("1234560480810");
     }
 
@@ -101,7 +101,7 @@ public class IntegrationTest {
         String strResp = mvcResult.getResponse().getContentAsString();
 
         List<User> users = objectMapper.readValue(strResp, new TypeReference<List<User>>() {});
-        assertThat(users.size()).isNotEqualTo(0);
+        assertThat(users.size()).isNotZero();
     }
 
     @Test
@@ -159,7 +159,7 @@ public class IntegrationTest {
 
         Optional<User> deleted_user = userRepository.findByEmail("to_delete@raf.rs");
         assertThat(deleted_user).isPresent();
-        assertThat(deleted_user.get().isAktivan()).isEqualTo(false);
+        assertThat(deleted_user.get().isAktivan()).isFalse();
 
         url = "/api/user/enable/" + user.get().getId();
         mockMvc.perform(post(url)
@@ -170,7 +170,7 @@ public class IntegrationTest {
 
         deleted_user = userRepository.findByEmail("to_delete@raf.rs");
         assertThat(deleted_user).isPresent();
-        assertThat(deleted_user.get().isAktivan()).isEqualTo(true);
+        assertThat(deleted_user.get().isAktivan()).isTrue();
     }
 
     @Test
