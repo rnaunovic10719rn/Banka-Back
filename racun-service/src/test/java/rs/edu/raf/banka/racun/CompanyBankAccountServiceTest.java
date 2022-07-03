@@ -20,11 +20,12 @@ import rs.edu.raf.banka.racun.service.impl.CompanyContactPersonService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.prefs.BackingStoreException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyBankAccountServiceTest {
@@ -41,7 +42,16 @@ public class CompanyBankAccountServiceTest {
     ValutaRepository valutaRepository;
 
     @Test
-    void testValidateCompanyBankAccountRequest() {
+    void testValidateCompanyBankAccountRequest1() {
+        CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
+        companyBankAccount.setId(2L);
+        companyBankAccount.setBanka("mockBanka");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateBankAccountRequest(companyBankAccount), "Required parameter is missing");
+    }
+
+    @Test
+    void testValidateCompanyBankAccountRequest2() {
         CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
         companyBankAccount.setId(2L);
         companyBankAccount.setBanka("mockBanka");
@@ -65,11 +75,67 @@ public class CompanyBankAccountServiceTest {
     void testCreateBankAccountCompanyIsEmpty(){
         CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
         companyBankAccountRequest.setId(1L);
+        companyBankAccountRequest.setCompanyId(1L);
         companyBankAccountRequest.setBanka("mockBanka");
         companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
         companyBankAccountRequest.setValutaId(1L);
 
         assertThrows(InvalidCompanyException.class, () -> companyService.createBankAccount(companyBankAccountRequest), "message");
+    }
+
+    @Test
+    void testEditBankAccountIdNotNull(){
+        CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
+        companyBankAccountRequest.setCompanyId(1L);
+        companyBankAccountRequest.setBanka("mockBanka");
+        companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
+        companyBankAccountRequest.setValutaId(1L);
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.editBankAccount(companyBankAccountRequest), "message");
+    }
+
+    @Test
+    void testEditBankAccountCompanyIsEmpty(){
+        CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
+        companyBankAccountRequest.setId(1L);
+        companyBankAccountRequest.setCompanyId(1L);
+        companyBankAccountRequest.setBanka("mockBanka");
+        companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
+        companyBankAccountRequest.setValutaId(1L);
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.editBankAccount(companyBankAccountRequest), "message");
+    }
+
+    @Test
+    void testEditBankAccountValutaIsEmpty(){
+        CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
+        companyBankAccountRequest.setId(1L);
+        companyBankAccountRequest.setCompanyId(1L);
+        companyBankAccountRequest.setBanka("mockBanka");
+        companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
+        companyBankAccountRequest.setValutaId(-1L);
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.editBankAccount(companyBankAccountRequest), "message");
+    }
+
+    @Test
+    void testEditBankAccountBankAccountIsEmpty(){
+        CompanyBankAccount bankAccount = new CompanyBankAccount();
+        bankAccount.setId(2L);
+        bankAccount.setCompany(new Company());
+        bankAccount.setValuta(valutaRepository.findValutaByKodValute("RSD"));
+        bankAccount.setBrojRacuna("mockBroj");
+
+        CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
+        companyBankAccountRequest.setId(0L);
+        companyBankAccountRequest.setCompanyId(1L);
+        companyBankAccountRequest.setBanka("mockBanka");
+        companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
+        companyBankAccountRequest.setValutaId(1L);
+
+        lenient().when(companyBankAccountRepository.findById(2L)).thenReturn(Optional.of(bankAccount));
+        lenient().when(companyBankAccountRepository.save(bankAccount)).thenReturn(bankAccount);
+        assertThrows(InvalidCompanyException.class, () -> companyService.editBankAccount(companyBankAccountRequest), "message");
     }
 
     @Test
@@ -151,5 +217,19 @@ public class CompanyBankAccountServiceTest {
         given(companyBankAccountRepository.save(cb)).willReturn(cb);
 
         assertEquals(companyService.editBankAccount(cbar), cb);
+    }
+
+    @Test
+    void testDeleteBankAccount() {
+        CompanyBankAccount bankAccount = new CompanyBankAccount();
+        when(companyBankAccountRepository.findById(1L)).thenReturn(Optional.of(bankAccount));
+        assertDoesNotThrow(() -> companyService.deleteBankAccount(1L));
+    }
+
+    @Test
+    void testDeleteBankAccountIsEmpty() {
+        CompanyBankAccount bankAccount = new CompanyBankAccount();
+        lenient().when(companyBankAccountRepository.findById(1L)).thenReturn(Optional.of(bankAccount));
+        assertThrows(InvalidCompanyException.class, () -> companyService.deleteBankAccount(0L));
     }
 }

@@ -5,7 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import rs.edu.raf.banka.racun.exceptions.InvalidCompanyException;
 import rs.edu.raf.banka.racun.model.company.Company;
+import rs.edu.raf.banka.racun.model.company.CompanyBankAccount;
 import rs.edu.raf.banka.racun.model.company.CompanyContactPerson;
 import rs.edu.raf.banka.racun.repository.company.CompanyContactPersonRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
@@ -16,8 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyContactPersonServiceTest {
@@ -110,5 +114,19 @@ public class CompanyContactPersonServiceTest {
         given(companyCPRepository.save(cp)).willReturn(cp);
 
         assertEquals(companyService.editContactPerson(cpr), cp);
+    }
+
+    @Test
+    void testDeleteConcatPerson() {
+        CompanyContactPerson contactPerson = new CompanyContactPerson();
+        when(companyCPRepository.findById(1L)).thenReturn(Optional.of(contactPerson));
+        assertDoesNotThrow(() -> companyService.deleteContactPerson(1L));
+    }
+
+    @Test
+    void testDeleteConcatPersonIsEmpty() {
+        CompanyContactPerson contactPerson = new CompanyContactPerson();
+        lenient().when(companyCPRepository.findById(1L)).thenReturn(Optional.of(contactPerson));
+        assertThrows(InvalidCompanyException.class, () -> companyService.deleteContactPerson(0L));
     }
 }
