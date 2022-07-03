@@ -12,6 +12,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import rs.edu.raf.banka.racun.controller.MarginRacunController;
+import rs.edu.raf.banka.racun.dto.KapitalHartijeDto;
+import rs.edu.raf.banka.racun.dto.KapitalPoTipuHartijeDto;
+import rs.edu.raf.banka.racun.dto.MarginTransakcijeHartijeDto;
 import rs.edu.raf.banka.racun.dto.SupervisorSredstvaKapitalDto;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
@@ -59,12 +62,81 @@ public class MarginRacunControllerTest {
     }
 
     @Test
-    void getSredstvaStanje() throws Exception {
+    void testGetTransakcije() throws Exception {
+        List<MarginTransakcija> marginTransakcija = new ArrayList<>();
+        when(marginTransakcijaService.getAll(anyString())).thenReturn(marginTransakcija);
+        mockMvc.perform(get("/api/margin/transakcije").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
+
+
+    @Test
+    void testGetSredstvaStanje() throws Exception {
         List<SupervisorSredstvaKapitalDto> supervisorSredstvaKapitalDtoList = new ArrayList<>();
         when(sredstvaKapitalService.findSredstvaKapitalSupervisor(anyString(), anyBoolean())).thenReturn(supervisorSredstvaKapitalDtoList);
         mockMvc.perform(get("/api/margin/stanje").header(HttpHeaders.AUTHORIZATION, validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void testGetKapitalStanje() throws Exception {
+        List<KapitalHartijeDto> kapitalHartijeDtoList = new ArrayList<>();
+        when(sredstvaKapitalService.getUkupnoStanjePoHartijama(anyString(), anyBoolean())).thenReturn(kapitalHartijeDtoList);
+        mockMvc.perform(get("/api/margin/kapitalStanje").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void testGetKapitalStanjeBad() throws Exception {
+
+        when(sredstvaKapitalService.getUkupnoStanjePoHartijama(anyString(), anyBoolean())).thenReturn(null);
+        mockMvc.perform(get("/api/margin/kapitalStanje").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void testGetStanjePoTipu() throws Exception {
+        List<KapitalPoTipuHartijeDto> kapitalPoTipuHartijeDtos = new ArrayList<>();
+        when(sredstvaKapitalService.getStanjeJednogTipaHartije(anyString(),anyString(), anyBoolean())).thenReturn(kapitalPoTipuHartijeDtos);
+        mockMvc.perform(get("/api/margin/kapitalStanje/{kapitalType}","type").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void testGetStanjePoTipuBad() throws Exception {
+        when(sredstvaKapitalService.getStanjeJednogTipaHartije(anyString(),anyString(), anyBoolean())).thenReturn(null);
+        mockMvc.perform(get("/api/margin/kapitalStanje/{kapitalType}","type").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void testGetTransakcijeHartije() throws Exception {
+        List<MarginTransakcijeHartijeDto> marginTransakcijeHartijeDtos = new ArrayList<>();
+        when(sredstvaKapitalService.getTransakcijeHartijeMargins(anyLong(),anyString())).thenReturn(marginTransakcijeHartijeDtos);
+        mockMvc.perform(get("/api/margin/transakcijaHartije/{kapitalType}/{id}","type",1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void testGetTransakcijeHartijeBad() throws Exception {
+        when(sredstvaKapitalService.getTransakcijeHartijeMargins(anyLong(),anyString())).thenReturn(null);
+        mockMvc.perform(get("/api/margin/transakcijaHartije/{kapitalType}/{id}","type",1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
 
     }
 
