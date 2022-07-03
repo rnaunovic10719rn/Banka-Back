@@ -217,25 +217,11 @@ public class BerzaService {
     }
 
     public Double getPrice(Double ask, Double bid, OrderAction orderAction){
-        List<Double> cene;
-        Random random = new Random();
-
-        Double toReturn;
         if(orderAction.equals(OrderAction.BUY)) {
-            // TODO: Prepraviti ovo.
-//            cene = transakcijaService.findPriceActionBuy(bid);
-//            if(cene.size() >= 3)
-//                return cene.get(random.nextInt(3));
-            toReturn = bid;
-        } else { // SELL
-            // TODO: Prepraviti ovo.
-//            cene = transakcijaService.findPriceActionBuy(ask);
-//            if(cene.size() >= 3)
-//                return cene.get(random.nextInt(3));
-            toReturn = ask;
+            return bid;
         }
 
-        return toReturn;
+        return ask;
     }
 
     public Double getCommission(Double price, OrderType orderType) {
