@@ -17,8 +17,10 @@ import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
+import rs.edu.raf.banka.racun.model.Valuta;
+import rs.edu.raf.banka.racun.model.company.CompanyBankAccount;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
-import rs.edu.raf.banka.racun.requests.ValutaService;
+import rs.edu.raf.banka.racun.service.impl.ValutaService;
 import rs.edu.raf.banka.racun.service.impl.RacunService;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
@@ -66,6 +68,15 @@ public class RacunControllerTest {
     UUID mockRacun = UUID.randomUUID();
     String mockValuta = "RSD";
 
+
+    @Test
+    void getValuta() throws Exception {
+        List<Valuta> valute = new ArrayList<>();
+        when(valutaService.getValute()).thenReturn(valute);
+        mockMvc.perform(get("/api/racun/valute", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 
     @Test
     void testDodajTransakciju() throws Exception {

@@ -12,7 +12,7 @@ import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
-import rs.edu.raf.banka.racun.requests.ValutaService;
+import rs.edu.raf.banka.racun.service.impl.ValutaService;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
 
