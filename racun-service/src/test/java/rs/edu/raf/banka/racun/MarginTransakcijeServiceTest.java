@@ -178,6 +178,58 @@ public class MarginTransakcijeServiceTest {
     }
 
     @Test
+    void testDodavanjeTransakcijeIsplata() throws NoSuchFieldException {
+        MarginTransakcijaRequest marginTransakcijaRequest = new MarginTransakcijaRequest();
+        marginTransakcijaRequest.setTipTransakcije(MarginTransakcijaType.ISPLATA);
+        marginTransakcijaRequest.setOpis("mock");
+        marginTransakcijaRequest.setOrderId(-1L);
+        marginTransakcijaRequest.setIznos(0.0);
+        marginTransakcijaRequest.setKredit(0.0);
+        marginTransakcijaRequest.setMaintenanceMargin(0.0);
+        marginTransakcijaRequest.setTipKapitala(KapitalType.AKCIJA);
+        marginTransakcijaRequest.setHartijaId(1L);
+        marginTransakcijaRequest.setKolicina(1.0);
+        marginTransakcijaRequest.setUnitPrice(1.0);
+        marginTransakcijaRequest.setUsername("admin");
+
+        MarginTransakcija t = new MarginTransakcija();
+
+        Valuta v = new Valuta();
+        v.setId(1L);
+        v.setKodValute("RSD");
+
+        Racun r = new Racun();
+        r.setBrojRacuna(mockRacun);
+
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setMaintenanceMargin(1.0);
+        sredstvaKapital.setKreditnaSredstva(1.0);
+        sredstvaKapital.setValuta(v);
+
+//        when(valutaRepository.findValutaByKodValute("RSD")).thenReturn(v);
+
+        Query query = mock(Query.class);
+
+        when(racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN)).thenReturn(r);
+
+        given(entityManager.createQuery(anyString())).willReturn(query);
+
+        List<SredstvaKapital> skList = new ArrayList<>();
+        skList.add(sredstvaKapital);
+
+        given(query.getResultList()).willReturn(skList);
+
+
+        when(marginTransakcijaRepository.save(any())).thenReturn(t);
+        when(sredstvaKapitalRepository.save(any())).thenReturn(sredstvaKapital);
+
+//        when(transakcijaService.dodajTransakciju(any(), any())).thenReturn(new Transakcija());
+
+        assertEquals(marginTransakcijaService.dodajTransakciju("Bearer " + validJWToken, marginTransakcijaRequest),t);
+    }
+
+    @Test
     void testGetAskBidPrice1() {
         AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
         askBidPriceResponse.setHartijaId(1L);
@@ -243,6 +295,77 @@ public class MarginTransakcijeServiceTest {
 
             double razlikaMMR = marginTransakcijaService.calculateMMRDifference(sks);
             assertEquals(razlikaMMR, -140.0);
+        }
+    }
+
+    @Test
+    void testCheckMarginCall1() {
+        Racun r = new Racun();
+        r.setBrojRacuna(mockRacun);
+        r.setTipRacuna(RacunType.MARGINS_RACUN);
+        when(racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN)).thenReturn(r);
+
+        Valuta v = new Valuta();
+        v.setId(1L);
+        v.setKodValute("RSD");
+
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setMaintenanceMargin(1.0);
+        sredstvaKapital.setKreditnaSredstva(1.0);
+        sredstvaKapital.setValuta(v);
+        when(sredstvaKapitalRepository.findByRacunAndKapitalType(any(), any())).thenReturn(sredstvaKapital);
+
+        List<SredstvaKapital> sks = new ArrayList<>();
+        when(sredstvaKapitalRepository.findAllByRacunAndKapitalType(any(), any())).thenReturn(sks);
+
+        marginTransakcijaService.checkMarginCall();
+
+        assertEquals(sredstvaKapital.getMarginCall(), false);
+    }
+
+    @Test
+    void testCheckMarginCall2() {
+        Racun r = new Racun();
+        r.setBrojRacuna(mockRacun);
+        r.setTipRacuna(RacunType.MARGINS_RACUN);
+        when(racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN)).thenReturn(r);
+
+        Valuta v = new Valuta();
+        v.setId(1L);
+        v.setKodValute("RSD");
+
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setMaintenanceMargin(1.0);
+        sredstvaKapital.setKreditnaSredstva(1.0);
+        sredstvaKapital.setValuta(v);
+        when(sredstvaKapitalRepository.findByRacunAndKapitalType(any(), any())).thenReturn(sredstvaKapital);
+
+        List<SredstvaKapital> sks = new ArrayList<>();
+        SredstvaKapital sredstvaKapitalAkcija = new SredstvaKapital();
+        sredstvaKapitalAkcija.setHaritjeOdVrednostiID(1L);
+        sredstvaKapitalAkcija.setUkupno(1);
+        sredstvaKapitalAkcija.setKreditnaSredstva(1000.0);
+        sredstvaKapitalAkcija.setMaintenanceMargin(1000.0);
+        sks.add(sredstvaKapitalAkcija);
+
+        AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
+        askBidPriceResponse.setHartijaId(1L);
+        askBidPriceResponse.setAsk(1.0);
+
+        when(sredstvaKapitalRepository.findAllByRacunAndKapitalType(r, KapitalType.AKCIJA)).thenReturn(sks);
+        when(sredstvaKapitalRepository.findAllByRacunAndKapitalType(r, KapitalType.FUTURE_UGOVOR)).thenReturn(new ArrayList<>());
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(() -> HttpUtils.getAskBidPriceByID(any(), anyString(), anyLong()))
+                    .thenReturn(ResponseEntity.ok(askBidPriceResponse));
+
+            Query query = mock(Query.class);
+            given(entityManager.createQuery(anyString())).willReturn(query);
+            given(query.getResultList()).willReturn(sks);
+
+            marginTransakcijaService.checkMarginCall();
         }
     }
 
