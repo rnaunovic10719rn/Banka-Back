@@ -5,27 +5,38 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import rs.edu.raf.banka.berza.dto.AskBidPriceDto;
 import rs.edu.raf.banka.berza.dto.UserDto;
 import rs.edu.raf.banka.berza.enums.*;
 import rs.edu.raf.banka.berza.model.Berza;
 import rs.edu.raf.banka.berza.model.Order;
 import rs.edu.raf.banka.berza.repository.OrderRepository;
 import rs.edu.raf.banka.berza.requests.OrderRequest;
+import rs.edu.raf.banka.berza.requests.TransakcijaRequest;
 import rs.edu.raf.banka.berza.response.ApproveRejectOrderResponse;
+import rs.edu.raf.banka.berza.response.MarginTransakcijaResponse;
 import rs.edu.raf.banka.berza.response.TransakcijaResponse;
 import rs.edu.raf.banka.berza.service.impl.FuturesUgovoriPodaciService;
 import rs.edu.raf.banka.berza.service.impl.OrderService;
+import rs.edu.raf.banka.berza.service.impl.PriceService;
 import rs.edu.raf.banka.berza.service.impl.UserService;
 import rs.edu.raf.banka.berza.service.remote.TransakcijaService;
+import rs.edu.raf.banka.berza.utils.HttpUtils;
 import rs.edu.raf.banka.berza.utils.MessageUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,6 +56,12 @@ public class OrderServiceTest {
 
     @Mock
     FuturesUgovoriPodaciService futuresUgovoriPodaciService;
+
+    @Mock
+    PriceService priceService;
+
+    @Mock
+    EntityManager entityManager;
 
     @Test
     void testGetOrders1() {
@@ -1053,6 +1070,339 @@ public class OrderServiceTest {
         assertTrue(orderService.canExecuteTransactionBuy(order));
     }
 
+    @Test
+    void testExecuteTransaction1() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(null);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.MARKET_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(0);
+        order.setStopValue(0);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(true);
+        order.setMargin(false);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
 
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+        when(priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol())).thenReturn(askBidPriceDto);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(HttpUtils::retryTemplate).thenReturn(null);
+
+            orderService.executeTransaction(order);
+
+            assertEquals(order.getDone(), true);
+        }
+    }
+
+    @Test
+    void testExecuteTransaction2() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(null);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.MARKET_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(0);
+        order.setStopValue(0);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(false);
+        order.setMargin(true);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
+
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+        when(priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol())).thenReturn(askBidPriceDto);
+        when(transakcijaService.commitMarginsTransaction(any(), any())).thenReturn(new MarginTransakcijaResponse());
+
+        orderService.executeTransaction(order);
+        assertEquals(order.getDone(), true);
+    }
+
+    @Test
+    void testExecuteTransaction3() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(null);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.LIMIT_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(500);
+        order.setStopValue(0);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(true);
+        order.setMargin(false);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
+
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+        when(priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol())).thenReturn(askBidPriceDto);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(HttpUtils::retryTemplate).thenReturn(null);
+
+            orderService.executeTransaction(order);
+
+            assertEquals(order.getDone(), false);
+        }
+    }
+
+    @Test
+    void testExecuteTransaction4() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(null);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.LIMIT_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(1500);
+        order.setStopValue(0);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(true);
+        order.setMargin(false);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
+
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+        when(priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol())).thenReturn(askBidPriceDto);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(HttpUtils::retryTemplate).thenReturn(null);
+
+            orderService.executeTransaction(order);
+
+            assertEquals(order.getDone(), true);
+        }
+    }
+
+    @Test
+    void testExecuteTransaction5() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(null);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.STOP_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(0);
+        order.setStopValue(1500);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(true);
+        order.setMargin(false);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
+
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+        when(priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol())).thenReturn(askBidPriceDto);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(HttpUtils::retryTemplate).thenReturn(null);
+
+            orderService.executeTransaction(order);
+
+            assertEquals(order.getDone(), false);
+        }
+    }
+
+    @Test
+    void testExecuteTransaction6() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(null);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.STOP_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(0);
+        order.setStopValue(500);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(true);
+        order.setMargin(false);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
+
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+        when(priceService.getAskBidPrice(order.getHartijaOdVrednosti(), order.getHartijaOdVrednostiSymbol())).thenReturn(askBidPriceDto);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(HttpUtils::retryTemplate).thenReturn(null);
+
+            orderService.executeTransaction(order);
+
+            assertEquals(order.getDone(), true);
+        }
+    }
+
+    @Test
+    void testExecuteTransaction7() {
+        Berza berza = new Berza();
+        berza.setOpenTime("00:00");
+        berza.setCloseTime("00:01");
+
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setUsername("admin");
+        order.setBerza(berza);
+        order.setOrderAction(OrderAction.BUY);
+        order.setOrderType(OrderType.STOP_ORDER);
+        order.setOrderStatus(OrderStatus.APPROVED);
+        order.setHartijaOdVrednosti(HartijaOdVrednostiType.AKCIJA);
+        order.setHartijaOdVrednostiId(1L);
+        order.setHartijaOdVrednostiSymbol("AAPL");
+        order.setKolicina(10);
+        order.setPreostalaKolicina(10);
+        order.setBackoff(0);
+        order.setLimitValue(0);
+        order.setStopValue(500);
+        order.setPredvidjenaCena(1000.0);
+        order.setProvizija(0.0);
+        order.setAON(true);
+        order.setMargin(false);
+        order.setAsk(1000.0);
+        order.setBid(1000.0);
+        order.setBackoff(-1);
+
+        AskBidPriceDto askBidPriceDto = new AskBidPriceDto();
+        askBidPriceDto.setHartijaId(1L);
+        askBidPriceDto.setAsk(1000.0);
+        askBidPriceDto.setBid(1000.0);
+        askBidPriceDto.setBerza(null);
+
+        ArrayList<TransakcijaRequest> transakcijaRequests = new ArrayList<>();
+        transakcijaRequests.add(new TransakcijaRequest());
+
+        when(entityManager.find(Order.class, 1L, LockModeType.PESSIMISTIC_WRITE)).thenReturn(order);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(HttpUtils::retryTemplate).thenReturn(null);
+
+            orderService.executeTransaction(order);
+
+            assertEquals(order.getDone(), false);
+        }
+    }
+
+    @Test
+    void testExecuteOrders() {
+        List<Order> orders = new ArrayList<>();
+        Order o = new Order();
+        o.setOrderStatus(OrderStatus.REJECTED);
+        orders.add(o);
+
+        when(orderRepository.findOrderByDoneFalse()).thenReturn(orders);
+
+        orderService.executeOrder();
+        assertEquals(orders.get(0).getDone(), false);
+    }
 
 }
