@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DisabledIfEnvironmentVariable(named = "WORKSPACE", matches = "CI")
 class IntegrationTest {
 
     @Autowired
