@@ -92,7 +92,6 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
         Double newLimitUsed = user.getLimitUsed() + limitDelta;
         user.setLimitUsed(newLimitUsed);
         userRepository.save(user);
-        return;
     }
 
     @Override

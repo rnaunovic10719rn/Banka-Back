@@ -42,6 +42,7 @@ public class Ugovor
     @PrePersist
     protected void onCreate() {
         created = new Date();
+        lastChanged = new Date();
     }
 
     @PreUpdate

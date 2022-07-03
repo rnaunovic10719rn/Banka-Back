@@ -6,7 +6,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import rs.edu.raf.banka.racun.model.Racun;
+import rs.edu.raf.banka.racun.model.SredstvaKapital;
+import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.repository.RacunRepository;
+import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
+import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.service.impl.RacunService;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 
@@ -27,8 +31,14 @@ class RacunServiceTest {
     private RacunRepository racunRepository;
 
     @Mock
+    private ValutaRepository valutaRepository;
+
+
+    @Mock
     SredstvaKapitalService sredstvaKapitalService;
 
+    @Mock
+    SredstvaKapitalRepository sredstvaKapitalRepository;
 
     @Test
     void testCreateRacun() {
@@ -40,5 +50,12 @@ class RacunServiceTest {
         assertNotEquals(racunService.createKesRacun(),null);
     }
 
+    @Test
+    void testCreateMarginRacun() {
+        Racun r = new Racun();
+        r.setBrojRacuna(UUID.randomUUID());
 
+        given(racunRepository.save(any())).willReturn(r);
+        assertNotEquals(racunService.createMarginRacun(),null);
+    }
 }

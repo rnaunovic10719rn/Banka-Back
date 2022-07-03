@@ -1,6 +1,7 @@
 package rs.edu.raf.banka.racun.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -110,10 +111,17 @@ public class UgovorController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping(value = "/document/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public @ResponseBody byte[] getContractDocument(@RequestHeader("Authorization") String token, @PathVariable Long id) {
-        var result = ugovorService.getContractDocument(id, token);
-        return result.getData();
+    @GetMapping(value = "/document/{documentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody ResponseEntity<byte[]> getContractDocument(@PathVariable String documentId) {
+        var result = ugovorService.getContractDocument(documentId);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Content-Disposition",
+                "attachment; filename=\"dokument-" + documentId + ".pdf\"");
+
+        return ResponseEntity.ok()
+                .headers(responseHeaders)
+                .body(result.getData());
     }
 
     @PostMapping(value = "/stavka", produces = MediaType.APPLICATION_JSON_VALUE)

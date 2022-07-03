@@ -36,11 +36,17 @@
         <jacoco.version>0.8.8</jacoco.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.coverage.exclusions>**/bootstrap/*, **/config/*, **/dto/**, **/enums/*, **/model/*, **/requests/*, **/response/*, **/security/*, **/utils/*</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/bootstrap/*, **/config/*, **/dto/**, **/enums/*, **/exceptions/*, **/model/**, **/requests/*, **/response/*, **/security/*, **/utils/*</sonar.coverage.exclusions>
         <sonar.cpd.exclusions>**/model/*</sonar.cpd.exclusions>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>3.8.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
