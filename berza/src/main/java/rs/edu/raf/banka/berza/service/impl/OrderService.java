@@ -184,7 +184,7 @@ public class OrderService {
         return null;
     }
 
-    private List<TransakcijaRequest> getTransakcijeForOrder(Order order, Integer kolicina, Boolean lastSegment) {
+    public List<TransakcijaRequest> getTransakcijeForOrder(Order order, Integer kolicina, Boolean lastSegment) {
         List<TransakcijaRequest> transakcije = new ArrayList<>();
 
         if (order.getHartijaOdVrednosti() == HartijaOdVrednostiType.AKCIJA || order.getHartijaOdVrednosti() == HartijaOdVrednostiType.FUTURES_UGOVOR) {
@@ -273,7 +273,7 @@ public class OrderService {
         return transakcije;
     }
 
-    private MarginTransakcijaRequest getMarginTransakcijaForOrder(Order order, Integer kolicina) {
+    public MarginTransakcijaRequest getMarginTransakcijaForOrder(Order order, Integer kolicina) {
         MarginTransakcijaRequest transakcija = new MarginTransakcijaRequest();
 
         double cena;
