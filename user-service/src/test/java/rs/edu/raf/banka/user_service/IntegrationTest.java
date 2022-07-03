@@ -69,7 +69,7 @@ class IntegrationTest {
                 .andExpect(status().isOk());
 
         Optional<User> user = userRepository.findByEmail("create.test@raf.rs");
-        assertThat(user.isEmpty()).isFalse();
+        assertThat(user).isPresent();
         assertThat(user.get().getJmbg()).isEqualTo("1234560480810");
     }
 

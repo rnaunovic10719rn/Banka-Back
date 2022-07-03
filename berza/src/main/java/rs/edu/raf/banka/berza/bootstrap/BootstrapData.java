@@ -59,7 +59,9 @@ public class BootstrapData implements CommandLineRunner {
         } catch (Exception e) {
             log.error("Error when downloading currencies {}", e.getMessage());
         } finally {
-            fos.close();
+            if(fos != null) {
+                fos.close();
+            }
         }
 
         String fileName = "currency.csv";
@@ -87,7 +89,7 @@ public class BootstrapData implements CommandLineRunner {
                     v.setOznakaValute(jc.getSymbol());
                 }
             } catch (Exception e) {
-                log.error("Error when adding currencies {}", e.printStackTrace(););
+                log.error("Error when adding currencies {}", e.getMessage());
             }
             valute.add(v);
         }
