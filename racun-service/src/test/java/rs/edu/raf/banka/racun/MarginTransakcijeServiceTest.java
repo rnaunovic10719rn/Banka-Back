@@ -4,11 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import rs.edu.raf.banka.racun.enums.KapitalType;
 import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
@@ -21,6 +20,7 @@ import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
 import rs.edu.raf.banka.racun.repository.*;
 import rs.edu.raf.banka.racun.requests.MarginTransakcijaRequest;
 import rs.edu.raf.banka.racun.requests.TransakcijaRequest;
+import rs.edu.raf.banka.racun.response.AskBidPriceResponse;
 import rs.edu.raf.banka.racun.service.impl.MarginTransakcijaService;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.TransakcijaService;
@@ -173,7 +173,74 @@ public class MarginTransakcijeServiceTest {
         assertEquals(marginTransakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest),t);
     }
 
+    @Test
+    void testGetAskBidPrice1() {
+        AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
+        askBidPriceResponse.setHartijaId(1L);
+        askBidPriceResponse.setAsk(0.0);
 
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(() -> HttpUtils.getAskBidPriceByID(any(), anyString(), anyLong()))
+                    .thenReturn(ResponseEntity.ok(askBidPriceResponse));
+
+            assertEquals(marginTransakcijaService.getAskBidPrice(KapitalType.AKCIJA, 1L).getAsk(), 0.0);
+        }
+    }
+
+    @Test
+    void testGetAskBidPrice2() {
+        AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
+        askBidPriceResponse.setHartijaId(1L);
+        askBidPriceResponse.setAsk(0.0);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(() -> HttpUtils.getAskBidPriceByID(any(), anyString(), anyLong()))
+                    .thenReturn(ResponseEntity.ok(askBidPriceResponse));
+
+            assertEquals(marginTransakcijaService.getAskBidPrice(KapitalType.FOREX, 1L).getAsk(), 0.0);
+        }
+    }
+
+    @Test
+    void testGetAskBidPrice3() {
+        AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
+        askBidPriceResponse.setHartijaId(1L);
+        askBidPriceResponse.setAsk(0.0);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(() -> HttpUtils.getAskBidPriceByID(any(), anyString(), anyLong()))
+                    .thenReturn(ResponseEntity.ok(askBidPriceResponse));
+
+            assertEquals(marginTransakcijaService.getAskBidPrice(KapitalType.FUTURE_UGOVOR, 1L).getAsk(), 0.0);
+        }
+    }
+
+    @Test
+    void testCalculateMMRDifference1() {
+        AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
+        askBidPriceResponse.setHartijaId(1L);
+        askBidPriceResponse.setAsk(1.0);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+            utilities.when(() -> HttpUtils.getAskBidPriceByID(any(), anyString(), anyLong()))
+                    .thenReturn(ResponseEntity.ok(askBidPriceResponse));
+
+            assertEquals(marginTransakcijaService.getAskBidPrice(KapitalType.AKCIJA, 1L).getAsk(), 1.0);
+
+            SredstvaKapital sredstvaKapital = new SredstvaKapital();
+            sredstvaKapital.setKapitalType(KapitalType.AKCIJA);
+            sredstvaKapital.setHaritjeOdVrednostiID(1L);
+            sredstvaKapital.setUkupno(10);
+            sredstvaKapital.setKreditnaSredstva(100.0);
+            sredstvaKapital.setMaintenanceMargin(50.0);
+
+            List<SredstvaKapital> sks = new ArrayList<>();
+            sks.add(sredstvaKapital);
+
+            double razlikaMMR = marginTransakcijaService.calculateMMRDifference(sks);
+            assertEquals(razlikaMMR, -140.0);
+        }
+    }
 
     private MarginTransakcijaRequest initTransakcijaRequest() {
         MarginTransakcijaRequest tr = new MarginTransakcijaRequest();
