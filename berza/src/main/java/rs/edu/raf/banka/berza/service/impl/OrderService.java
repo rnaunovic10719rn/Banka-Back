@@ -46,6 +46,8 @@ public class OrderService {
 
     private EntityManager entityManager;
 
+    private Random random = new Random();
+
     @Autowired
     public OrderService(OrderRepository orderRepository,
                         FuturesUgovoriPodaciService futuresUgovoriPodaciService,
@@ -409,7 +411,6 @@ public class OrderService {
         }
 
         // Korak 2: Izracunaj kolicinu tog dela ordera
-        Random random = new Random();
         int kolicina = order.getPreostalaKolicina();
         int kolicinaZaTransakciju = random.nextInt(kolicina) + 1;
         // Ukoliko je order AON (All or None), margins ili Forex izvrsi sve odjednom.
