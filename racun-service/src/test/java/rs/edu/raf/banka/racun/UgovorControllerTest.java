@@ -105,7 +105,32 @@ public class UgovorControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void testGetAllBrUgovora() throws Exception {
+        List<Ugovor> ugovors = new ArrayList<>();
+        when(ugovorService.getAllByDelovodniBroj(anyString(),anyString())).thenReturn(ugovors);
+        mockMvc.perform(get("/api/ugovor/delovodnibroj/{delovodniBroj}","mockBroj").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 
+    @Test
+    void testGetAllBrUgovoraFinalized() throws Exception {
+        List<Ugovor> ugovors = new ArrayList<>();
+        when(ugovorService.getAllByDelovodniBrojAndUgovorStatus(anyString(),anyString(),any())).thenReturn(ugovors);
+        mockMvc.perform(get("/api/ugovor/delovodnibroj/{delovodniBroj}/finalized","mockBroj").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetAllBrUgovoraDraft() throws Exception {
+        List<Ugovor> ugovors = new ArrayList<>();
+        when(ugovorService.getAllByDelovodniBrojAndUgovorStatus(anyString(),anyString(),any())).thenReturn(ugovors);
+        mockMvc.perform(get("/api/ugovor/delovodnibroj/{delovodniBroj}/draft","mockBroj").header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 
     String initValidJWT() {
         return "Bearer " + JWT.create()
