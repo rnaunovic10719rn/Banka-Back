@@ -369,6 +369,113 @@ public class MarginTransakcijeServiceTest {
         }
     }
 
+
+    @Test
+    void testDodavanjeTransakcije2() throws NoSuchFieldException {
+
+        Valuta v = new Valuta();
+        v.setId(1L);
+        v.setKodValute("RSD");
+        MarginTransakcija t = new MarginTransakcija();
+
+        Racun r = new Racun();
+        r.setBrojRacuna(mockRacun);
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setMaintenanceMargin(1.0);
+        sredstvaKapital.setKreditnaSredstva(1.0);
+        sredstvaKapital.setValuta(v);
+
+        when(valutaRepository.findValutaByKodValute("RSD")).thenReturn(v);
+
+        Query query = mock(Query.class);
+
+        when(racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN)).thenReturn(r);
+
+        given(entityManager.createQuery(anyString())).willReturn(query);
+
+        List<SredstvaKapital> skList = new ArrayList<>();
+        skList.add(sredstvaKapital);
+
+        given(query.getResultList()).willReturn(skList);
+
+
+        when(marginTransakcijaRepository.save(any())).thenReturn(t);
+        when(sredstvaKapitalRepository.save(any())).thenReturn(sredstvaKapital);
+
+        // when(transakcijaService.dodajTransakciju(any(), any())).thenReturn(new Transakcija());
+
+        assertEquals(marginTransakcijaService.dodajTransakciju("Bearer " + validJWToken, transakcijaRequest2),t);
+    }
+
+    @Test
+    void testNaplataKamate()  {
+
+        Racun r = new Racun();
+        r.setBrojRacuna(mockRacun);
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setMaintenanceMargin(1.0);
+        sredstvaKapital.setKreditnaSredstva(1.0);
+
+
+        when(racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN)).thenReturn(r);
+
+        var kaptal = new SredstvaKapital();
+        kaptal.setKreditnaSredstva(1.0);
+        var kapitali = new ArrayList<SredstvaKapital>();
+        kapitali.add(kaptal);
+        when(sredstvaKapitalRepository.findAllByRacunAndKapitalType(any(), any())).thenReturn(kapitali);
+
+        Query query = mock(Query.class);
+
+        given(entityManager.createQuery(anyString())).willReturn(query);
+
+        assertDoesNotThrow(() -> marginTransakcijaService.naplataKamate());
+    }
+
+    @Test
+    void testMarginCall()  {
+
+        Racun r = new Racun();
+        r.setBrojRacuna(mockRacun);
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setMaintenanceMargin(1.0);
+        sredstvaKapital.setKreditnaSredstva(1.0);
+
+
+        when(racunRepository.findRacunByTipRacuna(RacunType.MARGINS_RACUN)).thenReturn(r);
+
+        var kaptal = new SredstvaKapital();
+        kaptal.setKreditnaSredstva(1.0);
+        kaptal.setMaintenanceMargin(1.0);
+        var kapitali = new ArrayList<SredstvaKapital>();
+        kapitali.add(kaptal);
+        when(sredstvaKapitalRepository.findAllByRacunAndKapitalType(any(), any())).thenReturn(kapitali);
+        when(sredstvaKapitalRepository.findByRacunAndKapitalType(any(), any())).thenReturn(kaptal);
+
+        Query query = mock(Query.class);
+
+        given(entityManager.createQuery(anyString())).willReturn(query);
+
+        AskBidPriceResponse askBidPriceResponse = new AskBidPriceResponse();
+        askBidPriceResponse.setHartijaId(1L);
+        askBidPriceResponse.setAsk(1.0);
+
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)) {
+
+            var response = ResponseEntity.ok(askBidPriceResponse);
+            utilities.when(() -> HttpUtils.getAskBidPriceByID(any(), any(),any()))
+                    .thenReturn(response);
+
+            assertDoesNotThrow(() -> marginTransakcijaService.checkMarginCall());
+
+        }
+
+    }
+
     private MarginTransakcijaRequest initTransakcijaRequest() {
         MarginTransakcijaRequest tr = new MarginTransakcijaRequest();
         tr.setBrojRacuna(mockRacun);
