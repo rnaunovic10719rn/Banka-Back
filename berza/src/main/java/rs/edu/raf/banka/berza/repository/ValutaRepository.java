@@ -10,5 +10,6 @@ public interface ValutaRepository extends JpaRepository<Valuta, Long>, JpaSpecif
 
     Valuta findByOznakaValute(String valuta);
     Optional<Valuta> getValutaByNazivValute(String nazivValute);
+    Optional<Valuta> getValutaByKodValute(String kodValute);
 
 }
