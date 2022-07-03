@@ -4,30 +4,29 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import rs.edu.raf.banka.racun.dto.*;
 import rs.edu.raf.banka.racun.enums.KapitalType;
+import rs.edu.raf.banka.racun.enums.MarginTransakcijaType;
 import rs.edu.raf.banka.racun.enums.RacunType;
 import rs.edu.raf.banka.racun.model.Racun;
 import rs.edu.raf.banka.racun.model.SredstvaKapital;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.model.Valuta;
-import rs.edu.raf.banka.racun.repository.RacunRepository;
-import rs.edu.raf.banka.racun.repository.SredstvaKapitalRepository;
-import rs.edu.raf.banka.racun.repository.TransakcijaRepository;
-import rs.edu.raf.banka.racun.repository.ValutaRepository;
+import rs.edu.raf.banka.racun.model.margins.MarginTransakcija;
+import rs.edu.raf.banka.racun.repository.*;
 import rs.edu.raf.banka.racun.service.impl.SredstvaKapitalService;
 import rs.edu.raf.banka.racun.service.impl.UserService;
+import rs.edu.raf.banka.racun.utils.HttpUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -44,6 +43,9 @@ public class SredstvaKapitalaServiceTest {
 
     @Mock
     private RacunRepository racunRepository;
+
+    @Mock
+    private MarginTransakcijaRepository marginTransakcijaRepository;
 
     @Mock
     private ValutaRepository valutaRepository;
@@ -83,27 +85,196 @@ public class SredstvaKapitalaServiceTest {
         assertEquals(sredstvaKapitalService.pocetnoStanje(r.getBrojRacuna(),sredstvaKapital.getKapitalType(),1L,1000).getUkupno(),1000);
     }
 
+    @Test
+    void testPocetnoStanjeMargin() {
+        Racun r = new Racun();
+        r.setBrojRacuna(UUID.randomUUID());
+
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+
+        given(racunRepository.findByBrojRacuna(any())).willReturn(r);
+        given(valutaRepository.findValutaByKodValute("USD")).willReturn(new Valuta());
+        given(sredstvaKapitalRepository.save(any())).willReturn(sredstvaKapital);
+
+        assertDoesNotThrow(() -> sredstvaKapitalService.pocetnoStanjeMarzniRacun(r.getBrojRacuna()));
+    }
+
 
     @Test
     void testGetUkupnoStanjePoHartijama() {
         List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setRaspolozivo(1.0);
+        sredstvaKapital.setKapitalType(KapitalType.AKCIJA);
+        sredstvaKapitals.add(sredstvaKapital);
+        sredstvaKapitals.add(sredstvaKapital);
+
+        SredstvaKapital sredstvaKapital2 = new SredstvaKapital();
+        sredstvaKapital2.setUkupno(1000);
+        sredstvaKapital2.setRaspolozivo(1.0);
+        sredstvaKapital2.setKapitalType(KapitalType.FUTURE_UGOVOR);
+        sredstvaKapitals.add(sredstvaKapital2);
+
 
         when(sredstvaKapitalRepository.findAllByRacun(any())).thenReturn(sredstvaKapitals);
         List<KapitalHartijeDto> toReturn = new ArrayList<>();
-        KapitalHartijeDto khdAkcija = new KapitalHartijeDto(KapitalType.AKCIJA, 0.0);
-        KapitalHartijeDto khdFuture = new KapitalHartijeDto(KapitalType.FUTURE_UGOVOR, 0.0);
+        KapitalHartijeDto khdAkcija = new KapitalHartijeDto(KapitalType.AKCIJA, 2.0);
+        KapitalHartijeDto khdFuture = new KapitalHartijeDto(KapitalType.FUTURE_UGOVOR, 1.0);
         toReturn.add(khdAkcija);
         toReturn.add(khdFuture);
 
-        assertEquals(sredstvaKapitalService.getUkupnoStanjePoHartijama("", false),toReturn);
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            var akcija = new AkcijePodaciDto();
+            akcija.setId(1L);
+            akcija.setPrice(1.0);
+            var berza = new BerzaDto();
+            berza.setKodValute("USD");
+            var berza2 = new BerzaDto();
+            berza2.setKodValute("RSD");
+            var forex = new ForexPodaciDto();
+            forex.setExchangeRate(1.0);
+            var future = new FuturesPodaciDto();
+            future.setOpen(1.0);
+            utilities.when(() -> HttpUtils.getAkcijeById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(akcija));
+            utilities.when(() -> HttpUtils.getBerzaById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(berza))
+                    .thenReturn(ResponseEntity.ok(berza2));
+            utilities.when(() -> HttpUtils.getExchangeRate(any(), any(),any(),any()))
+                    .thenReturn(ResponseEntity.ok(forex));
+            utilities.when(() -> HttpUtils.getFuturesById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(future));
+
+            assertEquals(sredstvaKapitalService.getUkupnoStanjePoHartijama("", false),toReturn);
+            assertEquals(sredstvaKapitalService.getUkupnoStanjePoHartijama("", true),toReturn);
+        }
+
     }
 
     @Test
-    void testGetStanjeJednogTipaHartije() {
-        List<SredstvaKapital> sredstvaKapitals = sredstvaKapitalRepository.findAll();
-        List<KapitalPoTipuHartijeDto> toReturn = new ArrayList<>();
+    void testGetStanjeJednogTipaHartijeFture() {
 
-        assertEquals(sredstvaKapitalService.getStanjeJednogTipaHartije("","", false),toReturn);
+        List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setRaspolozivo(1.0);
+        sredstvaKapital.setKapitalType(KapitalType.AKCIJA);
+        sredstvaKapitals.add(sredstvaKapital);
+
+        SredstvaKapital sredstvaKapital2 = new SredstvaKapital();
+        sredstvaKapital2.setUkupno(1000);
+        sredstvaKapital2.setRaspolozivo(1.0);
+        sredstvaKapital2.setKapitalType(KapitalType.FUTURE_UGOVOR);
+        sredstvaKapitals.add(sredstvaKapital2);
+
+        SredstvaKapital sredstvaKapital3 = new SredstvaKapital();
+        sredstvaKapital3.setKapitalType(KapitalType.NOVAC);
+        sredstvaKapitals.add(sredstvaKapital3);
+
+        when(sredstvaKapitalRepository.findAllByRacun(any())).thenReturn(sredstvaKapitals);
+        when(racunRepository.findRacunByTipRacuna(any())).thenReturn(new Racun());
+
+        KapitalPoTipuHartijeDto toReturn1 = new KapitalPoTipuHartijeDto();
+        toReturn1.setBerza("EUREX");
+        toReturn1.setKolicinaUVlasnistvu(1000L);
+        toReturn1.setCena(1.0);
+        toReturn1.setVrednostRSD(1000.0);
+        toReturn1.setVrednost(1000.0);
+        toReturn1.setKupljenoZa(0.0);
+        toReturn1.setProfit(1000.0);
+        toReturn1.setKodValute("USD");
+
+        var toReturn1List = new ArrayList<>();
+        toReturn1List.add(toReturn1);
+
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            var akcija = new AkcijePodaciDto();
+            akcija.setId(1L);
+            akcija.setPrice(1.0);
+            var berza = new BerzaDto();
+            berza.setKodValute("USD");
+            var forex = new ForexPodaciDto();
+            forex.setExchangeRate(1.0);
+            var future = new FuturesPodaciDto();
+            future.setOpen(1.0);
+            utilities.when(() -> HttpUtils.getAkcijeById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(akcija));
+            utilities.when(() -> HttpUtils.getBerzaById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(berza));
+            utilities.when(() -> HttpUtils.getExchangeRate(any(), any(),any(),any()))
+                    .thenReturn(ResponseEntity.ok(forex));
+            utilities.when(() -> HttpUtils.getFuturesById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(future));
+
+
+
+            assertEquals(sredstvaKapitalService.getStanjeJednogTipaHartije("","FUTURE_UGOVOR", false),toReturn1List);
+            //assertEquals(sredstvaKapitalService.getStanjeJednogTipaHartije("","AKCIJA", false),toReturn);
+        }
+    }
+
+    @Test
+    void testGetStanjeJednogTipaHartijeAkcija() {
+
+        List<SredstvaKapital> sredstvaKapitals = new ArrayList<>();
+        SredstvaKapital sredstvaKapital = new SredstvaKapital();
+        sredstvaKapital.setUkupno(1000);
+        sredstvaKapital.setRaspolozivo(1.0);
+        sredstvaKapital.setKapitalType(KapitalType.AKCIJA);
+        sredstvaKapitals.add(sredstvaKapital);
+
+        SredstvaKapital sredstvaKapital2 = new SredstvaKapital();
+        sredstvaKapital2.setUkupno(1000);
+        sredstvaKapital2.setRaspolozivo(1.0);
+        sredstvaKapital2.setKapitalType(KapitalType.FUTURE_UGOVOR);
+        sredstvaKapitals.add(sredstvaKapital2);
+
+        SredstvaKapital sredstvaKapital3 = new SredstvaKapital();
+        sredstvaKapital3.setKapitalType(KapitalType.NOVAC);
+        sredstvaKapitals.add(sredstvaKapital3);
+
+        when(sredstvaKapitalRepository.findAllByRacun(any())).thenReturn(sredstvaKapitals);
+        when(racunRepository.findRacunByTipRacuna(any())).thenReturn(new Racun());
+
+        KapitalPoTipuHartijeDto toReturn1 = new KapitalPoTipuHartijeDto();
+        toReturn1.setId(1L);
+        toReturn1.setKolicinaUVlasnistvu(1000L);
+        toReturn1.setCena(1.0);
+        toReturn1.setVrednostRSD(1000.0);
+        toReturn1.setVrednost(1000.0);
+        toReturn1.setKupljenoZa(0.0);
+        toReturn1.setProfit(1000.0);
+        toReturn1.setKodValute("USD");
+
+        var toReturn1List = new ArrayList<>();
+        toReturn1List.add(toReturn1);
+
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            var akcija = new AkcijePodaciDto();
+            akcija.setId(1L);
+            akcija.setPrice(1.0);
+            var berza = new BerzaDto();
+            berza.setKodValute("USD");
+            var forex = new ForexPodaciDto();
+            forex.setExchangeRate(1.0);
+            var future = new FuturesPodaciDto();
+            future.setOpen(1.0);
+            utilities.when(() -> HttpUtils.getAkcijeById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(akcija));
+            utilities.when(() -> HttpUtils.getBerzaById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(berza));
+            utilities.when(() -> HttpUtils.getExchangeRate(any(), any(),any(),any()))
+                    .thenReturn(ResponseEntity.ok(forex));
+            utilities.when(() -> HttpUtils.getFuturesById(any(), any()))
+                    .thenReturn(ResponseEntity.ok(future));
+
+
+            assertEquals(sredstvaKapitalService.getStanjeJednogTipaHartije("","AKCIJA", false),toReturn1List);
+        }
     }
 
 
@@ -229,7 +400,38 @@ public class SredstvaKapitalaServiceTest {
         assertEquals(sredstvaKapitalService.findSredstvaKapitalAgent(token),null);
     }
 
+    @Test
+    void testGetTransakcijeHartijeMargins() {
 
+        var transakcije = new ArrayList<MarginTransakcija>();
+        var transakcija = new MarginTransakcija();
+        transakcija.setTip(MarginTransakcijaType.UPLATA);
+        transakcije.add(transakcija);
+
+        var transakcija2 = new MarginTransakcija();
+        transakcija2.setTip(MarginTransakcijaType.ISPLATA);
+        transakcije.add(transakcija2);
+
+        var transakcijeDto = new ArrayList<MarginTransakcijeHartijeDto>();
+        var transakcijaDto = new MarginTransakcijeHartijeDto();
+        transakcijaDto.setTipOrdera("Kupovina");
+        transakcijaDto.setCena(0.0);
+        transakcijaDto.setKolicina(0L);
+        transakcijaDto.setUkupno(0.0);
+        transakcijeDto.add(transakcijaDto);
+
+        var transakcijaDto2 = new MarginTransakcijeHartijeDto();
+        transakcijaDto2.setTipOrdera("Prodaja");
+        transakcijaDto2.setCena(0.0);
+        transakcijaDto2.setKolicina(0L);
+        transakcijaDto2.setUkupno(0.0);
+        transakcijeDto.add(transakcijaDto2);
+
+        when(racunRepository.findRacunByTipRacuna(any())).thenReturn(new Racun());
+        when(marginTransakcijaRepository.findByHaritjeOdVrednostiIDAndKapitalTypeAndRacun(any(),any(),any())).thenReturn(transakcije);
+
+        assertEquals(sredstvaKapitalService.getTransakcijeHartijeMargins(1L,"FOREX"),transakcijeDto);
+    }
 
 
 
