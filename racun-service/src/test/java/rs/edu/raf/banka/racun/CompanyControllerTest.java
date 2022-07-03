@@ -142,13 +142,6 @@ public class CompanyControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void testDeleteCompany() throws Exception {
-
-        mockMvc.perform(delete("/api/company/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
-    }
 
     @Test
     void testGetContactPersons() throws Exception {

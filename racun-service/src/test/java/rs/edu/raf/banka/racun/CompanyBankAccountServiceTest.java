@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import rs.edu.raf.banka.racun.exceptions.InvalidCompanyException;
 import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.company.Company;
 import rs.edu.raf.banka.racun.model.company.CompanyBankAccount;
@@ -12,6 +13,7 @@ import rs.edu.raf.banka.racun.repository.ValutaRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyBankAccountRepository;
 import rs.edu.raf.banka.racun.repository.company.CompanyRepository;
 import rs.edu.raf.banka.racun.requests.CompanyBankAccountRequest;
+import rs.edu.raf.banka.racun.requests.CompanyRequest;
 import rs.edu.raf.banka.racun.service.impl.CompanyBankAccountService;
 import rs.edu.raf.banka.racun.service.impl.CompanyContactPersonService;
 
@@ -20,7 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 public class CompanyBankAccountServiceTest {
@@ -35,6 +39,38 @@ public class CompanyBankAccountServiceTest {
 
     @Mock
     ValutaRepository valutaRepository;
+
+    @Test
+    void testValidateCompanyBankAccountRequest() {
+        CompanyBankAccountRequest companyBankAccount = new CompanyBankAccountRequest();
+        companyBankAccount.setId(2L);
+        companyBankAccount.setBanka("mockBanka");
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.validateBankAccountRequest(companyBankAccount), "Required parameter is missing");
+    }
+
+    @Test
+    void testCreateBankAccountIdNotNull(){
+        CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
+        companyBankAccountRequest.setId(1L);
+        companyBankAccountRequest.setCompanyId(1L);
+        companyBankAccountRequest.setBanka("mockBanka");
+        companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
+        companyBankAccountRequest.setValutaId(1L);
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.createBankAccount(companyBankAccountRequest), "message");
+    }
+
+    @Test
+    void testCreateBankAccountCompanyIsEmpty(){
+        CompanyBankAccountRequest companyBankAccountRequest = new CompanyBankAccountRequest();
+        companyBankAccountRequest.setId(1L);
+        companyBankAccountRequest.setBanka("mockBanka");
+        companyBankAccountRequest.setBrojRacuna("mockBrojRacuna");
+        companyBankAccountRequest.setValutaId(1L);
+
+        assertThrows(InvalidCompanyException.class, () -> companyService.createBankAccount(companyBankAccountRequest), "message");
+    }
 
     @Test
     void testGetBankAccounts(){
