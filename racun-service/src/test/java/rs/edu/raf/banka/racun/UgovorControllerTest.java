@@ -219,7 +219,7 @@ public class UgovorControllerTest {
     void testGetStavka() throws Exception {
         TransakcionaStavka transakcionaStavka = new TransakcionaStavka();
         when(ugovorService.getTransakcionaStavkaById(anyLong(), anyString())).thenReturn(transakcionaStavka);
-        mockMvc.perform(get("/api/ugovor/id/{id}",1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+        mockMvc.perform(get("/api/ugovor/stavka/{id}",1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
