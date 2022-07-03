@@ -1,5 +1,7 @@
 package rs.edu.raf.banka.racun;
 
+import org.bson.BsonBinarySubType;
+import org.bson.types.Binary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +18,7 @@ import rs.edu.raf.banka.racun.exceptions.ContractExpcetion;
 import rs.edu.raf.banka.racun.model.Transakcija;
 import rs.edu.raf.banka.racun.model.Valuta;
 import rs.edu.raf.banka.racun.model.company.Company;
+import rs.edu.raf.banka.racun.model.contract.ContractDocument;
 import rs.edu.raf.banka.racun.model.contract.TransakcionaStavka;
 import rs.edu.raf.banka.racun.model.contract.Ugovor;
 import rs.edu.raf.banka.racun.repository.ValutaRepository;
@@ -1166,6 +1169,38 @@ public class UgovorServiceTest {
         when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.empty());
 
         assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token), "Ugovor not found");
+    }
+
+    @Test
+    void getContractDocumentTest() {
+
+        String documentId = "id";
+
+        var contractDocument = new ContractDocument();
+        var document = new Binary(BsonBinarySubType.BINARY, new byte[] {1,2,3});
+        contractDocument.setDocument(document);
+
+        when(contractDocumentService.getDocument(documentId)).thenReturn(contractDocument);
+
+        assertEquals(ugovorService.getContractDocument(documentId), document);
+    }
+
+    @Test
+    void getContractDocumentNoDocumentIdTest() {
+
+        String documentId = null;
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.getContractDocument(documentId), "Invalid document ID");
+    }
+
+    @Test
+    void getContractDocumentNoDocumentTest() {
+
+        String documentId = "id";
+
+        when(contractDocumentService.getDocument(documentId)).thenReturn(null);
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.getContractDocument(documentId), "Contract doesn't exist");
     }
 
 
