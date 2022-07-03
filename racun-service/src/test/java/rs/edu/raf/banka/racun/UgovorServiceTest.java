@@ -1268,6 +1268,7 @@ public class UgovorServiceTest {
         request.setKolicinaPotrazna(null);
         request.setKolicinaDugovna(null);
 
+
         assertThrows(ContractExpcetion.class, () -> ugovorService.addStavka(request, token), "bad request");
     }
 
@@ -1287,6 +1288,8 @@ public class UgovorServiceTest {
         ugovor.setStatus(ugovorStatus);
         ugovor.setId(ugovorId);
 
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+        given(userService.getUserByToken(token)).willReturn(user);
 
         var request = new TransakcionaStavkaRequest();
         request.setUgovorId(1L);
@@ -1298,6 +1301,56 @@ public class UgovorServiceTest {
         request.setKolicinaDugovna(1.0);
 
         assertThrows(ContractExpcetion.class, () -> ugovorService.addStavka(request, token), "Ugovor is finalized");
+    }
+
+    @Test
+    void createTransakcionaStavkaBadTransactionTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var request = new TransakcionaStavkaRequest();
+        request.setUgovorId(1L);
+        request.setKapitalTypePotrazni(KapitalType.NOVAC);
+        request.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        request.setKapitalPotrazniOznaka("USD");
+        request.setKapitalDugovniOznaka("USD");
+        request.setKolicinaPotrazna(1.0);
+        request.setKolicinaDugovna(1.0);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(valutaRepository.findValutaByKodValute("USD")).thenReturn(valuta);
+        when(valutaRepository.getById(any())).thenReturn(valuta);
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(null);
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
+            assertThrows(ContractExpcetion.class, () -> ugovorService.addStavka(request, token), "Transaction error");
+        }
     }
 
     @Test
@@ -1366,6 +1419,167 @@ public class UgovorServiceTest {
         var token = "test";
 
         assertThrows( ContractExpcetion.class, () -> ugovorService.modifyStavka(request, token), "bad request");
+    }
+
+    @Test
+    void modifyTransakcionaStavkaNoUgovorTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+        stavka.setUgovor(null);
+
+        var request = new TransakcionaStavkaRequest();
+        request.setStavkaId(1L);
+        request.setKapitalTypePotrazni(KapitalType.NOVAC);
+        request.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        request.setKapitalPotrazniOznaka("USD");
+        request.setKapitalDugovniOznaka("USD");
+        request.setKolicinaPotrazna(1.0);
+        request.setKolicinaDugovna(1.0);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        assertThrows( ContractExpcetion.class, () -> ugovorService.modifyStavka(request, token), "Ugovor not found");
+    }
+
+    @Test
+    void modifyTransakcionaStavkaBadTransactionTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+        stavka.setUgovor(ugovor);
+
+        var request = new TransakcionaStavkaRequest();
+        request.setStavkaId(1L);
+        request.setKapitalTypePotrazni(KapitalType.NOVAC);
+        request.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        request.setKapitalPotrazniOznaka("USD");
+        request.setKapitalDugovniOznaka("USD");
+        request.setKolicinaPotrazna(1.0);
+        request.setKolicinaDugovna(1.0);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+        when(valutaRepository.findValutaByKodValute("USD")).thenReturn(valuta);
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(null);
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
+            assertThrows( ContractExpcetion.class, () -> ugovorService.modifyStavka(request, token), "Transaction error");
+        }
+    }
+
+    @Test
+    void modifyTransakcionaStavkaBadSecondTransactionTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+        stavka.setUgovor(ugovor);
+
+        var request = new TransakcionaStavkaRequest();
+        request.setStavkaId(1L);
+        request.setKapitalTypePotrazni(KapitalType.NOVAC);
+        request.setKapitalTypeDugovni(KapitalType.AKCIJA);
+        request.setKapitalPotrazniOznaka("USD");
+        request.setKapitalDugovniOznaka("USD");
+        request.setKolicinaPotrazna(1.0);
+        request.setKolicinaDugovna(1.0);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+        when(valutaRepository.findValutaByKodValute("USD")).thenReturn(valuta);
+
+        when(valutaRepository.getById(any())).thenReturn(valuta);
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(new Transakcija()).thenReturn(null);
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        try (MockedStatic<HttpUtils> utilities = Mockito.mockStatic(HttpUtils.class)){
+            utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
+            assertThrows( ContractExpcetion.class, () -> ugovorService.modifyStavka(request, token), "Transaction error");
+        }
+
     }
 
     @ParameterizedTest
@@ -1506,5 +1720,84 @@ public class UgovorServiceTest {
             utilities.when(() -> HttpUtils.getAskBidPrice(any(), any(), any())).thenReturn(ResponseEntity.ok(bidResponse));
             assertThrows( ContractExpcetion.class, () -> ugovorService.removeStavka(1L, token), "Ugovor is finalized");
         }
+    }
+
+    @Test
+    void removeTransakcionaStavkaNoUgovorTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+
+        var ugovorId = 1L;
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        assertThrows( ContractExpcetion.class, () -> ugovorService.removeStavka(1L, token), "Ugovor not found");
+    }
+
+    @Test
+    void removeTransakcionaStavkaTransactionFailTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        var ugovorId = 1L;
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(1L);
+        stavka.setKapitalPotrazniOznaka("EUR");
+        stavka.setKapitalDugovniOznaka("EUR");
+        stavka.setKapitalTypePotrazni(KapitalType.AKCIJA);
+        stavka.setKapitalPotrazniId(1L);
+        stavka.setKapitalTypeDugovni(KapitalType.NOVAC);
+        stavka.setKapitalDugovniId(1L);
+        stavka.setKolicinaPotrazna(2.0);
+        stavka.setKolicinaDugovna(2.0);
+        stavka.setUgovor(ugovor);
+
+        var valuta = new Valuta();
+        valuta.setKodValute("USD");
+        valuta.setOznakaValute("USD");
+
+        when(transakcionaStavkaRepository.findById(1L)).thenReturn(Optional.of(stavka));
+        when(transakcijaService.dodajTransakciju(eq(token), any())).thenReturn(null);
+
+        var bidResponse = new AskBidPriceResponse();
+        bidResponse.setAsk(1.0);
+        bidResponse.setHartijaId(1L);
+
+        assertThrows( ContractExpcetion.class, () -> ugovorService.removeStavka(1L, token), "Transaction error");
     }
 }
