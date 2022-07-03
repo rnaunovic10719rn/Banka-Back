@@ -213,10 +213,17 @@ public class CompanyControllerTest {
     }
 
     @Test
+    void testGetBankAccountNotFound() throws Exception {
+        mockMvc.perform(get("/api/company//bankaccount/id/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void testGetBankAccount() throws Exception {
         CompanyBankAccount companyBankAccount = new CompanyBankAccount();
         when(bankAccountService.getBankAccountById(anyLong())).thenReturn(Optional.of(companyBankAccount));
-        mockMvc.perform(get("/api/company//bankaccount/id/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
+        mockMvc.perform(get("/api/company/bankaccount/id/{id}", 1L).header(HttpHeaders.AUTHORIZATION, validJWToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
