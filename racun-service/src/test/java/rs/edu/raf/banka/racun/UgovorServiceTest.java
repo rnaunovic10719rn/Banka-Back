@@ -209,6 +209,72 @@ public class UgovorServiceTest {
         assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token), "No permissions");
     }
 
+    @Test
+    void testGetByIdNoUgovor() {
+        Long ugovorId = 1L;
+
+        String token = "test";
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.empty());
+
+        assertThrows(ContractExpcetion.class , () -> ugovorService.getUgovorById(ugovorId, token), "Ugovor not found");
+    }
+
+    @Test
+    void testGetStavkaById() {
+        Long ugovorId = 1L;
+        Long userId = 1L;
+        Long stavkaId = 1L;
+
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+        ugovor.setUserId(userId);
+
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(stavkaId);
+        stavka.setUgovor(ugovor);
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+        when(transakcionaStavkaRepository.findById(stavkaId)).thenReturn(Optional.of(stavka));
+
+        assertEquals(ugovorService.getTransakcionaStavkaById(stavkaId, token), stavka);
+    }
+
+    @Test
+    void testGetStavkaByIdNoStavka() {
+        Long stavkaId = 1L;
+
+        when(transakcionaStavkaRepository.findById(stavkaId)).thenReturn(Optional.empty());
+
+        String token = "test";
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.getTransakcionaStavkaById(stavkaId, token), "Transakciona stavka not found");
+    }
+
+
+    @Test
+    void testGetStavkaByIdNoUgovor() {
+        Long stavkaId = 1L;
+
+        var stavka = new TransakcionaStavka();
+        stavka.setId(stavkaId);
+
+        String token = "test";
+
+        when(transakcionaStavkaRepository.findById(stavkaId)).thenReturn(Optional.of(stavka));
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.getTransakcionaStavkaById(stavkaId, token), "Ugovor not found");
+    }
+
+
+
 
     @ParameterizedTest
     @ValueSource(strings = {"ROLE_GL_ADMIN", "ROLE_ADMIN", "ROLE_SUPERVISOR"})
@@ -279,6 +345,38 @@ public class UgovorServiceTest {
         assertEquals(ugovorService.getAll(token), ugovori);
         assertEquals(ugovorService.getAllDraft(token), ugovoriDraft);
         assertEquals(ugovorService.getAllFinalized(token), ugovoriFinalized);
+    }
+
+    @Test
+    void testGetAllNoPermission() {
+        List<Ugovor> ugovori = new ArrayList<>();
+        List<Ugovor> ugovoriDraft = new ArrayList<>();
+        List<Ugovor> ugovoriFinalized = new ArrayList<>();
+
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("");
+
+        var ugovor1 = new Ugovor();
+        ugovor1.setUserId(userId);
+        ugovor1.setStatus(UgovorStatus.FINALIZED);
+        ugovori.add(ugovor1);
+        ugovoriFinalized.add(ugovor1);
+
+        var ugovor2 = new Ugovor();
+        ugovor2.setUserId(userId);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
+        ugovori.add(ugovor2);
+        ugovoriDraft.add(ugovor2);
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        assertEquals(ugovorService.getAll(token), new ArrayList<>());
+        assertEquals(ugovorService.getAllDraft(token), new ArrayList<>());
+        assertEquals(ugovorService.getAllFinalized(token), new ArrayList<>());
     }
 
     @ParameterizedTest
@@ -362,6 +460,44 @@ public class UgovorServiceTest {
         assertEquals(ugovorService.getAllByCompany(companyId, token), ugovori);
         assertEquals(ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.DRAFT), ugovoriDraft);
         assertEquals(ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.FINALIZED), ugovoriFinalized);
+    }
+
+    @Test
+    void testGetAllByCompanyNoPermission() {
+        List<Ugovor> ugovori = new ArrayList<>();
+        List<Ugovor> ugovoriDraft = new ArrayList<>();
+        List<Ugovor> ugovoriFinalized = new ArrayList<>();
+
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("");
+
+        var ugovor1 = new Ugovor();
+        ugovor1.setUserId(userId);
+        ugovor1.setStatus(UgovorStatus.FINALIZED);
+        ugovori.add(ugovor1);
+        ugovoriFinalized.add(ugovor1);
+
+        var ugovor2 = new Ugovor();
+        ugovor2.setUserId(userId);
+        ugovor2.setStatus(UgovorStatus.DRAFT);
+        ugovori.add(ugovor2);
+        ugovoriDraft.add(ugovor2);
+
+        String token = "test";
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        assertEquals(ugovorService.getAllByCompany(companyId, token), new ArrayList<>());
+        assertEquals(ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.DRAFT), new ArrayList<>());
+        assertEquals(ugovorService.getAllByCompanyAndUgovorStatus(companyId, token, UgovorStatus.FINALIZED), new ArrayList<>());
     }
 
     @Test
@@ -454,6 +590,40 @@ public class UgovorServiceTest {
     }
 
     @Test
+    void testGetAllByDelovodniBrojNoPermission() {
+        List<Ugovor> ugovori = new ArrayList<>();
+        List<Ugovor> ugovoriDraft = new ArrayList<>();
+        List<Ugovor> ugovoriFinalized = new ArrayList<>();
+
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_AGENT");
+
+        var ugovor1 = new Ugovor();
+        ugovor1.setUserId(userId);
+        ugovor1.setStatus(UgovorStatus.FINALIZED);
+        ugovori.add(ugovor1);
+        ugovoriFinalized.add(ugovor1);
+
+        var ugovor2 = new Ugovor();
+        ugovor2.setUserId(userId);
+        ugovor2.setStatus(UgovorStatus.FINALIZED);
+        ugovori.add(ugovor2);
+        ugovoriDraft.add(ugovor2);
+
+        String token = "test";
+
+        String delovodniBroj = "123-456";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        assertEquals(ugovorService.getAllByDelovodniBroj(delovodniBroj, token), new ArrayList<>());
+        assertEquals(ugovorService.getAllByDelovodniBrojAndUgovorStatus(delovodniBroj, token, UgovorStatus.DRAFT), new ArrayList<>());
+        assertEquals(ugovorService.getAllByDelovodniBrojAndUgovorStatus(delovodniBroj, token, UgovorStatus.FINALIZED), new ArrayList<>());
+    }
+
+    @Test
     void createUgovorTest()
     {
         Long userId = 1L;
@@ -483,14 +653,67 @@ public class UgovorServiceTest {
     }
 
     @Test
-    void createUgovorBadRequestTest()
+    void createUgovorBadRequestTest1()
     {
         var request = new UgovorCreateRequest();
-
+        request.setCompanyId(null);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
         var token = "test";
 
         assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token), "bad request");
     }
+
+    @Test
+    void createUgovorBadRequestTest2()
+    {
+        Long companyId = 1L;
+        var request = new UgovorCreateRequest();
+        request.setCompanyId(companyId);
+        request.setDescription(null);
+        request.setDelovodniBroj("123-456");
+        var token = "test";
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token), "bad request");
+    }
+
+    @Test
+    void createUgovorBadRequestTest3()
+    {
+        Long companyId = 1L;
+        var request = new UgovorCreateRequest();
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj(null);
+        var token = "test";
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token), "bad request");
+    }
+
+    @Test
+    void createUgovorNoCompanyTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.empty());
+
+        var request = new UgovorCreateRequest();
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.createUgovor(request, token), "Company not found");
+    }
+
 
     @Test
     void modifyUgovorTest()
@@ -508,7 +731,6 @@ public class UgovorServiceTest {
         Long companyId = 1L;
         var company = new Company();
         company.setId(companyId);
-
 
         given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
 
@@ -554,6 +776,190 @@ public class UgovorServiceTest {
 
         assertThrows(ContractExpcetion.class, () -> ugovorService.modifyUgovor(request, token), "Ugovor is finalized");
     }
+
+    @Test
+    void modifyUgovorNoUgovorTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+
+        Long companyId = 1L;
+
+        var ugovorId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.empty());
+
+        assertThrows(ContractExpcetion.class, ()-> ugovorService.modifyUgovor(request, token), "Ugovor not found");
+    }
+
+    @Test
+    void modifyUgovorNoCompanyTest()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.empty());
+
+
+        var ugovorId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(new Ugovor()));
+
+        assertThrows(ContractExpcetion.class, ()-> ugovorService.modifyUgovor(request, token), "Company not found");
+    }
+
+    @Test
+    void modifyUgovorBadRequest1Test()
+    {
+        var ugovorId = 1L;
+        var companyId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(null);
+        request.setDescription(null);
+        request.setDelovodniBroj(null);
+
+        var token = "test";
+
+        assertThrows(ContractExpcetion.class, ()-> ugovorService.modifyUgovor(request, token), "bad request");
+    }
+
+    @Test
+    void modifyUgovorBadRequest2Test()
+    {
+        var companyId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(null);
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        var token = "test";
+
+        assertThrows(ContractExpcetion.class, ()-> ugovorService.modifyUgovor(request, token), "bad request");
+    }
+
+    @Test
+    void modifyUgovorBadRequestNoMod1Test()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+
+        var ugovorId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(null);
+        request.setDescription("Test");
+        request.setDelovodniBroj("123-456");
+
+        when(ugovorRepository.save(any())).thenReturn(new Ugovor());
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(new Ugovor()));
+
+        assertNotNull(ugovorService.modifyUgovor(request, token));
+    }
+
+    @Test
+    void modifyUgovorBadRequestNoMod2Test()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+
+        var ugovorId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(companyId);
+        request.setDescription(null);
+        request.setDelovodniBroj("123-456");
+
+        when(ugovorRepository.save(any())).thenReturn(new Ugovor());
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(new Ugovor()));
+
+        assertNotNull(ugovorService.modifyUgovor(request, token));
+    }
+
+    @Test
+    void modifyUgovorBadRequestNoMod3Test()
+    {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        String token = "test";
+
+        given(userService.getUserByToken(token)).willReturn(user);
+
+
+        Long companyId = 1L;
+        var company = new Company();
+        company.setId(companyId);
+
+        given(companyRepository.findById(companyId)).willReturn(Optional.of(company));
+
+        var ugovorId = 1L;
+        var request = new UgovorUpdateRequest();
+        request.setId(ugovorId);
+        request.setCompanyId(companyId);
+        request.setDescription("Test");
+        request.setDelovodniBroj(null);
+
+        when(ugovorRepository.save(any())).thenReturn(new Ugovor());
+
+        given(ugovorRepository.findById(ugovorId)).willReturn(Optional.of(new Ugovor()));
+
+        assertNotNull(ugovorService.modifyUgovor(request, token));
+    }
+
 
     @Test
     void finalizeUgovorTest() throws IOException {
@@ -632,6 +1038,56 @@ public class UgovorServiceTest {
     }
 
     @Test
+    void finalizeUgovorNoPermissionsTest() throws IOException {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("");
+
+        Long ugovorId = 1L;
+        var document = new MockMultipartFile("test", new byte[] {1, 2, 3});
+
+        var ugovor = new Ugovor();
+        ugovor.setId(ugovorId);
+
+        String token = "test";
+        given(userService.getUserByToken(token)).willReturn(user);
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.finalizeUgovor(ugovorId, document, token), "No permissions");
+
+    }
+
+    @Test
+    void finalizeUgovorBadRequestTest() throws IOException {
+        Long ugovorId = 1L;
+
+        MockMultipartFile document = null;
+        String token = "test";
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.finalizeUgovor(ugovorId, document, token), "bad request");
+    }
+
+    @Test
+    void finalizeUgovorNoUgovor() throws IOException {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        Long ugovorId = 1L;
+        var document = new MockMultipartFile("test", new byte[] {1, 2, 3});
+
+
+        String token = "test";
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.empty());
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.finalizeUgovor(ugovorId, document, token), "Ugovor not found");
+    }
+
+    @Test
     void rejectUgovorTest() throws IOException {
         Long userId = 1L;
         var user = new UserDto();
@@ -693,6 +1149,23 @@ public class UgovorServiceTest {
         when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.of(ugovor));
 
         assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token), "Ugovor is finalized");
+    }
+
+    @Test
+    void rejectUgovorNoUgovorTest() {
+        Long userId = 1L;
+        var user = new UserDto();
+        user.setId(userId);
+        user.setRoleName("ROLE_GL_ADMIN");
+
+        Long ugovorId = 1L;
+
+
+        String token = "test";
+
+        when(ugovorRepository.findById(ugovorId)).thenReturn(Optional.empty());
+
+        assertThrows(ContractExpcetion.class, () -> ugovorService.rejectUgovor(ugovorId, token), "Ugovor not found");
     }
 
 
