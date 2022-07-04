@@ -201,7 +201,10 @@ public class SredstvaKapitalService {
         }
         kapitalPoTipuHartijeDto.setKupljenoZa(kupljenoZa);
 
-        Double profit = kapitalPoTipuHartijeDto.getVrednost() - kupljenoZa;
+        Double profit = 0.0;
+        if(kupljenoZa != null) {
+            profit = kapitalPoTipuHartijeDto.getVrednost() - kupljenoZa;
+        }
         kapitalPoTipuHartijeDto.setProfit(profit);
     }
 
